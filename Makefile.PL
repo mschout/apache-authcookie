@@ -1,83 +1,90 @@
 use ExtUtils::MakeMaker;
-use lib 't/lib';
-use Apache::test;
 
-my %params = Apache::test->get_test_params();
-Apache::test->write_httpd_conf( %params, include => join('', <DATA>) );
-*MY::test = sub { Apache::test->MM_test(%params) };
+my @CLEAN_FILES = ();
+my $mp_version = mod_perl_version();
+build_prepare($mp_version);
+
+test_configure();
 
 WriteMakefile(
     'NAME'         => 'Apache::AuthCookie',
     'VERSION_FROM' => 'AuthCookie.pm',
-    'clean'        => {FILES => 't/httpd.conf t/httpd.loc t/error_log t/httpd'},
+    'PREREQ_PM'    => {
+        'Apache::Test' => 1.01
+    },
+    'clean'        => {
+        FILES => "@CLEAN_FILES"
+    },
     'dist'         => {PREOP=>('rm -f README; '.
                               'pod2text -80 < AuthCookie.pm > README; '.
                               'cp -f README $(DISTNAME)-$(VERSION);')}
 );
 
-__DATA__
-PerlModule Apache::AuthCookie
-PerlModule Sample::AuthCookieHandler
+# inspired by Apache::Peek 1.01
+sub test_configure {
+    if (eval { require Apache::TestMM }) {
+        # enable "make test"
+        Apache::TestMM->import(qw(test clean));
 
-PerlSetVar WhatEverPath /
-PerlSetVar WhatEverLoginScript /docs/login.pl
-PerlSetVar AuthCookieDebug 3
+        # accept configs from command line.
+        Apache::TestMM::filter_args();
 
-# These documents require user to be logged in.
-<Location /docs/protected>
- AuthType Sample::AuthCookieHandler
- AuthName WhatEver
- PerlAuthenHandler Sample::AuthCookieHandler->authenticate
- PerlAuthzHandler Sample::AuthCookieHandler->authorize
- Require user programmer
-</Location>
+        Apache::TestMM::generate_script('t/TEST');
 
-# must satisfy any requirement
-<Location /docs/authany>
- PerlSetVar WhatEverSatisfy Any
- AuthType Sample::AuthCookieHandler
- AuthName WhatEver
- PerlAuthenHandler Sample::AuthCookieHandler->authenticate
- PerlAuthzHandler Sample::AuthCookieHandler->authorize
- Require user some-user
- Require user programmer
-</Location>
+        push @CLEAN_FILES, 't/TEST';
+    }
+    else {
+        # overload test rule with a no-op
+        warn "***: You should install Apache::Test to do real testing\n";
+        *MY::test = sub {
+            return <<'EOF';
+test : pure_all
+	@echo \*** This test suite requires Apache::Test available from CPAN
+EOF
+        }
+    }
+}
 
-# must satisfy all requirements
-<Location /docs/authall>
- PerlSetVar WhatEverSatisfy All
- AuthType Sample::AuthCookieHandler
- AuthName WhatEver
- PerlAuthenHandler Sample::AuthCookieHandler->authenticate
- PerlAuthzHandler Sample::AuthCookieHandler->authorize
- Require user some-user
- Require user programmer
-</Location>
+sub build_prepare {
+    my $mp_version = shift;
 
-# These documents don't require logging in, but allow it.
-<FilesMatch "\.cgi$">
- AuthType Sample::AuthCookieHandler
- AuthName WhatEver
- PerlFixupHandler Sample::AuthCookieHandler->recognize_user
-</FilesMatch>
+    my $outfile = 'AuthCookie.pm';
 
-<FilesMatch "\.pl">
- AuthType Sample::AuthCookieHandler
- AuthName WhatEver
- SetHandler perl-script
- PerlHandler Apache::Registry
- Options +ExecCGI
-</FilesMatch>
+    my $infile = "AuthCookie.pm.mp${mp_version}";
 
-# This is the action of the login.pl script above.
-<Files LOGIN>
- AuthType Sample::AuthCookieHandler
- AuthName WhatEver
- SetHandler perl-script
- PerlHandler Sample::AuthCookieHandler->login
-</Files>
+    die "whoops, $infile doesnt exist!" unless -f $infile;
 
-<Location /perl-status>
- SetHandler perl-script
- PerlHandler Apache::Status
-</Location>
+    # remove old copy of the file if its already there.
+    if (-f $outfile) {
+        unlink $outfile or die "unlink($outfile): $!";
+    }
+
+    # copy source file to the outfile
+    require File::Copy;
+    File::Copy::copy($infile, $outfile);
+
+    push @CLEAN_FILES, 'AuthCookie.pm';
+}
+
+sub mod_perl_version {
+    eval {
+        require mod_perl
+    };
+    if ($@) {
+        die "Can't find mod_perl installed: $@\n";
+    }
+
+    # version 3 does not exist yet, but we check here for sanity.
+    if ($mod_perl::VERSION >= 3) {
+        die "mod_perl version $mod_perl::VERSION is not supported\n";
+    }
+    elsif ($mod_perl::VERSION >= 1.99) {
+        return 2;
+    }
+    elsif ($mod_perl::VERSION >= 1.0) {
+        return 1;
+    }
+    else {
+        die "mod_perl version $mod_perl::VERSION is not supported\n";
+    }
+}
