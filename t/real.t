@@ -17,7 +17,7 @@ my %requests = (
    # Should succeed (redirect)
    5  => {uri=>'/LOGIN',
 	  method=>'POST',
-	  content=>'destination=/protected/get_me.html&credential_0=programmer&credential_1=Hero',
+	  content=>'destination=/docs/protected/get_me.html&credential_0=programmer&credential_1=Hero',
 	 },
 
    # Should succeed
@@ -29,7 +29,7 @@ my %requests = (
    # Should fail with 'no_cookie'
    7  => {uri=>'/docs/protected/get_me.html',
 	  method=>'GET',
-	  content=>'destination=/protected/get_me.html&credential_0=programmer&credential_1=Heroo',
+	  content=>'destination=/docs/protected/get_me.html&credential_0=programmer&credential_1=Heroo',
 	 },
 
    8  => '/docs/logout.pl',
@@ -45,7 +45,7 @@ my %requests = (
 	  headers=>{Cookie=>'Sample::AuthCookieHandler_WhatEver=some-user:duck;'},
 	 },
 
-   # Should redirect to /protected/get_me.html
+   # Should redirect to /docs/protected/get_me.html
    11 => {uri=>'/LOGIN',
 	  method=>'POST',
 	  content=>'destination=/docs/protected/get_me.html&credential_0=programmer&credential_1=Heroo',
@@ -61,9 +61,23 @@ my %requests = (
    # Check that destination is right.
    13  => {uri=>'/LOGIN',
 	   method=>'POST',
-	   content=>'destination=/protected/get_me.html&credential_0=fail&credential_1=Hero',
+	   content=>'destination=/docs/protected/get_me.html&credential_0=fail&credential_1=Hero',
 	 },
 
+    # auth any should get the page
+    14 => {uri => '/LOGIN',
+           method => 'POST',
+           content => join('&', 'destination=/docs/authany/get_me.html',
+                                'credential_0=some-user',
+                                'credential_1=mypassword')
+          },                       
+
+    # auth all should fail because we have 2 user requirements
+    # so we should get FORBIDDEN
+    15 => {uri     => '/docs/authall/get_me.html',
+           method  => 'GET',
+           headers => {Cookie => 'Sample::AuthCookieHandler_WhatEver=some-user:mypassword'}
+          },
 );
 
 my %special_tests = (
@@ -82,7 +96,27 @@ my %special_tests = (
        $ok = 0 unless $r->header('Set-Cookie') eq 'Sample::AuthCookieHandler_WhatEver=programmer:Heroo; path=/';
        $ok = 0 unless $r->code() == 302;
        return $ok;
-   }
+   },
+   14 => sub {
+        my $r = shift;
+        print("Location: ", $r->header('Location'), "\n",
+              "Set-Cookie: ", $r->header('Set-Cookie'), "\n",
+              "Code: ", $r->code(), "\n");
+        
+        my $ok = 1;
+
+        $ok = 0 unless $r->header('Location') eq '/docs/authany/get_me.html';
+        $ok = 0 unless $r->header('Set-Cookie') eq 
+                'Sample::AuthCookieHandler_WhatEver=some-user:mypassword; path=/';
+        $ok = 0 unless $r->code() == 302;
+
+        return $ok;
+   },
+   15 => sub {
+        my $r = shift;
+        print "code: ", $r->code(), "\n";
+        return ($r->code() == 403);
+   },
 );
 
 print "1.." . (2 + keys %requests) . "\n";
