@@ -9,7 +9,7 @@ use Apache::AuthCookie::Util;
 use Apache::Util qw(escape_uri);
 use vars qw($VERSION);
 
-# $Id: AuthCookie.pm,v 2.33 2002-08-30 23:28:50 mschout Exp $
+# $Id: AuthCookie.pm,v 2.34 2002-09-20 21:08:11 mschout Exp $
 $VERSION = '3.02';
 
 sub recognize_user ($$) {
@@ -307,6 +307,12 @@ sub send_cookie {
   my $cookie = $self->cookie_string( request => $r,
                                      key     => "$auth_type\_$auth_name",
                                      value   => $ses_key );
+
+  # add P3P header if user has configured it.    
+  if (my $p3p = $r->dir_config("${auth_name}P3P")) {
+    $r->err_header_out(P3P => $p3p);
+  }
+                                   
   $r->err_header_out("Set-Cookie" => $cookie);
 }
 
@@ -405,6 +411,11 @@ MethodHandlers, Authen, and Authz compiled in.
 
  # Use this to make your cookies persistent (+2 hours here)
  PerlSetVar WhatEverExpires +2h
+
+ # Use to make AuthCookie send a P3P header with the cookie
+ # see http://www.w3.org/P3P/ for details about what the value 
+ # of this should be
+ PerlSetVar WhatEverP3P "CP=\"...\""
 
  # These documents require user to be logged in.
  <Location /protected>
@@ -883,7 +894,7 @@ implement anything, though.
 
 =head1 CVS REVISION
 
-$Id: AuthCookie.pm,v 2.33 2002-08-30 23:28:50 mschout Exp $
+$Id: AuthCookie.pm,v 2.34 2002-09-20 21:08:11 mschout Exp $
 
 =head1 AUTHOR
 
