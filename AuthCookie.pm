@@ -9,7 +9,7 @@ use Apache::AuthCookie::Util;
 use Apache::Util qw(escape_uri);
 use vars qw($VERSION);
 
-# $Id: AuthCookie.pm,v 2.28 2002-05-15 17:55:43 mschout Exp $
+# $Id: AuthCookie.pm,v 2.29 2002-05-16 14:17:47 mschout Exp $
 $VERSION = '3.01';
 
 sub recognize_user ($$) {
@@ -295,7 +295,6 @@ sub authorize ($$) {
 
     # Nothing succeeded, deny access to this user.
     $forbidden = 1;
-    last;
   }
 
   return $forbidden ? FORBIDDEN : OK;
@@ -880,7 +879,7 @@ implement anything, though.
 
 =head1 CVS REVISION
 
-$Id: AuthCookie.pm,v 2.28 2002-05-15 17:55:43 mschout Exp $
+$Id: AuthCookie.pm,v 2.29 2002-05-16 14:17:47 mschout Exp $
 
 =head1 AUTHOR
 
