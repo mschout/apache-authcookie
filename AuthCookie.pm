@@ -9,7 +9,7 @@ use Apache::AuthCookie::Util;
 use Apache::Util qw(escape_uri);
 use vars qw($VERSION);
 
-# $Id: AuthCookie.pm,v 2.34 2002-09-20 21:08:11 mschout Exp $
+# $Id: AuthCookie.pm,v 2.35 2002-09-24 02:35:31 mschout Exp $
 $VERSION = '3.02';
 
 sub recognize_user ($$) {
@@ -46,6 +46,7 @@ sub _convert_to_get {
 
     my @pairs =();
     while (my ($name, $value) = each %$args) {
+      $value = '' unless defined $value;
       push @pairs, escape_uri($name) . '=' . escape_uri($value);
     }
     $r->args(join '&', @pairs) if scalar(@pairs) > 0;
@@ -894,7 +895,7 @@ implement anything, though.
 
 =head1 CVS REVISION
 
-$Id: AuthCookie.pm,v 2.34 2002-09-20 21:08:11 mschout Exp $
+$Id: AuthCookie.pm,v 2.35 2002-09-24 02:35:31 mschout Exp $
 
 =head1 AUTHOR
 
