@@ -10,21 +10,42 @@ print("\nFor testing purposes, please give the full path to an httpd\n",
       "The path defaults to \$ENV{APACHE}, if present.\n",
      );
 
-my $httpd = '';
+my %conf;
+
 do {
   print "\n [$default]: ";
-  chomp ($httpd = <STDIN>);
-  $httpd ||= $default;
-} until -e $httpd || !print("$httpd not found\n");
+  chomp ($conf{httpd} = <STDIN>);
+  $conf{httpd} ||= $default;
+} until -e $conf{httpd} || !print("$conf{httpd} not found\n");
+
+$default = getpwuid($<) || "nobody";
+print "User to run tests under [$default]: ";
+chomp ($conf{user} = <STDIN>);
+$conf{user} ||= $default;
+
+$default = getgrgid((getpwnam($conf{user}))[3]) || "nobody";
+print "Group to run tests under [$default]: ";
+chomp ($conf{group} = <STDIN>);
+$conf{group} ||= $default;
+
+$default = 8228;
+print "Port to run tests under [$default]: ";
+chomp ($conf{port} = <STDIN>);
+$conf{port} ||= $default;
+
 
 open LOC, ">t/httpd.loc" or die "can't write t/httpd.loc: $!";
-print LOC $httpd;
+print LOC map {"$_=$conf{$_}\n"} keys %conf;
 close LOC;
+
 
 WriteMakefile
   (
    'NAME' => 'Apache::AuthCookie',
    'VERSION_FROM' => 'AuthCookie.pm', # finds $VERSION
-   'dist' => { COMPRESS=>"gzip", SUFFIX=>"gz" },
+   'dist' => { COMPRESS=>"gzip", 
+	       SUFFIX=>"gz", 
+	       PREOP=>'rm -f Changes; cvs log AuthCookie.pm | $(PERL) -MCVS::Parse -e "prettylog" > Changes',
+	     },
    'clean' => {FILES => "t/httpd.loc"},
   );
