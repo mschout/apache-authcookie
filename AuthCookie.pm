@@ -9,8 +9,8 @@ use Apache::AuthCookie::Util;
 use Apache::Util qw(escape_uri);
 use vars qw($VERSION);
 
-# $Id: AuthCookie.pm,v 2.37 2002-09-24 03:09:18 mschout Exp $
-$VERSION = '3.02';
+# $Id: AuthCookie.pm,v 2.38 2002-09-24 03:18:59 mschout Exp $
+$VERSION = '3.03';
 
 sub recognize_user ($$) {
   my ($self, $r) = @_;
@@ -903,7 +903,7 @@ implement anything, though.
 
 =head1 CVS REVISION
 
-$Id: AuthCookie.pm,v 2.37 2002-09-24 03:09:18 mschout Exp $
+$Id: AuthCookie.pm,v 2.38 2002-09-24 03:18:59 mschout Exp $
 
 =head1 AUTHOR
 
