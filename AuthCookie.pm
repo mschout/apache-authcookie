@@ -8,7 +8,7 @@ use mod_perl qw(1.07 StackedHandlers MethodHandlers Authen Authz);
 use Apache::Constants qw(:common M_GET M_POST FORBIDDEN REDIRECT);
 use vars qw($VERSION);
 
-# $Id: AuthCookie.pm,v 2.17 2001-08-09 05:09:28 mschout Exp $
+# $Id: AuthCookie.pm,v 2.18 2001-10-25 14:11:03 mschout Exp $
 $VERSION = '3.00';
 
 sub recognize_user ($$) {
@@ -515,9 +515,9 @@ This will step through the C<require> directives you've given for
 protected documents and make sure the user passes muster.  The
 C<require valid-user> and C<require user joey-jojo> directives are
 handled for you.  You can implement custom directives, such as
-C<require species hamster>, by defining a method called C<hamster()>
+C<require species hamster>, by defining a method called C<species()>
 in your subclass, which will then be called.  The method will be
-called as C<$r-E<gt>hamster($r, $args)>, where C<$args> is everything
+called as C<$r-E<gt>species($r, $args)>, where C<$args> is everything
 on your C<require> line after the word C<hamster>.  The method should
 return OK on success and FORBIDDEN on failure.
 
@@ -744,7 +744,7 @@ implement anything, though.
 
 =head1 CVS REVISION
 
-$Id: AuthCookie.pm,v 2.17 2001-08-09 05:09:28 mschout Exp $
+$Id: AuthCookie.pm,v 2.18 2001-10-25 14:11:03 mschout Exp $
 
 =head1 AUTHOR
 
