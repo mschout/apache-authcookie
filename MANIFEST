@@ -6,6 +6,9 @@ MANIFEST.SKIP
 Changes
 Makefile.PL
 t/Skeleton/AuthCookieHandler.pm
+t/TEST.PL
+t/conf/extra.conf.in
+t/startup.pl
 t/check/12
 t/check/13
 t/check/16
