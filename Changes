@@ -1,65 +1,75 @@
-Revision history for Perl extension Apache::AuthCookie.
+Version: 2.004  Date: 2000/03/15 20:53:20
+   Added documentation about the ability to set cookie domains.  That
+   ability actually appeared in 2.002, but I forgot to document it or add
+   notes to the Changes file.
 
-2.001 date: 2000/02/11 04:46:59;
- - The login forms may now use the POST method instead of the GET method.
+
+Version: 2.003  Date: 2000/03/14 21:08:02
+   Now returns FORBIDDEN instead of AUTH_REQUIRED when authorization
+   fails or when a user tries to access a protected doc.
+
+
+Version: 2.002  Date: 2000/03/14 17:46:42
+   Added an internal _cookie_string method that helps construct cookie
+   strings.  This shouldn't change any functionality, but makes my job
+   easier.
+   
+   Added a couple of Makefile.PL questions that set the user & group
+   tests should run under.
+
+
+Version: 2.001  Date: 2000/02/11 04:46:59
+   The login forms may now use the POST method instead of the GET method.
    This is a big deal, because with GET the user's credentials get logged
    to access logs, they remain in the user's browser history, and so on.
    Thanks to cholet@logilune.com (Eric Cholet) for the patch and prodding.
-
- - There is now a proper test suite, which will fire up an httpd and make
+   
+   There is now a proper test suite, which will fire up an httpd and make
    requests of it.  The test code is adapted from Eric's old example
    (eg/) suite.
-
- - I've added a logout() method to help unset cookies.  The example
+   
+   I've added a logout() method to help unset cookies.  The example
    logout.pl now uses logout().  Thanks to Aaron Ross
    (ross@mathforum.com).
 
-2.000 date: 2000/02/02 13:18:23;
-  - Now owned by Ken Williams (ken@forum.swarthmore.edu)
 
-  - Created authenticate() and authorize() methods to replace authen()
-    and authz().  authen() and authz() are now deprecated and will 
-    disappear in a later version.
+Version: 2.000  Date: 2000/02/02 13:18:23
+   First released version, bumped up revision number to 2.0
+   
+   Created indentify() and authorize() methods to replace authen() and
+   authz().  authen() and authz() are now deprecated and will disappear
+   in a later version.
+   
+   AuthType can now contain colons [adi@certsite.com (Adi)]
+   
+   Nonexistent method calls (via 'require' directive) are no longer
+   shielded in authorization stage - if it fails it fails, and you get a
+   server error.
+   
+   Multiple 'require' directives should work now - previously only the
+   first directive was respected.
+   
+   Changed lots of documentation to reflect the above interface changes.
 
-  - AuthType can now contain colons [adi@certsite.com (Adi)]
 
-  - Nonexistent method calls (via 'require' directive) are no longer
-    shielded in authorization stage - if it fails it fails, and you 
-    get a server error.
+Version: 1.002  Date: 2000/01/27 22:07:13
+     - Now owned by Ken Williams (ken@forum.swarthmore.edu)
+   
+     - Created indentify() and authorize() methods to replace authen()
+       and authz().  authen() and authz() are now deprecated and will
+       disappear in a later version.
+   
+     - AuthType can now contain colons [adi@certsite.com (Adi)]
+   
+     - Nonexistent method calls (via 'require' directive) are no longer
+       shielded in authorization stage - if it fails it fails, and you
+       get a server error.
+   
+     - Multiple 'require' directives should work now - previously only
+       the first directive was respected.
 
-  - Multiple 'require' directives should work now - previously only
-    the first directive was respected.
 
+Version: 1.001  Date: 2000/01/25 01:21:05
+   Eric's original version from CPAN
 
-1.3_03
-	- Make synopsis access control params match the example. Pointed
-	  out by tad@webcollective.com.
-	- Added <Files> to the .htaccess in the sample to enable ExecCGI.
-	- Nate Wilken reported that AuthCookie works as-is on Win32 with
-	  a post 1.10 version of mod_perl and post 1.3b5 version of Apache.
-	  (These versions add support for mod_perl's error_document method
-	  on Win32. For earlier versions, AuthCookie can be modified to use
-	  the ErrorDocument directive in the Apache config.)
-	- Cleanup "Use of uninitialized value" warnings sotted by 
-	  Marlys Nelson <marlys.a.nelson@UWRF.EDU>.
-
-1.3_02
-	- login.pl now uses $r->prev to get authtype and authname, so it
-	  doesn't have to be in the same hierarchy as the proctected docs.
-	  Thanks to Liam Kirsher <liam@numenet.com> for spotting this.
-	- Steve Shreeve <shreeve@meded.med.uci.edu> tracked down a segv
-	  from $r->err_header_out("Location"... I never could reproduce
-	  this, but he said this $r->header_out("Location"... worked.
-	- Fixed typo pointed out by Nate Wilken <wilken@mr_x.inre.asu.edu>
-	- Changed directory eg/sample to eg/unprotected for compatibility
-	  with windows pointed out by Nate Wilken <wilken@mr_x.inre.asu.edu>
-1.3_01
-	- Fix error where the cookie wasn't printed when debugging was
-	  turned on.
-	- Consistantly treat the session key as a string. This meant a
-	  change to the authen_* function prototypes, you may need to
-	  change ones you've already written.
-
-1.3
-	- First public release on CPAN, removed from Apache contrib.
 
