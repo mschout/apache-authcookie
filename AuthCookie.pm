@@ -4,8 +4,20 @@ use mod_perl qw(1.07 StackedHandlers MethodHandlers Authen Authz);
 use Apache::Constants qw(:common M_GET M_POST FORBIDDEN REDIRECT);
 use vars qw($VERSION);
 
-# $Id: AuthCookie.pm,v 2.8 2000-06-14 15:36:12 ken Exp $
-$VERSION = sprintf '%d.%03d', q$Revision: 2.8 $ =~ /: (\d+).(\d+)/;
+# $Id: AuthCookie.pm,v 2.9 2000-06-14 15:54:00 ken Exp $
+$VERSION = sprintf '%d.%03d', q$Revision: 2.9 $ =~ /: (\d+).(\d+)/;
+
+$Author: ken $ 
+$Date: 2000-06-14 15:54:00 $
+$Header: /var/media/dev/cvsbackup/Apache-AuthCookie/AuthCookie.pm,v 2.9 2000-06-14 15:54:00 ken Exp $ 
+$Id: AuthCookie.pm,v 2.9 2000-06-14 15:54:00 ken Exp $
+$Name: not supported by cvs2svn $ 
+$Locker:  $ 
+$Log: not supported by cvs2svn $
+$RCSfile: AuthCookie.pm,v $ 
+$Revision: 2.9 $ 
+$Source: /var/media/dev/cvsbackup/Apache-AuthCookie/AuthCookie.pm,v $ 
+$State: Exp $ 
 
 sub recognize_user ($$) {
   my ($self, $r) = @_;
@@ -406,11 +418,11 @@ client.
                V                       \             /     False
   +-----------------------------------+ \           /
   | Tell Apache to set Expires header,|  \         /
-  | set no-cache Pragma header, set   |   \       /
-  | user to user ID returned by       |    \     /
-  | authen_ses_key, set authentication|     \   /
-  | to our type (e.g. AuthCookie).    |      \ /
-  +-----------------------------------+       V
+  | set user to user ID returned by   |   \       /
+  | authen_ses_key, set authentication|    \     /
+  | to our type (e.g. AuthCookie).    |     \   /
+  +-----------------------------------+      \ /
+                                              V
          (---------------------)              ^
          ( Request a protected )              |
          ( page, user has a    )--------------+
