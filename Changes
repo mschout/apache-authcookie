@@ -1,5 +1,22 @@
 Revision history for Perl extension Apache::AuthCookie.
 
+2.0
+  - Now owned by Ken Williams (ken@forum.swarthmore.edu)
+
+  - Created indentify() and authorize() methods to replace authen()
+    and authz().  authen() and authz() are now deprecated and will 
+    disappear in a later version.
+
+  - AuthType can now contain colons [adi@certsite.com (Adi)]
+
+  - Nonexistent method calls (via 'require' directive) are no longer
+    shielded in authorization stage - if it fails it fails, and you 
+    get a server error.
+
+  - Multiple 'require' directives should work now - previously only
+    the first directive was respected.
+
+
 1.3_03
 	- Make synopsis access control params match the example. Pointed
 	  out by tad@webcollective.com.
