@@ -1,10 +1,14 @@
 package Apache::AuthCookie;
+
 use strict;
+
+use Carp;
+use CGI::Util ();
 use mod_perl qw(1.07 StackedHandlers MethodHandlers Authen Authz);
 use Apache::Constants qw(:common M_GET M_POST FORBIDDEN REDIRECT);
 use vars qw($VERSION);
 
-# $Id: AuthCookie.pm,v 2.12 2001-03-26 04:41:02 mschout Exp $
+# $Id: AuthCookie.pm,v 2.13 2001-05-22 14:00:21 mschout Exp $
 $VERSION = '2.99';
 
 sub recognize_user ($$) {
@@ -71,8 +75,11 @@ sub logout($$) {
   my ($auth_type, $auth_name) = ($r->auth_type, $r->auth_name);
   
   # Send the Set-Cookie header to expire the auth cookie.
-  my $str = $self->cookie_string($r, "$auth_type\_$auth_name", '');
-  $r->err_headers_out->add("Set-Cookie" => "$str; expires=Mon, 21-May-1971 00:00:00 GMT");
+  my $str = $self->cookie_string( request => $r,
+                                  key     => "$auth_type\_$auth_name", 
+                                  value   => '',
+                                  expires => 'Mon, 21-May-1971 00:00:00 GMT' );
+  $r->err_headers_out->add("Set-Cookie" => "$str");
   $r->log_error("set_cookie " . $r->err_header_out("Set-Cookie")) if $debug >= 2;
   unless ($r->dir_config("${auth_name}Cache")) {
     $r->no_cache(1);
@@ -136,8 +143,13 @@ sub authenticate ($$) {
       # remove it from the client now so when the credential data is posted
       # we act just like it's a new session starting.
       
-      my $str = $auth_type->cookie_string($r, "$auth_type\_$auth_name", '');
-      $r->err_headers_out->add("Set-Cookie" => "$str; expires=Mon, 21-May-1971 00:00:00 GMT");
+      my $str = $auth_type->cookie_string(
+        request => $r,
+        key     => "$auth_type\_$auth_name",
+        value   => '',
+        expires => 'Mon, 21-May-1971 00:00:00 GMT'
+      );
+      $r->err_headers_out->add("Set-Cookie" => "$str");
       $r->log_error("set_cookie " . $r->err_header_out("Set-Cookie")) if $debug >= 2;
       $r->subprocess_env('AuthCookieReason', 'bad_cookie');
     }
@@ -221,18 +233,40 @@ sub send_cookie {
   my $r = Apache->request();
 
   my ($auth_type, $auth_name) = ($r->auth_type, $r->auth_name);
-  my $cookie = $self->cookie_string($r, "$auth_type\_$auth_name", $ses_key);
+  my $cookie = $self->cookie_string( request => $r,
+                                     key     => "$auth_type\_$auth_name",
+                                     value   => $ses_key );
   $r->err_header_out("Set-Cookie" => $cookie);
 }
 
 
 sub cookie_string {
-  shift;
-  my ($r, $key, $val) = @_;
+  my $self = shift;
 
-  my $string = "$key=$val";
+  # if passed 3 args, we have old-style call.
+  if (scalar(@_) == 3) {
+    carp "deprecated old style call to ".__PACKAGE__."::cookie_string()";
+    my ($r, $key, $value) = @_;
+    return $self->cookie_string(request=>$r, key=>$key, value=>$value);
+  }
+  # otherwise assume named parameters.
+  my %p = @_;
+  for (qw/request key/) {    
+    croak "missing required parameter $_" unless defined $p{$_};
+  }
+  # its okay if value is undef here.
+
+  my $r = $p{request};
+
+  my $string = sprintf '%s=%s', @p{'key','value'};
 
   my $auth_name = $r->auth_name;
+  
+  if (my $expires = $p{expires} || $r->dir_config("${auth_name}Expires")) {
+    $expires = CGI::Util::expires($expires);
+    $string .= "; expires=$expires";
+  }
+
   if (my $path = $r->dir_config("${auth_name}Path")) {
     $string .= "; path=$path";
   }
@@ -256,10 +290,7 @@ sub key {
   return ($allcook =~ /(?:^|\s)${type}_$name=([^;]*)/)[0];
 }
 
-
 1;
-
-
 
 __END__
 
@@ -286,6 +317,9 @@ MethodHandlers, Authen, and Authz compiled in.
 
  # Usually documents are uncached - turn off here
  PerlSetVar WhatEverCache 1
+
+ # Use this to make your cookies persistent (+1 hour here)
+ PerlSetVar WhatEverExpires +2h
 
  # These documents require user to be logged in.
  <Location /protected>
