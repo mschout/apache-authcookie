@@ -9,7 +9,7 @@ use Apache::AuthCookie::Util;
 use Apache::Util qw(escape_uri);
 use vars qw($VERSION);
 
-# $Id: AuthCookie.pm,v 2.25 2002-02-21 21:32:49 mschout Exp $
+# $Id: AuthCookie.pm,v 2.26 2002-04-19 17:28:55 mschout Exp $
 $VERSION = '3.00';
 
 sub recognize_user ($$) {
@@ -84,6 +84,7 @@ sub login ($$) {
   unless ($ses_key) {
     $r->log_error("Bad credentials") if $debug >=2;
     $r->subprocess_env('AuthCookieReason', 'bad_credentials');
+    $r->uri($args{'destination'});
     return $auth_type->login_form;
   }
 
@@ -836,7 +837,7 @@ implement anything, though.
 
 =head1 CVS REVISION
 
-$Id: AuthCookie.pm,v 2.25 2002-02-21 21:32:49 mschout Exp $
+$Id: AuthCookie.pm,v 2.26 2002-04-19 17:28:55 mschout Exp $
 
 =head1 AUTHOR
 
