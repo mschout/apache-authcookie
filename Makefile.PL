@@ -10,7 +10,10 @@ WriteMakefile(
     'NAME'         => 'Apache::AuthCookie',
     'VERSION_FROM' => 'AuthCookie.pm',
     'PREREQ_PM'    => { 'CGI::Util' => 0 },
-    'clean'        => {FILES => 't/httpd.conf t/httpd.loc t/error_log t/httpd'}
+    'clean'        => {FILES => 't/httpd.conf t/httpd.loc t/error_log t/httpd'},
+    'dist'         => {PREOP=>('rm -f README; '.
+                              'pod2text -80 < AuthCookie.pm > README; '.
+                              'cp -f README $(DISTNAME)-$(VERSION);')}
 );
 
 __DATA__
