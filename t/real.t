@@ -1,10 +1,10 @@
 #!/usr/bin/perl
 
-use Apache::test qw(skip_test have_httpd test);
-skip_test unless have_httpd;
-
 use strict;
 use lib qw(lib t/lib);
+
+use Apache::test qw(skip_test have_httpd test);
+skip_test unless have_httpd;
 
 use vars qw($TEST_NUM);
 
