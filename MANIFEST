@@ -1,5 +1,6 @@
 AuthCookie.pm
 MANIFEST
+Changes
 Makefile.PL
 t/Skeleton/AuthCookieHandler.pm
 t/check/12
