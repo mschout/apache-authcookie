@@ -12,7 +12,7 @@
 <P>Failure reason: 'no_cookie'.  Please enter your login and password to authenticate.</P>
 </TD>
 <TR><TD>
-<INPUT TYPE=hidden NAME=destination VALUE="/protected/get_me.html">
+<INPUT TYPE=hidden NAME=destination VALUE="/docs/protected/get_me.html">
 
 </TD></TR>
 <TR><TD>
