@@ -1,3 +1,16 @@
+Version: CURRENT
+   - Fixed incorrect documentation in authorize() (thanks to David Young).
+   - login() handler changes:
+       o if "destination" isnt in posted data, set AuthCookieReason to 
+         no_cookie and return to login_form (previously just returned
+         SERVER_ERROR).
+       o if authen_cred() returns false, set AuthCookieReason to
+         bad_credentials and return to the login form.
+       o try to handle POST -> GET conversion.
+   - CGI::Util dependency removed (these are internal subroutines for CGI.pm)
+   - ${AuthName}Path will default to "/" if it is not specified (MSIE 6.0
+     wont set cookies without path)
+
 Version: 3.00
    - New maintiner: Michael Schout <mschout@gkg.net>
    - changed to hard coded $VERSION rather than RCS Revision style.

@@ -9,7 +9,7 @@ use Apache::AuthCookie::Util;
 use Apache::Util qw(escape_uri);
 use vars qw($VERSION);
 
-# $Id: AuthCookie.pm,v 2.21 2002-01-30 04:28:31 mschout Exp $
+# $Id: AuthCookie.pm,v 2.22 2002-01-30 16:30:37 mschout Exp $
 $VERSION = '3.00';
 
 sub recognize_user ($$) {
@@ -296,6 +296,8 @@ sub cookie_string {
 
   if (my $path = $r->dir_config("${auth_name}Path")) {
     $string .= "; path=$path";
+  } else {
+    $string .= '; path=/';
   }
   #$r->log_error("Attribute ${auth_name}Path not set") unless $path;
 
@@ -790,7 +792,7 @@ implement anything, though.
 
 =head1 CVS REVISION
 
-$Id: AuthCookie.pm,v 2.21 2002-01-30 04:28:31 mschout Exp $
+$Id: AuthCookie.pm,v 2.22 2002-01-30 16:30:37 mschout Exp $
 
 =head1 AUTHOR
 
