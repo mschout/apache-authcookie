@@ -4,8 +4,8 @@ use mod_perl qw(1.07 StackedHandlers MethodHandlers Authen Authz);
 use Apache::Constants qw(:common M_GET M_POST FORBIDDEN REDIRECT);
 use vars qw($VERSION);
 
-# $Id: AuthCookie.pm,v 2.10 2000-06-17 01:37:16 ken Exp $
-$VERSION = sprintf '%d.%03d', q$Revision: 2.10 $ =~ /: (\d+)\.(\d+)/;
+# $Id: AuthCookie.pm,v 2.11 2000-06-17 08:01:19 ken Exp $
+$VERSION = sprintf '%d.%03d', q$Revision: 2.11 $ =~ /: (\d+)\.(\d+)/;
 
 sub recognize_user ($$) {
   my ($self, $r) = @_;
@@ -138,9 +138,11 @@ sub authenticate ($$) {
       
       my $str = $auth_type->cookie_string($r, "$auth_type\_$auth_name", '');
       $r->err_headers_out->add("Set-Cookie" => "$str; expires=Mon, 21-May-1971 00:00:00 GMT");
-      $r->log_error("set_cookie " . $r->err_header_out("Set-Cookie"))
-	if $debug >= 2;
+      $r->log_error("set_cookie " . $r->err_header_out("Set-Cookie")) if $debug >= 2;
+      $r->subprocess_env('AuthCookieReason', 'bad_cookie');
     }
+  } else {
+    $r->subprocess_env('AuthCookieReason', 'no_cookie');
   }
 
   # They aren't authenticated, and they tried to get a protected
@@ -607,20 +609,27 @@ top of real.t).
 =head1 THE LOGIN SCRIPT
 
 You will need to create a login script (called login.pl above) that
-generates an HTML form for the user to fill out.  The following fields
-must be present in the form:
+generates an HTML form for the user to fill out.  You might generate
+the page using an Apache::Registry script, or an HTML::Mason
+component, or perhaps even using a static HTML page.  It's usually
+useful to generate it dynamically so that you can define the
+'destination' field correctly (see below).
+
+The following fields must be present in the form:
 
 =over 4
 
 =item 1.
 
 The ACTION of the form must be /LOGIN (or whatever you defined in your
-server configuration, as in the SYNOPSIS section).
+server configuration as handled by the ->login() method - see example
+in the SYNOPSIS section).
 
 =item 2.
 
 The various user input fields (username, passwords, etc.) must be
-named 'credential_0', 'credential_1', etc. on the form.
+named 'credential_0', 'credential_1', etc. on the form.  These will
+get passed to your authen_cred() method.
 
 =item 3.
 
@@ -630,6 +639,22 @@ in.  Typically this value is obtained from C<$r-E<gt>prev-E<gt>uri>.
 See the login.pl script in t/eg/.
 
 =back
+
+In addition, you might want your login page to be able to tell the
+difference between a user that sent an incorrect auth cookie, and a
+user that sent no auth cookie at all.  These typically correspond,
+respectively, to users who logged in incorrectly or aren't allowed to
+access the given page, and users who are trying to log in for the
+first time.  To help you differentiate between the two, B<AuthCookie>
+will set C<$r-E<gt>subprocess_env('AuthCookieReason')> to either
+C<bad_cookie> or C<no_cookie>.  You can examine this value in your
+login form by examining
+C<$r-E<gt>prev-E<gt>subprocess_env('AuthCookieReason')> (because it's
+a sub-request).
+
+Of course, if you want to give more specific information about why
+access failed when a cookie is present, your C<authen_ses_key()>
+method can set arbitrary entries in C<$r-E<gt>subprocess_env>.
 
 =head1 THE LOGOUT SCRIPT
 
