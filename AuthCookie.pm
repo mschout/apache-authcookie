@@ -4,8 +4,8 @@ use mod_perl qw(1.07 StackedHandlers MethodHandlers Authen Authz);
 use Apache::Constants qw(:common M_GET M_POST FORBIDDEN REDIRECT);
 use vars qw($VERSION);
 
-# $Id: AuthCookie.pm,v 2.11 2000-06-17 08:01:19 ken Exp $
-$VERSION = sprintf '%d.%03d', q$Revision: 2.11 $ =~ /: (\d+)\.(\d+)/;
+# $Id: AuthCookie.pm,v 2.12 2001-03-26 04:41:02 mschout Exp $
+$VERSION = '2.99';
 
 sub recognize_user ($$) {
   my ($self, $r) = @_;
