@@ -4,8 +4,8 @@ use mod_perl qw(1.07 StackedHandlers MethodHandlers Authen Authz);
 use Apache::Constants qw(:common M_GET M_POST FORBIDDEN REDIRECT);
 use vars qw($VERSION);
 
-# $Id: AuthCookie.pm,v 2.7 2000-04-15 15:27:02 ken Exp $
-$VERSION = sprintf '%d.%03d', q$Revision: 2.7 $ =~ /: (\d+).(\d+)/;
+# $Id: AuthCookie.pm,v 2.8 2000-06-14 15:36:12 ken Exp $
+$VERSION = sprintf '%d.%03d', q$Revision: 2.8 $ =~ /: (\d+).(\d+)/;
 
 sub recognize_user ($$) {
   my ($self, $r) = @_;
@@ -50,7 +50,7 @@ sub login ($$) {
   $r->log_error("ses_key " . $ses_key) if ($debug >= 2);
 
   # Send the Set-Cookie header.
-  $r->err_header_out("Set-Cookie" => $self->_cookie_string($r, "$auth_type\_$auth_name", $ses_key));
+  $r->err_headers_out->add("Set-Cookie" => $self->_cookie_string($r, "$auth_type\_$auth_name", $ses_key));
 
   if ($r->method eq 'POST') {
     $r->method('GET');
@@ -71,7 +71,7 @@ sub logout($$) {
   
   # Send the Set-Cookie header to expire the auth cookie.
   my $str = $self->_cookie_string($r, "$auth_type\_$auth_name", '');
-  $r->err_header_out("Set-Cookie" => "$str; expires=Mon, 21-May-1971 00:00:00 GMT");
+  $r->err_headers_out->add("Set-Cookie" => "$str; expires=Mon, 21-May-1971 00:00:00 GMT");
   $r->log_error("set_cookie " . $r->err_header_out("Set-Cookie")) if $debug >= 2;
   $r->no_cache(1);
   $r->err_header_out("Pragma" => "no-cache");
@@ -136,7 +136,7 @@ sub authenticate ($$) {
       # we act just like it's a new session starting.
       
       my $str = $auth_type->_cookie_string($r, "$auth_type\_$auth_name", '');
-      $r->err_header_out("Set-Cookie" => "$str; expires=Mon, 21-May-1971 00:00:00 GMT");
+      $r->err_headers_out->add("Set-Cookie" => "$str; expires=Mon, 21-May-1971 00:00:00 GMT");
       $r->log_error("set_cookie " . $r->err_header_out("Set-Cookie"))
 	if $debug >= 2;
     }
@@ -247,11 +247,8 @@ Apache::AuthCookie - Perl Authentication and Authorization via cookies
 
 =head1 SYNOPSIS
 
-C<use mod_perl qw(1.07 StackedHandlers MethodHandlers Authen Authz);>
-
-=for html
-<PRE>
-=end html
+Make sure your mod_perl is at least 1.24, with StackedHandlers,
+MethodHandlers, Authen, and Authz compiled in.
 
  # In httpd.conf or .htaccess:
  PerlModule Sample::AuthCookieHandler
@@ -284,11 +281,6 @@ C<use mod_perl qw(1.07 StackedHandlers MethodHandlers Authen Authz);>
   SetHandler perl-script
   PerlHandler Sample::AuthCookieHandler->login
  </Files>
-
-
-=for html
-</PRE>
-=end html
 
 =head1 DESCRIPTION
 
