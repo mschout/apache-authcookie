@@ -5,13 +5,15 @@ use Apache::Constants qw(:common);
 use Apache::AuthCookie;
 use vars qw($VERSION @ISA);
 
-$VERSION = substr(q$Revision: 1.1 $, 10);
+$VERSION = substr(q$Revision: 1.2 $, 10);
 @ISA = qw(Apache::AuthCookie);
 
 sub authen_cred ($$\@) {
     my $self = shift;
     my $r = shift;
     my @creds = @_;
+
+    return if $creds[0] eq 'fail'; # simulate bad_credentials
 
     # This would really authenticate the credentials 
     # and return the session key.
