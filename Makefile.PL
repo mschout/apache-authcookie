@@ -8,16 +8,22 @@ test_prepare($mp_version);
 
 test_configure();
 
-WriteMakefile(
+my %makeconf = (
     'NAME'         => 'Apache::AuthCookie',
     'VERSION_FROM' => 'AuthCookie.pm',
     'PREREQ_PM'    => {
-        'Apache::Test' => 1.0
+        'Apache::Test' => 1.09
     },
     'clean'        => {
         FILES => "@CLEAN_FILES"
     }
 );
+
+if ($mp_version == 2) {
+    $makeconf->{PREREQ_PM}{mod_perl} = '1.9913';
+}
+
+WriteMakefile(%makeconf);
 
 # inspired by Apache::Peek 1.01
 sub test_configure {
