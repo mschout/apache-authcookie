@@ -9,7 +9,7 @@ use Apache::AuthCookie::Util;
 use Apache::Util qw(escape_uri);
 use vars qw($VERSION);
 
-# $Id: AuthCookie.pm,v 2.35 2002-09-24 02:35:31 mschout Exp $
+# $Id: AuthCookie.pm,v 2.36 2002-09-24 02:47:05 mschout Exp $
 $VERSION = '3.02';
 
 sub recognize_user ($$) {
@@ -314,7 +314,7 @@ sub send_cookie {
     $r->err_header_out(P3P => $p3p);
   }
                                    
-  $r->err_header_out("Set-Cookie" => $cookie);
+  $r->err_headers_out->add("Set-Cookie" => $cookie);
 }
 
 
@@ -895,7 +895,7 @@ implement anything, though.
 
 =head1 CVS REVISION
 
-$Id: AuthCookie.pm,v 2.35 2002-09-24 02:35:31 mschout Exp $
+$Id: AuthCookie.pm,v 2.36 2002-09-24 02:47:05 mschout Exp $
 
 =head1 AUTHOR
 

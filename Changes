@@ -4,6 +4,8 @@ Version: CURRENT
    - Add support for ${AuthName}P3P which will set up a P3P header that will
      be sent with the cookie.
    - fix undefined warning in _convert_to_get (David K Trudgett)
+   - fix potential cookie clobbering if cookie was set in earlier handler
+     phase in send_cookie() (Carlyn Hicks).
 
 Version: 3.02
    - Add support for AuthNameSatisfy directive (can be Any/All, default: Any)
