@@ -1,5 +1,6 @@
 AuthCookie.pm
 MANIFEST
+MANIFEST.SKIP
 Changes
 Makefile.PL
 t/Skeleton/AuthCookieHandler.pm
