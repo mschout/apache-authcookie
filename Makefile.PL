@@ -1,8 +1,10 @@
 use ExtUtils::MakeMaker;
+use File::Spec;
 
 my @CLEAN_FILES = ();
 my $mp_version = mod_perl_version();
 build_prepare($mp_version);
+test_prepare($mp_version);
 
 test_configure();
 
@@ -10,7 +12,7 @@ WriteMakefile(
     'NAME'         => 'Apache::AuthCookie',
     'VERSION_FROM' => 'AuthCookie.pm',
     'PREREQ_PM'    => {
-        'Apache::Test' => 1.01
+        'Apache::Test' => 1.0
     },
     'clean'        => {
         FILES => "@CLEAN_FILES"
@@ -45,6 +47,29 @@ EOF
     }
 }
 
+# select the appropriate test files (MP1 vs MP2) and copy them to the correct
+# location.
+sub test_prepare {
+    my $mp_version = shift;
+
+    my $file = File::Spec->catfile(qw(t lib Sample),
+                                   "AuthCookieHandler.pm.mp${mp_version}");
+    my $outfile = File::Spec->catfile(qw(t lib Sample),
+                                      "AuthCookieHandler.pm");
+    unless (-f $file) {
+        die "whoops.  I cant find $file\n";
+    }
+
+    if (-f $outfile) {
+        unlink $outfile or die "unlink($outfile): $!";
+    }
+
+    warn "selected $file\n";
+    File::Copy::copy($file, $outfile);
+
+    push @CLEAN_FILES, $outfile;
+}
+
 sub build_prepare {
     my $mp_version = shift;
 
@@ -63,7 +88,7 @@ sub build_prepare {
     require File::Copy;
     File::Copy::copy($infile, $outfile);
 
-    push @CLEAN_FILES, 'AuthCookie.pm';
+    push @CLEAN_FILES, $outfile;
 }
 
 sub mod_perl_version {
