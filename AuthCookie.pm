@@ -8,7 +8,7 @@ use mod_perl qw(1.07 StackedHandlers MethodHandlers Authen Authz);
 use Apache::Constants qw(:common M_GET M_POST FORBIDDEN REDIRECT);
 use vars qw($VERSION);
 
-# $Id: AuthCookie.pm,v 2.16 2001-06-01 15:50:27 mschout Exp $
+# $Id: AuthCookie.pm,v 2.17 2001-08-09 05:09:28 mschout Exp $
 $VERSION = '3.00';
 
 sub recognize_user ($$) {
@@ -744,7 +744,7 @@ implement anything, though.
 
 =head1 CVS REVISION
 
-$Id: AuthCookie.pm,v 2.16 2001-06-01 15:50:27 mschout Exp $
+$Id: AuthCookie.pm,v 2.17 2001-08-09 05:09:28 mschout Exp $
 
 =head1 AUTHOR
 
@@ -753,6 +753,13 @@ Michael Schout <mschout@gkg.net>
 Originally written by Eric Bartley <bartley@purdue.edu>
 
 versions 2.x were written by Ken Williams <ken@forum.swarthmore.edu>
+
+=head1 COPYRIGHT
+
+Copyright (c) 2000 Ken Williams. All rights reserved.
+
+This program is free software; you can redistribute it and/or modify it under
+the same terms as Perl itself.
 
 =head1 SEE ALSO
 
