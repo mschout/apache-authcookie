@@ -5,11 +5,11 @@
 
 # You shouldn't have to change any of these, but you can if you want:
 $ACONF = "/dev/null";
-$CONF = "t/httpd.conf";
-$SRM = "/dev/null";
-$LOCK = "t/httpd.lock";
-$PID = "t/httpd.pid";
-$ELOG = "t/error_log";
+$CONF  = "t/httpd.conf";
+$SRM   = "/dev/null";
+$LOCK  = "t/httpd.lock";
+$PID   = "t/httpd.pid";
+$ELOG  = "t/error_log";
 
 ######################################################################
 ################ Don't change anything below here ####################
