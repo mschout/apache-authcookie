@@ -4,8 +4,8 @@ use mod_perl qw(1.07 StackedHandlers MethodHandlers Authen Authz);
 use Apache::Constants qw(:common M_GET M_POST FORBIDDEN REDIRECT);
 use vars qw($VERSION);
 
-# $Id: AuthCookie.pm,v 2.6 2000-03-26 18:28:32 ken Exp $
-$VERSION = sprintf '%d.%03d', q$Revision: 2.6 $ =~ /: (\d+).(\d+)/;
+# $Id: AuthCookie.pm,v 2.7 2000-04-15 15:27:02 ken Exp $
+$VERSION = sprintf '%d.%03d', q$Revision: 2.7 $ =~ /: (\d+).(\d+)/;
 
 sub recognize_user ($$) {
   my ($self, $r) = @_;
@@ -16,10 +16,13 @@ sub recognize_user ($$) {
 
   my ($cookie) = $r->header_in('Cookie') =~ /${auth_type}_${auth_name}=([^;]+)/;
   $r->log_error("cookie ${auth_type}_${auth_name} is $cookie") if $debug >= 2;
+  return unless $cookie;
+
   if (my ($user) = $auth_type->authen_ses_key($r, $cookie)) {
     $r->log_error("user is $user") if $debug >= 2;
     $r->connection->user($user);
   }
+  return OK;
 }
 
 
@@ -75,7 +78,7 @@ sub logout($$) {
 
   #my %args = $r->args;
   #if (exists $args{'redirect'}) {
-  #  $r->header_out("Location" => $args{'redirect'});
+  #  $r->err_header_out("Location" => $args{'redirect'});
   #  return REDIRECT;
   #} else {
   #  $r->status(200);
@@ -150,6 +153,7 @@ sub authenticate ($$) {
 		   $auth_name, $r->uri);
     return SERVER_ERROR;
   }
+  $r->log_error("Redirecting to $authen_script") if $debug >= 2;
   $r->custom_response(FORBIDDEN, $authen_script);
   
   return FORBIDDEN;
@@ -202,7 +206,11 @@ sub authorize ($$) {
     $r->log_error("requirement := $requirement, $args") if $debug >= 2;
     
     next if $requirement eq 'valid-user';
-    next if $requirement eq 'user' and $args =~ m/\b$user\b/;
+    if($requirement eq 'user') {
+      next if $args =~ m/\b$user\b/;
+      $forbidden = 1;
+      next;
+    }
 
     # Call a custom method
     my $ret_val = $auth_type->$requirement($r, $args);
@@ -513,7 +521,8 @@ URL contained in the C<"destination"> submitted form field.
 =item * logout()
 
 This is simply a convenience method that unsets the session key for
-you.  You can call it in your logout scripts.
+you.  You can call it in your logout scripts.  Usually this looks like
+C<$r-E<gt>auth_type-E<gt>logout($r);>.
 
 =item * recognize_user()
 
@@ -521,7 +530,7 @@ If the user has provided a valid session key but the document isn't
 protected, this method will set C<$r-E<gt>connection-E<gt>user>
 anyway.  Use it as a PerlFixupHandler, unless you have a better idea.
 
-=item * key($r)
+=item * key()
 
 This method will return the current session key, if any.  This can be
 handy inside a method that implements a C<require> directive check
@@ -595,7 +604,8 @@ If you want to let users log themselves out (something that can't be
 done using Basic Auth), you need to create a logout script.  For an
 example, see t/eg/logout.pl.  Logout scripts may want to take
 advantage of AuthCookie's C<logout()> method, which will set the
-proper cookie headers in order to clear the user's cookie.
+proper cookie headers in order to clear the user's cookie.  This
+usually looks like C<$r-E<gt>auth_type-E<gt>logout($r);>.
 
 Note that if you don't necessarily trust your users, you can't count
 on cookie deletion for logging out.  You'll have to expire some
