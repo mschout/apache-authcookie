@@ -4,8 +4,6 @@
 # it, and make several requests on that server.
 
 # You shouldn't have to change any of these, but you can if you want:
-my $HTTPD = `cat t/httpd.loc`;
-my $PORT = 8228;
 $ACONF = "/dev/null";
 $CONF = "t/httpd.conf";
 $SRM = "/dev/null";
@@ -26,10 +24,10 @@ use vars qw(
 my $DIR = `pwd`;
 chomp $DIR;
 &dirify(qw(ACONF CONF SRM LOCK PID ELOG));
-
+&read_httpd_loc();
 
 use strict;
-use vars qw($TEST_NUM $BAD);
+use vars qw($TEST_NUM $BAD %CONF);
 use LWP::UserAgent;
 use Carp;
 
@@ -89,7 +87,7 @@ if ($result) {
       ($meth, $uri, $content, $headers) = ('GET', $requests{$testnum}, '', undef);
     }
 
-    my $req = new HTTP::Request($meth, "http://localhost:$PORT/$uri", $headers, $content);
+    my $req = new HTTP::Request($meth, "http://localhost:$CONF{port}/$uri", $headers, $content);
     my $response = $ua->request($req);
     
     &test_outcome($response, $testnum);
@@ -107,14 +105,21 @@ sub index_ok { $_[0] =~ /index of/i };
 
 #############################
 
+sub read_httpd_loc {
+  open LOC, "t/httpd.loc" or die "t/httpd.loc: $!";
+  while (<LOC>) {
+    $CONF{$1} = $2 if /^(\w+)=(.*)/;
+  }
+}
+
 sub start_httpd {
   print STDERR "Starting http server... ";
-  unless (-x $HTTPD) {
-    warn("$HTTPD doesn't exist or isn't executable.\n");
+  unless (-x $CONF{httpd}) {
+    warn("$CONF{httpd} doesn't exist or isn't executable.\n");
     return;
   }
   &do_system("cp /dev/null $ELOG");
-  &do_system("$HTTPD -f $D_CONF") == 0
+  &do_system("$CONF{httpd} -f $D_CONF") == 0
     or die "Can't start httpd: $!";
   print STDERR "ready. ";
   return 1;
@@ -180,7 +185,9 @@ sub create_conf {
 
 #This file is created by the $0 script.
 
-Port $PORT
+Port $CONF{port}
+User $CONF{user}
+Group $CONF{group}
 ServerName localhost
 DocumentRoot $DIR/t/eg
 
