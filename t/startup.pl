@@ -1,3 +1,3 @@
-use lib qw(../blib/lib lib);
+use lib qw(../blib/lib lib t/lib);
 
 1;
