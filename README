@@ -1,0 +1,195 @@
+NAME
+    Apache::AuthCookie - Perl Authentication and Authorization via cookies
+
+SYNOPSIS
+    `use mod_perl qw(1.07 StackedHandlers MethodHandlers Authen Authz);'
+
+     # mod_perl startup script
+
+     use Sample::AuthCookieHandler;
+
+     # access.conf or .htaccess
+
+     <Location /unprotected/protected>
+        PerlAuthenHandler Sample::AuthCookieHandler->authen
+        PerlAuthzHandler Sample::AuthCookieHandler->authz
+        AuthType Sample
+        AuthName WhatEver
+        PerlSetVar WhatEverPath /unprotected
+        PerlSetVar WhatEverLoginScript /unprotected/login.pl
+        require valid-user
+     </Location>
+
+DESCRIPTION
+    Apache::AuthCookie allows you to intercept a users first unauthenticated
+    access to a protected document. The user will be presented with a custom
+    form where they can enter thier authentication credentials. The
+    credentials are posted to the server where AuthCookie verifies them and
+    generates a session key.
+
+    The session key is returned to the user's browser as a cookie. As a
+    cookie, the browser will pass the session key on every subsequent
+    accesses. AuthCookie will verify the session key and re-authenticate the
+    user.
+
+    All you have to do is write a custom package that inheriets from
+    AuthCookie. Your package implements two functions:
+
+    `authen_cred()'
+        Verify the credentials and return a session key.
+
+    `authen_ses_key()'
+        Verify the session key and return the user ID.
+
+    Using AuthCookie versus AuthBasic you get two key benefits.
+
+    1.  The client doesn't *have* to pass the user credentials on every
+        subsequent access. You have to do a little more work to get this
+        feature, by having `authen_cred()' generate a session key.
+
+    2.  When you determine that the client should stop using the
+        credentials/session key, the server can tell the client to delete
+        the cookie.
+
+    This is the flow of the authentication handler, less the details of the
+    redirects. Two REDIRECT's are used to keep the client from displaying
+    the user's credentials in the Location field. They don't really change
+    AuthCookie's model, but they do add another round-trip request to the
+    client.
+
+     (-----------------------)     +---------------------------------+
+     ( Request a protected   )     | AuthCookie sets custom error    |
+     ( page, but user hasn't )---->| document and returns            |
+     ( authenticated (no     )     | AUTH_REQUIRED. Apache abandons  |      
+     ( session key cookie)   )     | current request and creates sub |      
+     (-----------------------)     | request for the error document. |<-+
+                                   | Error document is a script that |  |
+                                   | generates a form where the user |  |
+                     return        | enters authentication           |  |
+              ^------------------->| credentials (login & password). |  |
+             / \      False        +---------------------------------+  |
+            /   \                                   |                   |
+           /     \                                  |                   |
+          /       \                                 V                   |
+         /         \               +---------------------------------+  |
+        /   Pass    \              | User's client submits this form |  |
+       /   user's    \             | to the same URL as the original |  |
+       | credentials |<------------| request. AuthCookie sees that   |  |
+       \     to      /             | the user isn't authenticated but|  |
+        \authen_cred/              | this time there are credentials |  |
+         \ function/               | as part of the request.         |  |
+          \       /                +---------------------------------+  |
+           \     /                                                      |
+            \   /            +------------------------------------+     |
+             \ /   return    | Authen cred returns an session     |  +--+
+              V------------->| key which is opaque to AuthCookie.*|  |
+                    True     +------------------------------------+  |
+                                                  |                  |
+                   +--------------------+         |      +---------------+
+                   |                    |         |      | If we had a   |
+                   V                    |         V      | cookie, add   |
+      +----------------------------+  r |         ^      | a Set-Cookie  |
+      | If we didn't have a session|  e |T       / \     | header to     |
+      | key cookie, add a          |  t |r      /   \    | override the  |
+      | Set-Cookie header with this|  u |u     /     \   | invalid cookie|
+      | session key. Client then   |  r |e    /       \  +---------------+
+      | returns session key with   |  n |    /  pass   \               ^    
+      | sucsesive requests         |    |   /  session  \              |    
+      +----------------------------+    |  /   key to    \    return   |
+                   |                    +-| authen_ses_key|------------+
+                   V                       \             /     False
+      +-----------------------------------+ \           /
+      | Tell Apache to set Expires header |  \         /
+      | set no-cache Pragma header, set   |   \       /
+      | user to user ID returned by       |    \     /
+      | authen_ses_key, set authentication|     \   /
+      | to our type (e.g. AuthCookie).    |      \ /
+      +-----------------------------------+       V
+             (---------------------)              ^
+             ( Request a protected )              |
+             ( page, user has a    )--------------+
+             ( session key cookie  )                    
+             (---------------------)
+
+     *  The session key that the client gets can be anything you
+        want. For example, encrypted information about the user, a
+        hash of the username and password (similar in function to
+        Digest authentication), or the user name and password in
+        plain text (similar in function to HTTP Basic
+        authentication).
+
+        They only catch is that the authen_ses_key function that you
+        create must be able to determine if this session_key is valid
+        and map it back to the originally authenticated user ID.
+
+EXAMPLE
+    Try the sample in eg/.
+
+  Install the sample
+
+    1.  Install eg/Sample into the site_perl directory in your perl5 library
+        directory.
+
+    2.  Install eg/unprotected into your Apache document root directory.
+
+    3.  Add `use Sample::AuthCookieHandler;' to your mod_perl startup script or
+        `Sample::AuthCookieHandler' to your PerlModule configuration
+        directive.
+
+    4.  Restart Apache so mod_perl picks up `Sample::AuthCookieHandler'.
+
+  Tryout the sample
+
+    1.  Try to access /unprotected/protected/get_me.html. You should instead get
+        a form requesting a login and password. The sample will validate two
+        users. The first is login => programmer and password => Hero and the
+        second is login => some-user with no/any password. You might want to
+        set your browser to show you cookies before accepting them. Then you
+        can see what AuthCookie is generating.
+
+    2.  As distributed, the .htaccess file in eg/unprotected/protected will
+        allow either of these user to access the document. However if you
+        change the line `require valid-user' to `require dwarf' in .htaccess
+        only the user "programmer" will have access. Look at the
+        authorization function `dwarf()' in eg/Sample/AuthCookieHandler.pm
+        to see how this works.
+
+  Using a Session Key
+
+        Unlike the sample AuthCookieHandler, you have you verify the user's
+        login and password in `authen_cred()', then you do something like:
+
+            my $date = localtime;
+            my $ses_key = MD5->hexhash(join(';', $date, $PID, $PAC));
+
+        save `$ses_key' alogin with the user's login, and return `$ses_key'.
+
+        Now `authen_ses_key()' looks up the `$ses_key' passed to it and
+        returns the saved login. I use Oracle to store the session key and
+        retrieve it later, see the ToDo section below for some other ideas.
+
+KNOWN LIMITATIONS
+        The first unauthenticated request can not be a POST.
+        Apache::AuthCookie interupts the initial request with the form for
+        the user credentials.
+
+  ToDo
+
+    *       See if there's a way to allow the initial request to be a POST. I
+            know Apache::AuthCookie could save the original POST'ed material
+            but I don't know how to re-insert this content into the request
+            stream after the user authenticates. If you knows of a way,
+            please drop me a note.
+
+    *       Create a session key store that uses shared memory. If anyone wants
+            to get together and help with this that would be cool. Storing
+            and retrieving them should be easy, but the harder part is
+            cleaning out "old" keys and dealing with server restarts without
+            losing all the keys.
+
+AUTHOR
+        Eric Bartley, bartley@purdue.edu
+
+SEE ALSO
+        the perl(1) manpage, the mod_perl(1) manpage, the Apache(1) manpage.
+

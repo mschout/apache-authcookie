@@ -1,0 +1,34 @@
+Revision history for Perl extension Apache::AuthCookie.
+
+1.3_03
+	- Make synopsis access control params match the example. Pointed
+	  out by tad@webcollective.com.
+	- Added <Files> to the .htaccess in the sample to enable ExecCGI.
+	- Nate Wilken reported that AuthCookie works as-is on Win32 with
+	  a post 1.10 version of mod_perl and post 1.3b5 version of Apache.
+	  (These versions add support for mod_perl's error_document method
+	  on Win32. For earlier versions, AuthCookie can be modified to use
+	  the ErrorDocument directive in the Apache config.)
+	- Cleanup "Use of uninitialized value" warnings sotted by 
+	  Marlys Nelson <marlys.a.nelson@UWRF.EDU>.
+
+1.3_02
+	- login.pl now uses $r->prev to get authtype and authname, so it
+	  doesn't have to be in the same hierarchy as the proctected docs.
+	  Thanks to Liam Kirsher <liam@numenet.com> for spotting this.
+	- Steve Shreeve <shreeve@meded.med.uci.edu> tracked down a segv
+	  from $r->err_header_out("Location"... I never could reproduce
+	  this, but he said this $r->header_out("Location"... worked.
+	- Fixed typo pointed out by Nate Wilken <wilken@mr_x.inre.asu.edu>
+	- Changed directory eg/sample to eg/unprotected for compatibility
+	  with windows pointed out by Nate Wilken <wilken@mr_x.inre.asu.edu>
+1.3_01
+	- Fix error where the cookie wasn't printed when debugging was
+	  turned on.
+	- Consistantly treat the session key as a string. This meant a
+	  change to the authen_* function prototypes, you may need to
+	  change ones you've already written.
+
+1.3
+	- First public release on CPAN, removed from Apache contrib.
+
