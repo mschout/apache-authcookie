@@ -9,7 +9,7 @@ use Apache::AuthCookie::Util;
 use Apache::Util qw(escape_uri);
 use vars qw($VERSION);
 
-# $Id: AuthCookie.pm,v 2.27 2002-04-24 22:34:26 mschout Exp $
+# $Id: AuthCookie.pm,v 2.28 2002-05-15 17:55:43 mschout Exp $
 $VERSION = '3.01';
 
 sub recognize_user ($$) {
@@ -218,10 +218,28 @@ sub login_form {
   return FORBIDDEN;
 }
 
+sub satisfy_is_valid {
+  my ($auth_type, $r, $satisfy) = @_;
+  $satisfy = lc $satisfy;
+
+  if ($satisfy eq 'any' or $satisfy eq 'all') {
+    return 1;
+  } else { 
+    $r->log_reason("PerlSetVar AuthCookieSatisfy $satisfy invalid",$r->uri);
+    return 0;
+  }
+}
+
+sub get_satisfy {
+  my ($auth_type, $r) = @_;
+  return lc $r->dir_config('AuthCookieSatisfy') || 'all';
+}
+
 sub authorize ($$) {
   my ($auth_type, $r) = @_;
   my $debug = $r->dir_config("AuthCookieDebug") || 0;
   
+  $r->log_error('authorize() for '.$r->uri()) if ($debug >= 3);
   return OK unless $r->is_initial_req; #only the first internal request
   
   if ($r->auth_type ne $auth_type) {
@@ -239,15 +257,30 @@ sub authorize ($$) {
     return FORBIDDEN;
   }
   
+  my $satisfy = $auth_type->get_satisfy($r);
+  return SERVER_ERROR unless $auth_type->satisfy_is_valid($r,$satisfy);
+  my $satisfy_all = $satisfy eq 'all';
+  
   my ($forbidden);
   foreach my $req (@$reqs_arr) {
     my ($requirement, $args) = split /\s+/, $req->{requirement}, 2;
     $args = '' unless defined $args;
     $r->log_error("requirement := $requirement, $args") if $debug >= 2;
     
-    next if $requirement eq 'valid-user';
+    if ( lc($requirement) eq 'valid-user' ) {
+      if ($satisfy_all) {
+        next;
+      } else {
+        return OK;
+      }
+    }
+
     if($requirement eq 'user') {
-      next if $args =~ m/\b$user\b/;
+      if ($args =~ m/\b$user\b/) {
+        next if $satisfy_all;
+        return OK; # satisfy any
+      }
+     
       $forbidden = 1;
       next;
     }
@@ -255,7 +288,10 @@ sub authorize ($$) {
     # Call a custom method
     my $ret_val = $auth_type->$requirement($r, $args);
     $r->log_error("$auth_type->$requirement returned $ret_val") if $debug >= 3;
-    next if $ret_val == OK;
+    if ($ret_val == OK) {
+      next if $satisfy_all;
+      return OK; # satisfy any
+    }
 
     # Nothing succeeded, deny access to this user.
     $forbidden = 1;
@@ -346,6 +382,13 @@ MethodHandlers, Authen, and Authz compiled in.
  PerlModule Sample::AuthCookieHandler
  PerlSetVar WhatEverPath /
  PerlSetVar WhatEverLoginScript /login.pl
+
+ # use to alter how "require" directives are matched. Can be "Any" or "All".
+ # If its "Any", then you must only match Any of the "require" directives. If
+ # its "All", then you must match All of the require directives. 
+ #
+ # Default: Any
+ PerlSetVar WhatEverSatisfy Any
  
  # The following line is optional - it allows you to set the domain
  # scope of your cookie.  Default is the current domain.
@@ -837,7 +880,7 @@ implement anything, though.
 
 =head1 CVS REVISION
 
-$Id: AuthCookie.pm,v 2.27 2002-04-24 22:34:26 mschout Exp $
+$Id: AuthCookie.pm,v 2.28 2002-05-15 17:55:43 mschout Exp $
 
 =head1 AUTHOR
 
