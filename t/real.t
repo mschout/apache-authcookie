@@ -62,7 +62,7 @@ my %requests = (
 my %special_tests = (
    5  => sub {print "code: ", $_[0]->code(), "\n"; $_[0]->code() == 302},
    8  => sub {$_[0]->header('Set-Cookie') 
-		eq 'Sample::AuthCookieHandler_WhatEver=; path=/; expires=Mon, 21-May-1971 00:00:00 GMT'},
+		eq 'Sample::AuthCookieHandler_WhatEver=; expires=Mon, 21-May-1971 00:00:00 GMT; path=/'},
    10 => sub {print "code: ", $_[0]->code(), "\n"; $_[0]->code() == 403},
    11 => sub {
        my $r = shift;
