@@ -1,4 +1,4 @@
-Version: CURRENT
+Version: 3.05
    - Fix POD documentation bug (thanks Steve van der Burg)
    - login(): set Location header with err_headers_out rather than headers_out
      (Casey West)
