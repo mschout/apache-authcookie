@@ -1,0 +1,181 @@
+Version: CURRENT
+   - New maintiner: Michael Schout <mschout@gkg.net>
+   - changed to hard coded $VERSION rather than RCS Revision style.
+   - Revamped testing code to use Apache::test (with minor mods).
+   - Added support for ${AuthName}Expires parameter that can be used
+     to make your cookie persistent.
+
+Version: 2.011  Date: 2000/06/17 08:01:19
+   Several people have requested a mechanism for the login script to be
+   able to tell the difference between a failed login and a first attempt
+   at a login.  Typically one can figure this out by whether a cookie has
+   been sent or not, so I've put some information to that effect in
+   $r->prev->subprocess_env().  See the login script docs for specifics.
+   
+   I also cleaned up the documentation for the login script.
+
+
+Version: 2.010  Date: 2000/06/17 01:37:16
+   (merged changes from sub-releases into main CVS branch.  Been living
+   in CVS hell.  My CVS-hubris got the better of me, tried to do things
+   with tags & soforth and wound up severely confused.  Thus the version
+   numbers jumped a bit.)
+   
+   Made some minor documentation updates.
+
+
+Version: 2.009  Date: 2000/06/14 15:54:00
+   *** empty log message ***
+
+
+Version: 2.008  Date: 2000/06/14 15:36:12
+   Instead of replacing the Set-Cookie header when we set the cookie, add
+   to it.  This means we won't clobber other folks' unrelated cookies
+   when we set ours.  It also means you need at least mod_perl version
+   1.24 (I think).  [rlocke@infiniteinfo.com (Robert Locke)]
+
+
+Version: 2.007.002.001  Date: 2000/05/14 18:06:30
+   Added a PerlSetVar *Cache parameter that you can set to a true value
+   to allow cacheing.  Also removed cache control from regular requests -
+   cacheing still happens on login & logout.  [asparks@cpd.harris.com
+   (Alan Sparks) and dtaylor@vialogix.com (Drew Taylor)]
+   
+   Split off the login-form-displaying code into its own method, called
+   login_form().  Can be overridden in subclasses.  The default method
+   uses $r->custom_response() to display the login. [richter@ecos.de
+   (Gerald Richter)]
+   
+   Added documentation for the send_cookie() method.
+
+
+Version: 2.007.001.001  Date: 2000/04/29 20:03:51
+   Created the send_cookie() method, which just creates the cookie and
+   calls $r->err_header_out to send it to the browser.  It is
+   occasionally useful to override this method if you need to change the
+   value of the cookie before sending it out (for instance, to update a
+   timestamp).  [mschout@gkg.net (Michael J Schout)]
+   
+   Changed the _cookie_string() method to cookie_string().
+   
+   Added a PerlSetVar configuration directive "{YourAuth}Secure" which
+   will secure cookies (i.e. only send them over a secure connection).
+   [mschout@gkg.net (Michael J Schout)]
+
+
+Version: 2.007  Date: 2000/04/15 15:27:02
+   branches:  2.7.1;  2.7.2;
+   If the browser sends a cookie but it's not one related to our
+   authentication, we formerly sent a blank cookie to the authentication
+   methods.  Now we act as if no cookie was sent.
+   [asparks@cpd.harris.com (Alan Sparks)]
+   
+   Fixed a server error that occurred when a certain user was required,
+   but a different valid user was logged in.
+   [efujii@miis.edu (Eduardo Fujii)]
+   
+   Added a couple more debug statements that can help figure out what's
+   happening when your auth isn't working.
+   
+   Improved some of the docs.
+   
+   Added some tricks to Makefile.PL to make my life easier.
+   
+   Changed the action of the example login forms from LOGIN to /LOGIN.
+   [michael@bizsystems.com (Michael)]
+
+
+Version: 2.006  Date: 2000/03/26 18:28:32
+   Added the key() method, which will return the user's current session
+   key, if any.  This can be handy inside a method that implements a
+   C<require> directive check (like the C<species> method discussed
+   above) if you put any extra information like clearances or whatever
+   into the session key.
+   
+   Added method-by-method documentation for each method in AuthCookie.
+
+
+Version: 2.005  Date: 2000/03/24 15:20:30
+   Removed the deprecated methods ->authen and ->authz.  If you have
+   configurations that use these methods, you must change to the newer
+   ->authenticate and ->authorize methods.
+   
+   Changed a couple of 'Sample's in the documentation to
+   'Sample::AuthCookieHandler'.  [asparks@cpd.harris.com (Alan Sparks)]
+
+
+Version: 2.004  Date: 2000/03/15 20:53:20
+   Added documentation about the ability to set cookie domains.  That
+   ability actually appeared in 2.002, but I forgot to document it or add
+   notes to the Changes file.
+
+
+Version: 2.003  Date: 2000/03/14 21:08:02
+   Now returns FORBIDDEN instead of AUTH_REQUIRED when authorization
+   fails or when a user tries to access a protected doc.
+
+
+Version: 2.002  Date: 2000/03/14 17:46:42
+   Added an internal _cookie_string method that helps construct cookie
+   strings.  This shouldn't change any functionality, but makes my job
+   easier.
+   
+   Added a couple of Makefile.PL questions that set the user & group
+   tests should run under.
+
+
+Version: 2.001  Date: 2000/02/11 04:46:59
+   The login forms may now use the POST method instead of the GET method.
+   This is a big deal, because with GET the user's credentials get logged
+   to access logs, they remain in the user's browser history, and so on.
+   Thanks to cholet@logilune.com (Eric Cholet) for the patch and prodding.
+   
+   There is now a proper test suite, which will fire up an httpd and make
+   requests of it.  The test code is adapted from Eric's old example
+   (eg/) suite.
+   
+   I've added a logout() method to help unset cookies.  The example
+   logout.pl now uses logout().  Thanks to Aaron Ross
+   (ross@mathforum.com).
+
+
+Version: 2.000  Date: 2000/02/02 13:18:23
+   First released version, bumped up revision number to 2.0
+   
+   Created indentify() and authorize() methods to replace authen() and
+   authz().  authen() and authz() are now deprecated and will disappear
+   in a later version.
+   
+   AuthType can now contain colons [adi@certsite.com (Adi)]
+   
+   Nonexistent method calls (via 'require' directive) are no longer
+   shielded in authorization stage - if it fails it fails, and you get a
+   server error.
+   
+   Multiple 'require' directives should work now - previously only the
+   first directive was respected.
+   
+   Changed lots of documentation to reflect the above interface changes.
+
+
+Version: 1.002  Date: 2000/01/27 22:07:13
+     - Now owned by Ken Williams (ken@forum.swarthmore.edu)
+   
+     - Created indentify() and authorize() methods to replace authen()
+       and authz().  authen() and authz() are now deprecated and will
+       disappear in a later version.
+   
+     - AuthType can now contain colons [adi@certsite.com (Adi)]
+   
+     - Nonexistent method calls (via 'require' directive) are no longer
+       shielded in authorization stage - if it fails it fails, and you
+       get a server error.
+   
+     - Multiple 'require' directives should work now - previously only
+       the first directive was respected.
+
+
+Version: 1.001  Date: 2000/01/25 01:21:05
+   Eric's original version from CPAN
+
+
