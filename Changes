@@ -1,9 +1,15 @@
 Version: 3.06
+  ** BUG FIX: AuthNameSatisfy (Any|All) directives were broken. AuthCookie
+     was using AuthCookieSatisfy rather than ${auth_name}Satisfy.  If you
+     used this feature and had an "AuthCookieSatisfy" directive in your
+     config file, you MUST change this to ${auth_name}Satisfy.
+     E.g.: "WhateverSatisfy All"
+   - created better test cases for AuthNameSatisfy directives.
    - when redirecting, set Location with headers_out() not err_headers_out().
      apache prefers Location in headers_out, even if the status code is not
      200.
-   - Apache::unescape_url() -> Apache::URI::unescape_url()
-   - check for mod_perl 1.9913:  Frederick Moyer <fred@redhotpenguin.com>
+   - MP2: Apache::unescape_url() -> Apache::URI::unescape_url()
+   - check for mod_perl 1.9913 or later for Apache::URI (Frederick Moyer)
    - Remove set status in login.pl which caused malformed custom error
      document (Frederick Moyer)
    - Add support for ${auth_name}CookieName to change the name of the cookie

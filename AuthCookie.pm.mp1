@@ -9,7 +9,7 @@ use Apache::AuthCookie::Util;
 use Apache::Util qw(escape_uri);
 use vars qw($VERSION);
 
-# $Id: AuthCookie.pm.mp1,v 1.10 2004-05-31 22:56:48 mschout Exp $
+# $Id: AuthCookie.pm.mp1,v 1.11 2004-08-19 04:24:06 mschout Exp $
 $VERSION = '3.06';
 
 sub recognize_user ($$) {
@@ -269,14 +269,18 @@ sub satisfy_is_valid {
   if ($satisfy eq 'any' or $satisfy eq 'all') {
     return 1;
   } else { 
-    $r->log_reason("PerlSetVar AuthCookieSatisfy $satisfy invalid",$r->uri);
+    my $auth_name = $r->auth_name;
+    $r->log_reason("PerlSetVar ${auth_name}Satisfy $satisfy invalid",$r->uri);
     return 0;
   }
 }
 
 sub get_satisfy {
   my ($auth_type, $r) = @_;
-  return lc $r->dir_config('AuthCookieSatisfy') || 'all';
+
+  my $auth_name = $r->auth_name;
+
+  return lc $r->dir_config("${auth_name}Satisfy") || 'all';
 }
 
 sub authorize ($$) {
@@ -954,7 +958,7 @@ implement anything, though.
 
 =head1 CVS REVISION
 
-$Id: AuthCookie.pm.mp1,v 1.10 2004-05-31 22:56:48 mschout Exp $
+$Id: AuthCookie.pm.mp1,v 1.11 2004-08-19 04:24:06 mschout Exp $
 
 =head1 AUTHOR
 
