@@ -1,5 +1,4 @@
-
-Version: CURRENT
+Version: 3.03
    - various POD typos fixed (Eric Cholet)
    - Add support for ${AuthName}P3P which will set up a P3P header that will
      be sent with the cookie.
