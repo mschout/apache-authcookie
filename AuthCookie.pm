@@ -1,11 +1,11 @@
 package Apache::AuthCookie;
 use strict;
 use mod_perl qw(1.07 StackedHandlers MethodHandlers Authen Authz);
-use Apache::Constants qw(:common M_GET M_POST AUTH_REQUIRED REDIRECT);
+use Apache::Constants qw(:common M_GET M_POST FORBIDDEN REDIRECT);
 use vars qw($VERSION);
 
-# $Id: AuthCookie.pm,v 2.2 2000-03-14 17:46:42 ken Exp $
-$VERSION = sprintf '%d.%03d', q$Revision: 2.2 $ =~ /: (\d+).(\d+)/;
+# $Id: AuthCookie.pm,v 2.3 2000-03-14 21:08:02 ken Exp $
+$VERSION = sprintf '%d.%03d', q$Revision: 2.3 $ =~ /: (\d+).(\d+)/;
 
 sub recognize_user ($$) {
   my ($self, $r) = @_;
@@ -150,9 +150,9 @@ sub authenticate ($$) {
 		   $auth_name, $r->uri);
     return SERVER_ERROR;
   }
-  $r->custom_response(AUTH_REQUIRED, $authen_script);
+  $r->custom_response(FORBIDDEN, $authen_script);
   
-  return AUTH_REQUIRED;
+  return FORBIDDEN;
 }
 
 sub _cookie_string {
@@ -568,7 +568,7 @@ client.
  (-----------------------)     +---------------------------------+
  ( Request a protected   )     | AuthCookie sets custom error    |
  ( page, but user hasn't )---->| document and returns            |
- ( authenticated (no     )     | AUTH_REQUIRED. Apache abandons  |      
+ ( authenticated (no     )     | FORBIDDEN. Apache abandons      |      
  ( session key cookie)   )     | current request and creates sub |      
  (-----------------------)     | request for the error document. |<-+
                                | Error document is a script that |  |
