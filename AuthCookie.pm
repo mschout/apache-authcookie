@@ -9,7 +9,7 @@ use Apache::AuthCookie::Util;
 use Apache::Util qw(escape_uri);
 use vars qw($VERSION);
 
-# $Id: AuthCookie.pm,v 2.29 2002-05-16 14:17:47 mschout Exp $
+# $Id: AuthCookie.pm,v 2.30 2002-05-24 21:31:02 mschout Exp $
 $VERSION = '3.01';
 
 sub recognize_user ($$) {
@@ -339,11 +339,7 @@ sub cookie_string {
     $string .= "; expires=$expires";
   }
 
-  if (my $path = $r->dir_config("${auth_name}Path")) {
-    $string .= "; path=$path";
-  } else {
-    $string .= '; path=/';
-  }
+  $string .= '; path=' . ( $self->get_cookie_path($r) || '/' );
   #$r->log_error("Attribute ${auth_name}Path not set") unless $path;
 
   if (my $domain = $r->dir_config("${auth_name}Domain")) {
@@ -362,6 +358,15 @@ sub key {
   my $allcook = ($r->header_in("Cookie") || "");
   my ($type, $name) = ($r->auth_type, $r->auth_name);
   return ($allcook =~ /(?:^|\s)${type}_$name=([^;]*)/)[0];
+}
+
+sub get_cookie_path {
+    my $self = shift;
+    my $r    = shift || Apache->request;
+
+    my $auth_name = $r->auth_name;
+
+    return $r->dir_config("${auth_name}Path");
 }
 
 1;
@@ -879,7 +884,7 @@ implement anything, though.
 
 =head1 CVS REVISION
 
-$Id: AuthCookie.pm,v 2.29 2002-05-16 14:17:47 mschout Exp $
+$Id: AuthCookie.pm,v 2.30 2002-05-24 21:31:02 mschout Exp $
 
 =head1 AUTHOR
 

@@ -1,5 +1,7 @@
 Version: CURRENT
    - Add support for AuthNameSatisfy directive (can be Any/All, default: Any)
+   - Move cookie path setting into get_cookie_path() so that users can
+     overload this function if they desire (Thanks Raj Chandran)
 
 Version: 3.01
    - adopted support for custom_errors() hook from michael@bizsystems.com.
