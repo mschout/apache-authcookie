@@ -9,7 +9,7 @@ use Apache::AuthCookie::Util;
 use Apache::Util qw(escape_uri);
 use vars qw($VERSION);
 
-# $Id: AuthCookie.pm,v 2.30 2002-05-24 21:31:02 mschout Exp $
+# $Id: AuthCookie.pm,v 2.31 2002-06-21 04:11:34 mschout Exp $
 $VERSION = '3.01';
 
 sub recognize_user ($$) {
@@ -36,7 +36,7 @@ sub recognize_user ($$) {
 
 # convert current request to GET
 sub _convert_to_get {
-    my ($self, $r) = @_;
+    my ($self, $r, $args) = @_;
 
     return unless $r->method eq 'POST';
 
@@ -44,9 +44,8 @@ sub _convert_to_get {
 
     $r->log_error("Converting POST -> GET") if $debug >= 2;
 
-    my %args = $r->content;
     my @pairs =();
-    while (my ($name, $value) = each %args) {
+    while (my ($name, $value) = each %$args) {
       push @pairs, escape_uri($name) . '=' . escape_uri($value);
     }
     $r->args(join '&', @pairs) if scalar(@pairs) > 0;
@@ -63,7 +62,7 @@ sub login ($$) {
   my ($auth_type, $auth_name) = ($r->auth_type, $r->auth_name);
   my %args = $r->method eq 'POST' ? $r->content : $r->args;
 
-  $self->_convert_to_get($r) if $r->method eq 'POST';
+  $self->_convert_to_get($r, \%args) if $r->method eq 'POST';
 
   unless (exists $args{'destination'}) {
     $r->log_error("No key 'destination' found in form data");
@@ -884,7 +883,7 @@ implement anything, though.
 
 =head1 CVS REVISION
 
-$Id: AuthCookie.pm,v 2.30 2002-05-24 21:31:02 mschout Exp $
+$Id: AuthCookie.pm,v 2.31 2002-06-21 04:11:34 mschout Exp $
 
 =head1 AUTHOR
 
