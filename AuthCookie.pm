@@ -4,20 +4,8 @@ use mod_perl qw(1.07 StackedHandlers MethodHandlers Authen Authz);
 use Apache::Constants qw(:common M_GET M_POST FORBIDDEN REDIRECT);
 use vars qw($VERSION);
 
-# $Id: AuthCookie.pm,v 2.9 2000-06-14 15:54:00 ken Exp $
-$VERSION = sprintf '%d.%03d', q$Revision: 2.9 $ =~ /: (\d+).(\d+)/;
-
-$Author: ken $ 
-$Date: 2000-06-14 15:54:00 $
-$Header: /var/media/dev/cvsbackup/Apache-AuthCookie/AuthCookie.pm,v 2.9 2000-06-14 15:54:00 ken Exp $ 
-$Id: AuthCookie.pm,v 2.9 2000-06-14 15:54:00 ken Exp $
-$Name: not supported by cvs2svn $ 
-$Locker:  $ 
-$Log: not supported by cvs2svn $
-$RCSfile: AuthCookie.pm,v $ 
-$Revision: 2.9 $ 
-$Source: /var/media/dev/cvsbackup/Apache-AuthCookie/AuthCookie.pm,v $ 
-$State: Exp $ 
+# $Id: AuthCookie.pm,v 2.10 2000-06-17 01:37:16 ken Exp $
+$VERSION = sprintf '%d.%03d', q$Revision: 2.10 $ =~ /: (\d+)\.(\d+)/;
 
 sub recognize_user ($$) {
   my ($self, $r) = @_;
@@ -61,16 +49,17 @@ sub login ($$) {
   my $ses_key = $self->authen_cred($r, @credentials);
   $r->log_error("ses_key " . $ses_key) if ($debug >= 2);
 
-  # Send the Set-Cookie header.
-  $r->err_headers_out->add("Set-Cookie" => $self->_cookie_string($r, "$auth_type\_$auth_name", $ses_key));
+  $self->send_cookie($ses_key);
 
   if ($r->method eq 'POST') {
     $r->method('GET');
     $r->method_number(M_GET);
     $r->headers_in->unset('Content-Length');
   }
-  $r->no_cache(1);
-  $r->err_header_out("Pragma" => "no-cache");
+  unless ($r->dir_config("${auth_name}Cache")) {
+    $r->no_cache(1);
+    $r->err_header_out("Pragma" => "no-cache");
+  }
   $r->header_out("Location" => $args{'destination'});
   return REDIRECT;
 }
@@ -82,11 +71,13 @@ sub logout($$) {
   my ($auth_type, $auth_name) = ($r->auth_type, $r->auth_name);
   
   # Send the Set-Cookie header to expire the auth cookie.
-  my $str = $self->_cookie_string($r, "$auth_type\_$auth_name", '');
+  my $str = $self->cookie_string($r, "$auth_type\_$auth_name", '');
   $r->err_headers_out->add("Set-Cookie" => "$str; expires=Mon, 21-May-1971 00:00:00 GMT");
   $r->log_error("set_cookie " . $r->err_header_out("Set-Cookie")) if $debug >= 2;
-  $r->no_cache(1);
-  $r->err_header_out("Pragma" => "no-cache");
+  unless ($r->dir_config("${auth_name}Cache")) {
+    $r->no_cache(1);
+    $r->err_header_out("Pragma" => "no-cache");
+  }
 
   #my %args = $r->args;
   #if (exists $args{'redirect'}) {
@@ -136,8 +127,6 @@ sub authenticate ($$) {
       # Tell the rest of Apache what the authentication method and
       # user is.
 
-      $r->no_cache(1);
-      $r->err_header_out("Pragma", "no-cache");
       $r->connection->auth_type($auth_type);
       $r->connection->user($auth_user);
       $r->log_error("user authenticated as $auth_user")	if $debug >= 1;
@@ -147,7 +136,7 @@ sub authenticate ($$) {
       # remove it from the client now so when the credential data is posted
       # we act just like it's a new session starting.
       
-      my $str = $auth_type->_cookie_string($r, "$auth_type\_$auth_name", '');
+      my $str = $auth_type->cookie_string($r, "$auth_type\_$auth_name", '');
       $r->err_headers_out->add("Set-Cookie" => "$str; expires=Mon, 21-May-1971 00:00:00 GMT");
       $r->log_error("set_cookie " . $r->err_header_out("Set-Cookie"))
 	if $debug >= 2;
@@ -155,39 +144,27 @@ sub authenticate ($$) {
   }
 
   # They aren't authenticated, and they tried to get a protected
-  # document. Send them the authen form.  There should be a
-  # PerlSetVar directive that give us the name and location of the
-  # script to execute for the authen page.
+  # document.  Send them the authen form.
+  return $auth_type->login_form;
+}
   
+
+sub login_form {  
+  my $r = Apache->request or die "no request";
+  my $auth_name = $r->auth_name;
+
+  # There should be a PerlSetVar directive that gives us the URI of
+  # the script to execute for the login form.
+  
+  my $authen_script;
   unless ($authen_script = $r->dir_config($auth_name . "LoginScript")) {
-    $r->log_reason($auth_type . 
-		   "::Auth:authen authentication script not set for auth realm " .
-		   $auth_name, $r->uri);
+    $r->log_reason("PerlSetVar '${auth_name}LoginScript' not set", $r->uri);
     return SERVER_ERROR;
   }
-  $r->log_error("Redirecting to $authen_script") if $debug >= 2;
+  #$r->log_error("Redirecting to $authen_script");
   $r->custom_response(FORBIDDEN, $authen_script);
   
   return FORBIDDEN;
-}
-
-sub _cookie_string {
-  shift;
-  my ($r, $key, $val) = @_;
-
-  my $string = "$key=$val";
-
-  my $auth_name = $r->auth_name;
-  if (my $path = $r->dir_config("${auth_name}Path")) {
-    $string .= "; path=$path";
-  }
-  #$r->log_error("Attribute ${auth_name}Path not set") unless $path;
-
-  if (my $domain = $r->dir_config("${auth_name}Domain")) {
-    $string .= "; domain=$domain";
-  }
-
-  return $string;
 }
 
 sub authorize ($$) {
@@ -237,6 +214,37 @@ sub authorize ($$) {
   return $forbidden ? FORBIDDEN : OK;
 }
 
+sub send_cookie {
+  my ($self, $ses_key) = @_;
+  my $r = Apache->request();
+
+  my ($auth_type, $auth_name) = ($r->auth_type, $r->auth_name);
+  my $cookie = $self->cookie_string($r, "$auth_type\_$auth_name", $ses_key);
+  $r->err_header_out("Set-Cookie" => $cookie);
+}
+
+
+sub cookie_string {
+  shift;
+  my ($r, $key, $val) = @_;
+
+  my $string = "$key=$val";
+
+  my $auth_name = $r->auth_name;
+  if (my $path = $r->dir_config("${auth_name}Path")) {
+    $string .= "; path=$path";
+  }
+  #$r->log_error("Attribute ${auth_name}Path not set") unless $path;
+
+  if (my $domain = $r->dir_config("${auth_name}Domain")) {
+    $string .= "; domain=$domain";
+  }
+
+  $string .= '; secure' if $r->dir_config("${auth_name}Secure");
+  
+  return $string;
+}
+
 sub key {
   my $self = shift;
   my $r = Apache->request;
@@ -267,8 +275,15 @@ MethodHandlers, Authen, and Authz compiled in.
  PerlSetVar WhatEverPath /
  PerlSetVar WhatEverLoginScript /login.pl
  
- # The following line is optional
+ # The following line is optional - it allows you to set the domain
+ # scope of your cookie.  Default is the current domain.
  PerlSetVar WhatEverDomain .yourdomain.com
+
+ # Use this to only send over a secure connection
+ PerlSetVar WhatEverSecure 1
+
+ # Usually documents are uncached - turn off here
+ PerlSetVar WhatEverCache 1
 
  # These documents require user to be logged in.
  <Location /protected>
@@ -522,11 +537,25 @@ C<$self-E<gt>authen_cred($r, @credentials)>.  After calling
 C<authen_cred()>, we set the user's cookie and redirect to the
 URL contained in the C<"destination"> submitted form field.
 
+=item * login_form()
+
+This method is responsible for displaying the login form. The default
+implementation will make an internal redirect and display the URL you
+specified with the C<PerlSetVar WhatEverLoginForm> configuration
+directive. You can overwrite this method to provide your own
+mechanism.
+
 =item * logout()
 
 This is simply a convenience method that unsets the session key for
 you.  You can call it in your logout scripts.  Usually this looks like
 C<$r-E<gt>auth_type-E<gt>logout($r);>.
+
+=item * send_cookie($session_key)
+
+By default this method simply sends out the session key you give it.
+If you need to change the default behavior (perhaps to update a
+timestamp in the key) you can override this method.
 
 =item * recognize_user()
 
