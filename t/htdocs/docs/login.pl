@@ -1,7 +1,11 @@
 #!/usr/bin/perl
 
 use strict;
+use mod_perl;
+use constant MP2 => ($mod_perl::VERSION >= 1.99);
+
 my $r = Apache->request;
+
 
 $r->status(200);
 my $uri = $r->prev->uri;
@@ -54,8 +58,10 @@ HERE
 $r->no_cache(1);
 my $x = length($form);
 $r->content_type("text/html");
-$r->header_out("Content-length","$x");
-$r->header_out("Pragma", "no-cache");
-$r->send_http_header;
+$r->headers_out->set("Content-length","$x");
+$r->headers_out->set("Pragma", "no-cache");
+unless (MP2) {
+    $r->send_http_header;
+}
 
 $r->print ($form);
