@@ -9,7 +9,7 @@ use Apache::AuthCookie::Util;
 use Apache::Util qw(escape_uri);
 use vars qw($VERSION);
 
-# $Id: AuthCookie.pm,v 2.24 2002-01-31 17:10:23 mschout Exp $
+# $Id: AuthCookie.pm,v 2.25 2002-02-21 21:32:49 mschout Exp $
 $VERSION = '3.00';
 
 sub recognize_user ($$) {
@@ -23,10 +23,14 @@ sub recognize_user ($$) {
   $r->log_error("cookie ${auth_type}_${auth_name} is $cookie") if $debug >= 2;
   return unless $cookie;
 
-  if (my ($user) = $auth_type->authen_ses_key($r, $cookie)) {
+  my ($user,@args) = $auth_type->authen_ses_key($r, $cookie);
+  if ($user and scalar @args == 0) {
     $r->log_error("user is $user") if $debug >= 2;
     $r->connection->user($user);
+  } elsif (scalar @args > 0 and $auth_type->can('custom_errors')) {
+    return $auth_type->custom_errors($r, $user, @args);
   }
+
   return OK;
 }
 
@@ -156,15 +160,20 @@ sub authenticate ($$) {
   $r->log_error("uri " . $r->uri) if ($debug >= 2);
 
   if ($ses_key_cookie) {
-    if ($auth_user = $auth_type->authen_ses_key($r, $ses_key_cookie)) {
+    my ($auth_user, @args) = $auth_type->authen_ses_key($r, $ses_key_cookie);
+
+    if ($auth_user and scalar @args == 0) {
       # We have a valid session key, so we return with an OK value.
       # Tell the rest of Apache what the authentication method and
       # user is.
 
       $r->connection->auth_type($auth_type);
       $r->connection->user($auth_user);
-      $r->log_error("user authenticated as $auth_user")	if $debug >= 1;
+      $r->log_error("user authenticated as $auth_user") if $debug >= 1;
+
       return OK;
+    } elsif (scalar @args > 0 and $auth_type->can('custom_errors')) {
+      return $auth_type->custom_errors($r, $auth_user, @args);
     } else {
       # There was a session key set, but it's invalid for some reason. So,
       # remove it from the client now so when the credential data is posted
@@ -592,6 +601,41 @@ authenticated user.
    return $ok ? $username : undef;
  }
 
+Optionally, return an array of 2 or more items that will be passed to method
+custom_errors. It is the responsibility of this method to return the correct
+response to the main Apache module.
+
+=item * custom_errors($r,@_)
+
+Note: this interface is experimental.
+
+This method handles the server response when you wish to access the Apache
+custom_response method. Any suitable response can be used. this is
+particularly useful when implementing 'by directory' access control using
+the user authentication information. i.e.
+
+        /restricted
+                /one            user is allowed access here
+                /two            not here
+                /three          AND here
+
+The authen_ses_key method would return a normal response when the user attempts
+to access 'one' or 'three' but return (NOT_FOUND, 'File not found') if an
+attempt was made to access subdirectory 'two'. Or, in the case of expired
+credentials, (AUTH_REQUIRED,'Your session has timed out, you must login
+again').
+
+  example 'custom_errors'
+
+  sub custom_errors {
+    my ($r,$msg,$CODE) = @_;
+    # return custom message else use the server's standard message
+    $r->custom_response($CODE, $msg) if $msg;
+    return($CODE);
+  }
+          
+  where CODE is a valid code from Apache::Constants
+
 =item * login()
 
 This method handles the submission of the login form.  It will call
@@ -792,7 +836,7 @@ implement anything, though.
 
 =head1 CVS REVISION
 
-$Id: AuthCookie.pm,v 2.24 2002-01-31 17:10:23 mschout Exp $
+$Id: AuthCookie.pm,v 2.25 2002-02-21 21:32:49 mschout Exp $
 
 =head1 AUTHOR
 
