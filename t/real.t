@@ -8,6 +8,8 @@ use Apache::Test;
 use Apache::TestUtil;
 use Apache::TestRequest qw(GET POST GET_BODY);
 
+Apache::TestRequest::user_agent( reset => 1, requests_redirectable => 0 );
+
 plan tests => 17;
 
 ok 1;  # we loaded.
@@ -264,7 +266,7 @@ sub get_expected {
     my ($fname) = @_;
 
     local $/ = undef;
-    open EXPFH, "< check/$fname" or die "cant oipen check/$fname: $!";
+    open EXPFH, "< t/check/$fname" or die "cant open check/$fname: $!";
     my $data = <EXPFH>;
     close EXPFH;
 
