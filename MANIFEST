@@ -7,6 +7,8 @@ Makefile.PL
 t/Skeleton/AuthCookieHandler.pm
 t/check/12
 t/check/13
+t/check/16
+t/check/17
 t/check/3
 t/check/4
 t/check/6
