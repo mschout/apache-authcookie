@@ -4,8 +4,8 @@ use mod_perl qw(1.07 StackedHandlers MethodHandlers Authen Authz);
 use Apache::Constants qw(:common M_GET M_POST AUTH_REQUIRED REDIRECT);
 use vars qw($VERSION);
 
-# $Id: AuthCookie.pm,v 2.0 2000-02-02 13:18:23 ken Exp $
-$VERSION = '2.0';
+# $Id: AuthCookie.pm,v 2.1 2000-02-11 04:46:59 ken Exp $
+$VERSION = sprintf '%d.%03d', q$Revision: 2.1 $ =~ /: (\d+).(\d+)/;
 
 sub recognize_user ($$) {
   my ($self, $r) = @_;
@@ -28,7 +28,7 @@ sub login ($$) {
   my $debug = $r->dir_config("AuthCookieDebug") || 0;
 
   my ($auth_type, $auth_name) = ($r->auth_type, $r->auth_name);
-  my %args = $r->args;
+  my %args = $r->method eq 'POST' ? $r->content : $r->args;
   unless (exists $args{'destination'}) {
     $r->log_error("No key 'destination' found in posted data");
     return SERVER_ERROR;
@@ -50,10 +50,39 @@ sub login ($$) {
   my $cookie_path = $r->dir_config($auth_name . "Path");
   $r->err_header_out("Set-Cookie" => "${auth_type}_${auth_name}=$ses_key; path=$cookie_path");
 
+  if ($r->method eq 'POST') {
+    $r->method('GET');
+    $r->method_number(M_GET);
+    $r->headers_in->unset('Content-Length');
+  }
   $r->no_cache(1);
   $r->err_header_out("Pragma" => "no-cache");
   $r->header_out("Location" => $args{'destination'});
   return REDIRECT;
+}
+
+sub logout($$) {
+  my ($self,$r) = @_;
+  my $debug = $r->dir_config("AuthCookieDebug") || 0;
+  
+  my ($auth_type, $auth_name) = ($r->auth_type, $r->auth_name);
+  
+  # Send the Set-Cookie header to expire the auth cookie.
+  my $path = $r->dir_config("${auth_name}Path") || '/';
+  $r->err_header_out("Set-Cookie" => 
+		     "${auth_type}_$auth_name=; path=$path; expires=Mon, 21-May-1971 00:00:00 GMT");
+  $r->log_error("set_cookie " . $r->err_header_out("Set-Cookie")) if $debug >= 2;
+  $r->no_cache(1);
+  $r->err_header_out("Pragma" => "no-cache");
+
+  #my %args = $r->args;
+  #if (exists $args{'redirect'}) {
+  #  $r->header_out("Location" => $args{'redirect'});
+  #  return REDIRECT;
+  #} else {
+  #  $r->status(200);
+  #  return OK;
+  #}
 }
 
 sub authenticate ($$) {
@@ -67,8 +96,7 @@ sub authenticate ($$) {
   if ($r->auth_type ne $auth_type) {
     # This location requires authentication because we are being called,
     # but we don't handle this AuthType.
-    $r->log_error($auth_type . "::Auth:authen auth type is " .
-		  $r->auth_type) if ($debug >= 3);
+    $r->log_error("AuthType mismatch: $auth_type =/= ".$r->auth_type) if $debug >= 3;
     return DECLINED;
   }
 
@@ -146,7 +174,7 @@ sub authorize ($$) {
   return OK unless $r->is_initial_req; #only the first internal request
   
   if ($r->auth_type ne $auth_type) {
-    $r->log_error($auth_type . "::Auth:authz auth type is " .
+    $r->log_error($auth_type . " auth type is " .
 		  $r->auth_type) if ($debug >= 3);
     return DECLINED;
   }
@@ -424,11 +452,8 @@ C<use mod_perl qw(1.07 StackedHandlers MethodHandlers Authen Authz);>
 <PRE>
 =end html
 
- # In mod_perl startup script:
- use Sample::AuthCookieHandler;
-
  # In httpd.conf or .htaccess:
-
+ PerlModule Sample::AuthCookieHandler
  PerlSetVar WhatEverPath /
  PerlSetVar WhatEverLoginScript /login.pl
 
@@ -603,8 +628,8 @@ client.
 
 =head1 UPGRADING FROM VERSION 1.4
 
-There are a couple of interface changes that you need to be aware of
-when migrating from version 1.4 to 2.0.  First, the authen() and
+There are a few interface changes that you need to be aware of
+when migrating from version 1.x to 2.x.  First, the authen() and
 authz() methods are now deprecated, replaced by the new authenticate()
 and authorize() methods.  The old methods will go away in a couple
 versions, but are maintained intact in this version to ease the task
@@ -613,67 +638,25 @@ of upgrading.  The use of these methods is essentially the same, though.
 Second, when you change to the new method names (see previous
 paragraph), you must change the action of your login forms to the
 location /LOGIN (or whatever URL will call your module's login()
-method).
+method).  You may also want to change their METHOD to POST instead of
+GET, since that's much safer and nicer to look at (but you can leave
+it as GET if you bloody well want to, for some god-unknown reason).
 
-Third, you must put another field in your login forms (see L<THE LOGIN
-SCRIPT> below) that indicates how requests should be redirected after
-a successful login.
+Third, you must change your login forms (see L<THE LOGIN SCRIPT>
+below) to indicate how requests should be redirected after a
+successful login.
 
+Fourth, you might want to take advantage of the new C<logout()>
+method, though you certainly don't have to.
 
 =head1 EXAMPLE
 
-NOTE: THE FOLLOWING EXAMPLE CODE IS BASED ON AN OLD VERSION OF
-Apache::AuthCookie, AND IS NO LONGER SUPPORTED.  I'll update the
-example stuff as soon as I get a chance.  For now, please see the
-sample configuration code at the top of this document.
-
-=head2 Install the sample
-
-=over 4
-
-=item 1.
-
-Install eg/Sample into the site_perl directory in your perl5 library
-directory.
-
-=item 2.
-
-Install eg/unprotected into your Apache document root directory.
-
-=item 3.
-
-Add C<use Sample::AuthCookieHandler;> to your mod_perl startup script
-or C<Sample::AuthCookieHandler> to your PerlModule configuration
-directive.
-
-=item 4.
-
-Restart Apache so mod_perl picks up C<Sample::AuthCookieHandler>.
-
-=back
-
-=head2 Try out the sample
-
-=over 4
-
-=item 1.
-
-Try to access /unprotected/protected/get_me.html. You should instead get
-a form requesting a login and password. The sample will validate two
-users. The first is login => programmer and password => Hero and the
-second is login => some-user with no/any password. You might want to
-set your browser to show you cookies before accepting them. Then you
-can see what AuthCookie is generating.
-
-=item 2.
-
-As distributed, the .htaccess file in F<eg/unprotected/protected> will allow
-either of these user to access the document. However if you change the
-line C<require valid-user> to C<require dwarf> in .htaccess only the
-user "programmer" will have access. Look at the authorization function
-C<dwarf()> in F<eg/Sample/AuthCookieHandler.pm> to see how this works.
-
-=back
+For an example of how to use Apache::AuthCookie, you may want to check
+out the test suite, which runs AuthCookie through a few of its paces.
+The documents are located in t/eg/, and you may want to peruse
+t/real.t to see the generated httpd.conf file (at the bottom of
+real.t) and check out what requests it's making of the server (at the
+top of real.t).
 
 =head1 THE LOGIN SCRIPT
 
@@ -698,8 +681,22 @@ named 'credential_0', 'credential_1', etc. on the form.
 You must define a form field called 'destination' that tells
 AuthCookie where to redirect the request after successfully logging
 in.  Typically this value is obtained from C<$r-E<gt>prev-E<gt>uri>.
+See the login.pl script in t/eg/.
 
 =back
+
+=head1 THE LOGOUT SCRIPT
+
+If you want to let users log themselves out (something that can't be
+done using Basic Auth), you need to create a logout script.  For an
+example, see t/eg/logout.pl.  Logout scripts may want to take
+advantage of AuthCookie's C<logout()> method, which will set the
+proper cookie headers in order to clear the user's cookie.
+
+Note that if you don't necessarily trust your users, you can't count
+on cookie deletion for logging out.  You'll have to expire some
+server-side login information too.  AuthCookie doesn't do this for
+you, you have to handle it yourself.
 
 =head1 ABOUT SESSION KEYS
 
@@ -718,14 +715,11 @@ retrieve it later, see the ToDo section below for some other ideas.
 
 =head1 KNOWN LIMITATIONS
 
-The login form uses the GET method to send the user's credentials, so
-they're visible on the query string.
-
 If the first unauthenticated request is a POST, it will be changed to
 a GET after the user fills out the login forms, and POSTed data will
 be lost.
 
-=head2 ToDo
+=head2 TO DO
 
 =over 4
 
@@ -736,6 +730,11 @@ LIMITATIONS section.  They both involve being able to change a request
 back & forth between GET & POST.  The second problem also involves
 being able to re-insert the POSTed content into the request stream after
 the user authenticates.  If you knows of a way, please drop me a note.
+
+It might be nice if the logout method could accept some parameters
+that could make it easy to redirect the user to another URI, or
+whatever.  I'd have to think about the options needed before I
+implement anything, though.
 
 =back
 
