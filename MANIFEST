@@ -17,6 +17,8 @@ t/docs/index.html
 t/docs/login.pl
 t/docs/logout.pl
 t/docs/protected/get_me.html
+t/docs/authall/get_me.html
+t/docs/authany/get_me.html
 t/lib/Apache/test.pm
 t/lib/Sample/AuthCookieHandler.pm
 t/real.t
