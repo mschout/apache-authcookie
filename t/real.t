@@ -54,13 +54,15 @@ my %requests =
 	  content=>'destination=/protected/get_me.html&credential_0=programmer&credential_1=Heroo',
 	 },
 
-	  
+   8  => 'logout.pl',
 
   );
 
 my %special_tests = 
   (
    5 => sub {print "code: ", $_[0]->code(), "\n"; $_[0]->code() == 302},
+   8 => sub {$_[0]->header('Set-Cookie') 
+	       eq 'Sample::AuthCookieHandler_WhatEver=; path=/; expires=Mon, 21-May-1971 00:00:00 GMT'},
   );
 
 print "1.." . (2 + keys %requests) . "\n";
