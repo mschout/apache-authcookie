@@ -9,7 +9,7 @@
 <H1>This is a secure document</H1>
 </TD></TR>
 <TR><TD ALIGN=LEFT>
-<P>Please enter your login and password to authenticate.</P>
+<P>Failure reason: 'no_cookie'.  Please enter your login and password to authenticate.</P>
 </TD>
 <TR><TD>
 <INPUT TYPE=hidden NAME=destination VALUE="/protected/get_me.html">

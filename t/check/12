@@ -1,13 +1,3 @@
-#!/usr/bin/perl
-
-use strict;
-my $r = Apache->request;
-
-$r->status(200);
-my $uri = $r->prev->uri;
-my $reason = $r->prev->subprocess_env("AuthCookieReason");
-
-my $form = <<HERE;
 <HTML>
 <HEAD>
 <TITLE>Enter Login and Password</TITLE>
@@ -19,10 +9,10 @@ my $form = <<HERE;
 <H1>This is a secure document</H1>
 </TD></TR>
 <TR><TD ALIGN=LEFT>
-<P>Failure reason: '$reason'.  Please enter your login and password to authenticate.</P>
+<P>Failure reason: 'bad_cookie'.  Please enter your login and password to authenticate.</P>
 </TD>
 <TR><TD>
-<INPUT TYPE=hidden NAME=destination VALUE="$uri">
+<INPUT TYPE=hidden NAME=destination VALUE="/protected/get_me.html">
 
 </TD></TR>
 <TR><TD>
@@ -42,13 +32,3 @@ my $form = <<HERE;
 </FORM>
 </BODY>
 </HTML>
-HERE
-
-$r->no_cache(1);
-my $x = length($form);
-$r->content_type("text/html");
-$r->header_out("Content-length","$x");
-$r->header_out("Pragma", "no-cache");
-$r->send_http_header;
-
-$r->print ($form);

@@ -34,7 +34,11 @@ use Carp;
 my %requests = 
   (
    3  => 'index.html',
+
+   # Should fail with 'no_cookie'
    4  => 'protected/get_me.html',
+
+   # Should succeed (redirect)
    5  => {uri=>'LOGIN',
 	  method=>'POST',
 	  content=>'destination=/protected/get_me.html&credential_0=programmer&credential_1=Hero',
@@ -46,7 +50,7 @@ my %requests =
 	  headers=>{Cookie=>'Sample::AuthCookieHandler_WhatEver=programmer:Hero;'},
 	 },
 
-   # Should fail
+   # Should fail with 'no_cookie'
    7  => {uri=>'protected/get_me.html',
 	  method=>'GET',
 	  content=>'destination=/protected/get_me.html&credential_0=programmer&credential_1=Heroo',
@@ -65,6 +69,18 @@ my %requests =
 	  headers=>{Cookie=>'Sample::AuthCookieHandler_WhatEver=some-user:duck;'},
 	 },
 
+   # Should redirect to /protected/get_me.html
+   11 => {uri=>'LOGIN',
+	  method=>'POST',
+	  content=>'destination=/protected/get_me.html&credential_0=programmer&credential_1=Heroo',
+	 },
+
+   # Should fail with 'bad_cookie'
+   12 => {uri=>'protected/get_me.html',
+	  method=>'GET',
+	  headers=>{Cookie=>'Sample::AuthCookieHandler_WhatEver=programmer:Heroo'},
+	 },
+
   );
 
 my %special_tests = 
@@ -73,6 +89,21 @@ my %special_tests =
    8  => sub {$_[0]->header('Set-Cookie') 
 		eq 'Sample::AuthCookieHandler_WhatEver=; path=/; expires=Mon, 21-May-1971 00:00:00 GMT'},
    10 => sub {print "code: ", $_[0]->code(), "\n"; $_[0]->code() == 403},
+   11 => sub 
+     {
+       my $r = shift;
+       print("Location: ", $r->header('Location'), "\n",
+	     "Set-Cookie: ", $r->header('Set-Cookie'), "\n", 
+	     "Code: ", $r->code(), "\n");
+
+       my $ok = 1;
+       $ok = 0 unless $r->header('Location')   eq '/protected/get_me.html';
+       $ok = 0 unless $r->header('Set-Cookie') eq 'Sample::AuthCookieHandler_WhatEver=programmer:Heroo; path=/';
+       $ok = 0 unless $r->code() == 302;
+       return $ok;
+     }
+   
+
   );
 
 print "1.." . (2 + keys %requests) . "\n";
