@@ -4,12 +4,12 @@ use strict;
 
 use Carp;
 use mod_perl qw(1.07 StackedHandlers MethodHandlers Authen Authz);
-use Apache::Constants qw(:common FORBIDDEN REDIRECT);
+use Apache::Constants qw(:common M_GET FORBIDDEN REDIRECT);
 use Apache::AuthCookie::Util;
 use Apache::Util qw(escape_uri);
 use vars qw($VERSION);
 
-# $Id: AuthCookie.pm,v 2.23 2002-01-30 16:41:02 mschout Exp $
+# $Id: AuthCookie.pm,v 2.24 2002-01-31 17:10:23 mschout Exp $
 $VERSION = '3.00';
 
 sub recognize_user ($$) {
@@ -48,7 +48,7 @@ sub _convert_to_get {
     $r->args(join '&', @pairs) if scalar(@pairs) > 0;
 
     $r->method('GET');
-    $r->method_number(Apache::Constants::M_GET);
+    $r->method_number(M_GET);
     $r->headers_in->unset('Content-Length');
 }
 
@@ -792,7 +792,7 @@ implement anything, though.
 
 =head1 CVS REVISION
 
-$Id: AuthCookie.pm,v 2.23 2002-01-30 16:41:02 mschout Exp $
+$Id: AuthCookie.pm,v 2.24 2002-01-31 17:10:23 mschout Exp $
 
 =head1 AUTHOR
 
