@@ -4,8 +4,8 @@ use mod_perl qw(1.07 StackedHandlers MethodHandlers Authen Authz);
 use Apache::Constants qw(:common M_GET M_POST FORBIDDEN REDIRECT);
 use vars qw($VERSION);
 
-# $Id: AuthCookie.pm,v 2.3 2000-03-14 21:08:02 ken Exp $
-$VERSION = sprintf '%d.%03d', q$Revision: 2.3 $ =~ /: (\d+).(\d+)/;
+# $Id: AuthCookie.pm,v 2.4 2000-03-15 20:53:20 ken Exp $
+$VERSION = sprintf '%d.%03d', q$Revision: 2.4 $ =~ /: (\d+).(\d+)/;
 
 sub recognize_user ($$) {
   my ($self, $r) = @_;
@@ -463,6 +463,9 @@ C<use mod_perl qw(1.07 StackedHandlers MethodHandlers Authen Authz);>
  PerlModule Sample::AuthCookieHandler
  PerlSetVar WhatEverPath /
  PerlSetVar WhatEverLoginScript /login.pl
+ 
+ # The following line is optional
+ PerlSetVar WhatEverDomain .yourdomain.com
 
  # These documents require user to be logged in.
  <Location /protected>
@@ -529,8 +532,7 @@ idea of who's logged in.
 =back
 
 By using AuthCookie versus Apache's built-in AuthBasic you can design
-your own authentication system.  There are at least three main
-benefits.
+your own authentication system.  There are several benefits.
 
 =over 4
 
@@ -553,6 +555,16 @@ problem of AuthBasic.
 
 AuthBasic dialog boxes are ugly.  You can design your own HTML login
 forms when you use AuthCookie.
+
+=item 4.
+
+You can specify the domain of a cookie using PerlSetVar commands.  For
+instance, if your AuthName is C<WhatEver>, you can put the command 
+
+ PerlSetVar WhatEverDomain .yourhost.com
+
+into your server setup file and your access cookies will span all
+hosts ending in C<.yourhost.com>.
 
 =back
 
