@@ -54,6 +54,11 @@ my %requests =
 
    8  => 'logout.pl',
 
+   9  => {uri=>'echo_cookie.pl',
+	  method=>'GET',
+	  headers=>{Cookie=>'Sample::AuthCookieHandler_WhatEver=programmer:Hero;'},
+	 },
+
   );
 
 my %special_tests = 
@@ -80,7 +85,7 @@ if ($result) {
       # Allow customization of request
       ($meth, $uri, $content) = @{$requests{$testnum}}{'method','uri','content'};
       $headers = $requests{$testnum}{headers};
-      $headers = {Content_Type => 'application/x-www-form-urlencoded'} 
+      $headers->{Content_Type} = 'application/x-www-form-urlencoded'
 	if (!$headers and $requests{$testnum}{method} eq 'POST');
       $headers = new HTTP::Headers(%$headers);
     } else {
