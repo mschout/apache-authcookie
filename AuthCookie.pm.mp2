@@ -18,7 +18,7 @@ use Data::Dumper; # XXX for debugging
 use Apache::Const qw(:common M_GET HTTP_FORBIDDEN HTTP_MOVED_TEMPORARILY);
 use vars qw($VERSION);
 
-# $Id: AuthCookie.pm.mp2,v 1.10 2004-05-27 04:51:28 mschout Exp $
+# $Id: AuthCookie.pm.mp2,v 1.11 2004-05-31 22:56:11 mschout Exp $
 $VERSION = '3.05';
 
 sub recognize_user {
@@ -34,8 +34,9 @@ sub recognize_user {
     return unless $r->headers_in->get('Cookie');
 
     my $cookie = $self->key($r);
+    my $cookie_name = $self->cookie_name($r);
 
-    $r->server->log_error("cookie ${auth_type}_${auth_name} is $cookie")
+    $r->server->log_error("cookie $cookie_name is $cookie")
         if $debug >= 2;
 
     return unless $cookie;
@@ -51,6 +52,18 @@ sub recognize_user {
     }
 
     return OK;
+}
+
+sub cookie_name {
+    my ($self, $r) = @_;
+
+    my $auth_type = $r->auth_type;
+    my $auth_name = $r->auth_name;
+
+    my $cookie_name = $r->dir_config("${auth_name}CookieName") ||
+                      "${auth_type}_${auth_name}";
+
+    return $cookie_name;
 }
 
 sub handle_cache {
@@ -71,21 +84,20 @@ sub remove_cookie {
     my ($self, $r) = @_;
     _check_request_rec(@_);
 
-    my $auth_type = $r->auth_type;
-    my $auth_name = $r->auth_name;
+    my $cookie_name = $self->cookie_name($r);
 
     my $debug = $r->dir_config("AuthCookieDebug") || 0;
 
     my $str = $self->cookie_string(
         request => $r,
-        key     => "$auth_type\_$auth_name",
+        key     => $cookie_name,
         value   => '',
         expires => 'Mon, 21-May-1971 00:00:00 GMT'
     );
 
     $r->err_headers_out->add("Set-Cookie" => "$str");
     $r->server->log_error("removed_cookie ".
-                          $r->err_headers_out->get("Set-Cooke"))
+                          $r->err_headers_out->get("Set-Cookie"))
         if $debug >= 2;
 }
 
@@ -158,7 +170,6 @@ sub login {
     my $debug = $r->dir_config("AuthCookieDebug") || 0;
 
     my $auth_type = $r->auth_type;
-    my $auth_name = $r->auth_name;
 
     my %args = $self->_get_form_data($r);
 
@@ -209,9 +220,6 @@ sub logout {
     my ($self,$r) = @_;
 
     my $debug = $r->dir_config("AuthCookieDebug") || 0;
-
-    my $auth_type = $r->auth_type;
-    my $auth_name = $r->auth_name;
 
     $self->remove_cookie($r);
 
@@ -409,12 +417,15 @@ sub send_cookie {
     my ($self, $r, $ses_key) = @_;
     _check_request_rec(@_);
 
-    my ($auth_type, $auth_name) = ($r->auth_type, $r->auth_name);
+    my $cookie_name = $self->cookie_name($r);
+
     my $cookie = $self->cookie_string(
         request => $r,
-        key     => "$auth_type\_$auth_name",
+        key     => $cookie_name,
         value   => $ses_key
     );
+
+    my $auth_name = $r->auth_name;
 
     # add a P3P header if user has configured it.
     if (my $p3p = $r->dir_config("${auth_name}P3P")) {
@@ -469,12 +480,11 @@ sub key {
     my ($self, $r) = @_;
     _check_request_rec(@_);
 
+    my $cookie_name = $self->cookie_name($r);
+
     my $allcook = ($r->headers_in->get("Cookie") || "");
 
-    my $type = $r->auth_type;
-    my $name = $r->auth_name;
-
-    return ($allcook =~ /(?:^|\s)${type}_$name=([^;]*)/)[0];
+    return ($allcook =~ /(?:^|\s)$cookie_name=([^;]*)/)[0];
 }
 
 sub get_cookie_path {
@@ -645,6 +655,17 @@ instance, if your AuthName is C<WhatEver>, you can put the command
 
 into your server setup file and your access cookies will span all
 hosts ending in C<.yourhost.com>.
+
+=item 5.
+
+You can optionally specify the name of your cookie using the C<CookieName>
+directive.  For instance, if your AuthName is C<WhatEver>, you can put the
+command
+
+ PerlSetVar WhatEverCookieName MyCustomName
+
+into your server setup file and your cookies for this AuthCookie realm will be
+named MyCustomName.  Default is AuthType_AuthName.
 
 =back
 
@@ -1006,7 +1027,7 @@ implement anything, though.
 
 =head1 CVS REVISION
 
-$Id: AuthCookie.pm.mp2,v 1.10 2004-05-27 04:51:28 mschout Exp $
+$Id: AuthCookie.pm.mp2,v 1.11 2004-05-31 22:56:11 mschout Exp $
 
 =head1 AUTHOR
 

@@ -6,6 +6,9 @@ Version: 3.06
    - check for mod_perl 1.9913:  Frederick Moyer <fred@redhotpenguin.com>
    - Remove set status in login.pl which caused malformed custom error
      document (Frederick Moyer)
+   - Add support for ${auth_name}CookieName to change the name of the cookie
+     used for each auth name.  Default remains ${auth_name}_${auth_type} if
+     not set.
 
 Version: 3.05
    - Fix POD documentation bug (thanks Steve van der Burg)
