@@ -9,7 +9,7 @@ use Apache::AuthCookie::Util;
 use Apache::Util qw(escape_uri);
 use vars qw($VERSION);
 
-# $Id: AuthCookie.pm,v 2.36 2002-09-24 02:47:05 mschout Exp $
+# $Id: AuthCookie.pm,v 2.37 2002-09-24 03:09:18 mschout Exp $
 $VERSION = '3.02';
 
 sub recognize_user ($$) {
@@ -88,7 +88,14 @@ sub login ($$) {
     return $auth_type->login_form;
   }
 
-  $r->log_error("ses_key " . $ses_key) if ($debug >= 2);
+  if ($debug >= 2) {
+    if (defined $ses_key) {
+      $r->log_error("ses_key $ses_key");
+    }
+    else {
+      $r->log_error("ses_key undefined");
+    }
+  }
 
   $self->send_cookie($ses_key);
 
@@ -130,7 +137,7 @@ sub logout($$) {
 
 sub authenticate ($$) {
   my ($auth_type, $r) = @_;
-  my ($authen_script, $auth_user);
+  my $auth_user;
   my $debug = $r->dir_config("AuthCookieDebug") || 0;
   
   $r->log_error("auth_type " . $auth_type) if ($debug >= 3);
@@ -198,7 +205,6 @@ sub authenticate ($$) {
   # document.  Send them the authen form.
   return $auth_type->login_form;
 }
-  
 
 sub login_form {  
   my $r = Apache->request or die "no request";
@@ -335,6 +341,8 @@ sub cookie_string {
   # its okay if value is undef here.
 
   my $r = $p{request};
+
+  $p{value} = '' unless defined $p{value};
 
   my $string = sprintf '%s=%s', @p{'key','value'};
 
@@ -895,7 +903,7 @@ implement anything, though.
 
 =head1 CVS REVISION
 
-$Id: AuthCookie.pm,v 2.36 2002-09-24 02:47:05 mschout Exp $
+$Id: AuthCookie.pm,v 2.37 2002-09-24 03:09:18 mschout Exp $
 
 =head1 AUTHOR
 
