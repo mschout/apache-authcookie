@@ -1,3 +1,6 @@
+Version: CURRENT
+   - Add support for AuthNameSatisfy directive (can be Any/All, default: Any)
+
 Version: 3.01
    - adopted support for custom_errors() hook from michael@bizsystems.com.
    - Fixed incorrect documentation in authorize() (thanks to David Young).
