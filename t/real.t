@@ -1,155 +1,273 @@
-#!/usr/bin/perl
 
 use strict;
-use lib qw(lib t/lib);
+use warnings FATAL => 'all';
+use lib 'lib';
 
-use Apache::test qw(skip_test have_httpd test);
-skip_test unless have_httpd;
+use Apache::AuthCookie;
+use Apache::Test;
+use Apache::TestUtil;
+use Apache::TestRequest qw(GET POST GET_BODY);
 
-use vars qw($TEST_NUM);
+plan tests => 17;
 
-my %requests = (
-   3  => '/docs/index.html',
+ok 1;  # we loaded.
 
-   # Should fail with 'no_cookie'
-   4  => '/docs/protected/get_me.html',
+ok 1;  # blank test just to keep check/* numbering matching.
 
-   # Should succeed (redirect)
-   5  => {uri=>'/LOGIN',
-	  method=>'POST',
-	  content=>'destination=/docs/protected/get_me.html&credential_0=programmer&credential_1=Hero',
-	 },
+ok test_3();
+ok test_4();
+ok test_5();
+ok test_6();
+ok test_7();
+ok test_8();
+ok test_9();
+ok test_10();
+ok test_11();
+ok test_12();
+ok test_13();
+ok test_14();
+ok test_15();
+ok test_16();
+ok test_17();
 
-   # Should succeed
-   6  => {uri=>'/docs/protected/get_me.html',
-	  method=>'GET',
-	  headers=>{Cookie=>'Sample::AuthCookieHandler_WhatEver=programmer:Hero;'},
-	 },
+sub test_3 {
+    my $url = '/docs/index.html';
+    my $data = GET_BODY $url;
 
-   # Should fail with 'no_cookie'
-   7  => {uri=>'/docs/protected/get_me.html',
-	  method=>'GET',
-	  content=>'destination=/docs/protected/get_me.html&credential_0=programmer&credential_1=Heroo',
-	 },
-
-   8  => '/docs/logout.pl',
-
-   9  => {uri=>'/docs/echo_cookie.pl',
-	  method=>'GET',
-	  headers=>{Cookie=>'Sample::AuthCookieHandler_WhatEver=programmer:Hero;'},
-	 },
-
-   # Should fail
-   10 => {uri=>'/docs/protected/get_me.html',
-	  method=>'GET',
-	  headers=>{Cookie=>'Sample::AuthCookieHandler_WhatEver=some-user:duck;'},
-	 },
-
-   # Should redirect to /docs/protected/get_me.html
-   11 => {uri=>'/LOGIN',
-	  method=>'POST',
-	  content=>'destination=/docs/protected/get_me.html&credential_0=programmer&credential_1=Heroo',
-	 },
-
-   # Should fail with 'bad_cookie'
-   12 => {uri=>'/docs/protected/get_me.html',
-	  method=>'GET',
-	  headers=>{Cookie=>'Sample::AuthCookieHandler_WhatEver=programmer:Heroo'},
-	 },
-
-   # should get the login form back (bad_credentials).
-   # Check that destination is right.
-   13  => {uri=>'/LOGIN',
-	   method=>'POST',
-	   content=>'destination=/docs/protected/get_me.html&credential_0=fail&credential_1=Hero',
-	 },
-
-    # auth any should get the page
-    14 => {uri => '/LOGIN',
-           method => 'POST',
-           content => join('&', 'destination=/docs/authany/get_me.html',
-                                'credential_0=some-user',
-                                'credential_1=mypassword')
-          },                       
-
-    # auth all should fail because we have 2 user requirements
-    # so we should get FORBIDDEN
-    15 => {uri     => '/docs/authall/get_me.html',
-           method  => 'GET',
-           headers => {Cookie => 'Sample::AuthCookieHandler_WhatEver=some-user:mypassword'}
-          },
-
-    # should get the login form (unauthenticated)
-    # check that destination is right.
-    16 => {uri     => '/docs/protected/get_me.html',
-           method  => 'POST',
-           content => 'foo=bar'
-          },
-
-    # same as #16, but in GET mode.  Result should be the same
-    17 => {uri     => '/docs/protected/get_me.html?foo=bar',
-           method  => 'GET'
-          },
-);
-
-my %special_tests = (
-   5  => sub {print "code: ", $_[0]->code(), "\n"; $_[0]->code() == 302},
-   8  => sub {$_[0]->header('Set-Cookie') 
-		eq 'Sample::AuthCookieHandler_WhatEver=; expires=Mon, 21-May-1971 00:00:00 GMT; path=/'},
-   10 => sub {print "code: ", $_[0]->code(), "\n"; $_[0]->code() == 403},
-   11 => sub {
-       my $r = shift;
-       print("Location: ", $r->header('Location'), "\n",
-	     "Set-Cookie: ", $r->header('Set-Cookie'), "\n", 
-	     "Code: ", $r->code(), "\n");
-
-       my $ok = 1;
-       $ok = 0 unless $r->header('Location')   eq '/docs/protected/get_me.html';
-       $ok = 0 unless $r->header('Set-Cookie') eq 'Sample::AuthCookieHandler_WhatEver=programmer:Heroo; path=/';
-       $ok = 0 unless $r->code() == 302;
-       return $ok;
-   },
-   14 => sub {
-        my $r = shift;
-        print("Location: ", $r->header('Location'), "\n",
-              "Set-Cookie: ", $r->header('Set-Cookie'), "\n",
-              "Code: ", $r->code(), "\n");
-        
-        my $ok = 1;
-
-        $ok = 0 unless $r->header('Location') eq '/docs/authany/get_me.html';
-        $ok = 0 unless $r->header('Set-Cookie') eq 
-                'Sample::AuthCookieHandler_WhatEver=some-user:mypassword; path=/';
-        $ok = 0 unless $r->code() == 302;
-
-        return $ok;
-   },
-   15 => sub {
-        my $r = shift;
-        print "code: ", $r->code(), "\n";
-        return ($r->code() == 403);
-   },
-);
-
-print "1.." . (2 + keys %requests) . "\n";
-
-test ++$TEST_NUM, 1;
-test ++$TEST_NUM, 1;
-
-foreach my $testnum (sort {$a <=> $b} keys %requests) {
-	test_outcome(Apache::test->fetch($requests{$testnum}), $testnum);
+    print "# data: $data";
+    my $exp = get_expected('3');
+    if ($data eq $exp) {
+        return 1;
+    }
+    else { 
+        return 0;
+    }
 }
 
-sub test_outcome {
-	my ($response, $i) = @_;
-	my $content = $response->content;
-	#warn "($content, $response, $i)\n";
-  
-  my ($text, $expected);
-  my $ok = ($special_tests{$i} ?
-	    $special_tests{$i}->($response) :
-	    ($content eq ($expected = `cat t/check/$i`)) );
-	Apache::test->test(++$TEST_NUM, $ok);
-  my $headers = $response->headers_as_string();
-  print "Result: $headers\n$text\nExpected: $expected\n" if ($ENV{TEST_VERBOSE} and not $ok);
+sub test_4 {
+    my $url = '/docs/protected/get_me.html';
+    my $r = GET $url;
+
+    print "# CODE: ", $r->code, "\n";
+    print "# BODY: ", $r->content;
+
+    my $dat = $r->content;
+
+    my $exp = get_expected('4');
+    print "expected: $exp, got: $dat\n";
+
+    return $dat eq $exp;
 }
+
+# should succeed with redirect.
+sub test_5 {
+    my $r = POST('/LOGIN', [
+        destination  => '/docs/protected/get_me.html',
+        credential_0 => 'programmer',
+        credential_1 => 'Hero'
+    ]);
+
+    unless ($r->code == 302) {
+        printf "# code: %d\n", $r->code;
+        return 0;
+    }
+
+    return 1;
+}
+
+sub test_6 {
+    my $uri = '/docs/protected/get_me.html';
+
+    my $r = GET(
+        $uri,
+        Cookie => 'Sample::AuthCookieHandler_WhatEver=programmer:Hero;'
+    );
+
+    my $exp = get_expected('6');
+
+    return $r->content eq $exp;
+}
+
+# should fail with no_cookie
+sub test_7 {
+    my $url = '/docs/protected/get_me.html';
+
+    my $dat = GET_BODY($url);
+
+    my $exp = get_expected('7');
+
+    print "expected: $exp\n";
+    print "got: $dat\n";
+
+    return $dat eq $exp;
+}
+
+# should have a Set-Cookie header that expired at epoch.
+sub test_8 {
+    my $url = '/docs/logout.pl';
+
+    my $r = GET($url);
+
+    my $data = $r->header('Set-Cookie');
+    my $expected = 'Sample::AuthCookieHandler_WhatEver=; expires=Mon, 21-May-1971 00:00:00 GMT; path=/';
+
+    print "# expected: $data\n";
+    print "# got: $data\n";
+
+    return $data eq $expected;
+}
+
+sub test_9 {
+    my $data = GET_BODY(
+        '/docs/echo_cookie.pl',
+        Cookie => 'Sample::AuthCookieHandler_WhatEver=programmer:Hero;'
+    );
+
+    my $expected = get_expected('9');
+
+    return $data eq $expected;
+}
+
+# should fail
+sub test_10 {
+    my $r = GET(
+        '/docs/protected/get_me.html',
+        Cookie => 'Sample::AuthCookieHandler_WhatEver=some-user:duck;'
+    );
+
+    my $data = $r->code;
+    my $expected = '403';
+
+    print "# expected: $expected\n";
+    print "# got: $data\n";
+
+    return $data eq $expected;
+}
+
+# Should redirect to /docs/protected/get_me.html
+sub test_11 {
+    my $r = POST('/LOGIN', [
+        destination  => '/docs/protected/get_me.html',
+        credential_0 => 'programmer',
+        credential_1 => 'Heroo'
+    ]);
+
+    print "Location: ", $r->header('Location'), "\n",
+          "Set-Cookie: ", $r->header('Set-Cookie'), "\n",
+          "Code: ", $r->code, "\n";
+
+    return 0 unless
+       $r->header('Location') eq '/docs/protected/get_me.html';
+
+    return 0 unless 
+        $r->header('Set-Cookie') eq 'Sample::AuthCookieHandler_WhatEver=programmer:Heroo; path=/';
+
+    return 0 unless $r->code == 302;
+
+    return 1;
+}
+
+# should get the login form back (bad_cookie).
+sub test_12 {
+    my $data = GET_BODY(
+        '/docs/protected/get_me.html',
+        Cookie=>'Sample::AuthCookieHandler_WhatEver=programmer:Heroo'
+    );
+
+    my $expected = get_expected('12');
+
+    print "# expected: $expected\n";
+    print "# got: $data\n";
+
+    return $data eq $expected;
+}
+
+# should get the login form back (bad_credentials)
+sub test_13 {
+    my $r = POST('/LOGIN', [
+        destination  => '/docs/protected/get_me.html',
+        credential_0 => 'fail',
+        credential_1 => 'Hero'
+    ]);
+
+    my $data = $r->content;
+    my $expected = get_expected('13');
+
+    print "# expected: $expected\n";
+    print "# got: $data\n";
+
+    return $data eq $expected;
+}
+
+# check that the destination is right.
+sub test_14 {
+    my $r = POST('/LOGIN', [
+        destination  => '/docs/authany/get_me.html',
+        credential_0 => 'some-user',
+        credential_1 => 'mypassword'
+    ]);
+
+    print "Location: ", $r->header('Location'), "\n",
+          "Set-Cookie: ", $r->header('Set-Cookie'), "\n",
+          "Code: ", $r->code(), "\n";
+
+    return 0 unless $r->header('Location') eq '/docs/authany/get_me.html';
+
+    return 0 unless 
+        $r->header('Set-Cookie') eq 'Sample::AuthCookieHandler_WhatEver=some-user:mypassword; path=/';
+
+    return 0 unless $r->code == 302;
+
+    return 1;
+}
+
+# should fail because all requirements are not met
+sub test_15 {
+    my $r = GET(
+        '/docs/authall/get_me.html',
+        Cookie => 'Sample::AuthCookieHandler_WhatEver=some-user:mypassword'
+    );
+
+    print "code: ", $r->code(), "\n";
+
+    return ($r->code() == 403);
+}
+
+# should succeed (any requirement is met)
+sub test_16 {
+    my $r = POST('/docs/protected/get_me.html', [
+        foo => 'bar'
+    ]);
+
+    my $data = $r->content;
+    my $expected = get_expected('16');
+
+    print "# expected: $expected\n";
+    print "# got: $data\n";
+
+    return $data eq $expected;
+}
+
+# same test at #16, but in GET mode. Should succeed
+sub test_17 {
+    my $data = GET_BODY('/docs/protected/get_me.html?foo=bar');
+    my $expected = get_expected('17');
+
+    print "# expected: $expected\n";
+    print "# got: $data\n";
+
+    return $data eq $expected;
+}
+
+# get the "expected output" file for a given test and return its contents.
+sub get_expected {
+    my ($fname) = @_;
+
+    local $/ = undef;
+    open EXPFH, "< check/$fname" or die "cant oipen check/$fname: $!";
+    my $data = <EXPFH>;
+    close EXPFH;
+
+    return $data;
+}
+

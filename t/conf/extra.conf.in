@@ -1,0 +1,71 @@
+PerlRequire @ServerRoot@/startup.pl
+
+PerlModule Apache::AuthCookie
+PerlModule Sample::AuthCookieHandler
+
+PerlSetVar WhatEverPath /
+PerlSetVar WhatEverLoginScript /docs/login.pl
+PerlSetVar AuthCookieDebug 3
+
+<Directory @ServerRoot@>
+    AllowOverride All
+</Directory>
+
+# These documents require user to be logged in.
+<Location /docs/protected>
+ AuthType Sample::AuthCookieHandler
+ AuthName WhatEver
+ PerlAuthenHandler Sample::AuthCookieHandler->authenticate
+ PerlAuthzHandler Sample::AuthCookieHandler->authorize
+ require user programmer
+</Location>
+
+# must satisfy any requirement
+<Location /docs/authany>
+ PerlSetVar WhatEverSatisfy Any
+ AuthType Sample::AuthCookieHandler
+ AuthName WhatEver
+ PerlAuthenHandler Sample::AuthCookieHandler->authenticate
+ PerlAuthzHandler Sample::AuthCookieHandler->authorize
+ Require user some-user
+ Require user programmer
+</Location>
+
+# must satisfy all requirements
+<Location /docs/authall>
+ PerlSetVar WhatEverSatisfy All
+ AuthType Sample::AuthCookieHandler
+ AuthName WhatEver
+ PerlAuthenHandler Sample::AuthCookieHandler->authenticate
+ PerlAuthzHandler Sample::AuthCookieHandler->authorize
+ Require user some-user
+ Require user programmer
+</Location>
+
+# These documents don't require logging in, but allow it.
+<FilesMatch "\.cgi$">
+ AuthType Sample::AuthCookieHandler
+ AuthName WhatEver
+ PerlFixupHandler Sample::AuthCookieHandler->recognize_user
+</FilesMatch>
+
+<FilesMatch "\.pl">
+ AuthType Sample::AuthCookieHandler
+ AuthName WhatEver
+ SetHandler perl-script
+ PerlHandler Apache::Registry
+ Options +ExecCGI
+</FilesMatch>
+
+# This is the action of the login.pl script above.
+<Files LOGIN>
+ AuthType Sample::AuthCookieHandler
+ AuthName WhatEver
+ SetHandler perl-script
+ PerlHandler Sample::AuthCookieHandler->login
+</Files>
+
+<Location /perl-status>
+ SetHandler perl-script
+ PerlHandler Apache::Status
+</Location>
