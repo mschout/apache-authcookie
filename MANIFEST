@@ -9,7 +9,9 @@ t/check/3
 t/check/4
 t/check/6
 t/check/7
+t/check/9
 t/eg/index.html
+t/eg/echo_cookie.pl
 t/eg/login.pl
 t/eg/logout.pl
 t/eg/protected/get_me.html
