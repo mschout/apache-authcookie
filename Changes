@@ -1,3 +1,6 @@
+Version: CURRENT
+   - POD fixes.
+
 Version: 3.06
   ** BUG FIX: AuthNameSatisfy (Any|All) directives were broken. AuthCookie
      was using AuthCookieSatisfy rather than ${auth_name}Satisfy.  If you
