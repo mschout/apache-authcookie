@@ -12,7 +12,7 @@ my $form = <<HERE;
 <TITLE>Enter Login and Password</TITLE>
 </HEAD>
 <BODY onLoad="document.forms[0].credential_0.focus();">
-<FORM METHOD="POST" ACTION="LOGIN">
+<FORM METHOD="POST" ACTION="/LOGIN">
 <TABLE WIDTH=60% ALIGN=CENTER VALIGN=CENTER>
 <TR><TD ALIGN=CENTER>
 <H1>This is a secure document</H1>
