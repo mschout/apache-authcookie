@@ -3,6 +3,9 @@ Version: 3.06
      apache prefers Location in headers_out, even if the status code is not
      200.
    - Apache::unescape_url() -> Apache::URI::unescape_url()
+   - check for mod_perl 1.9913:  Frederick Moyer <fred@redhotpenguin.com>
+   - Remove set status in login.pl which caused malformed custom error
+     document (Frederick Moyer)
 
 Version: 3.05
    - Fix POD documentation bug (thanks Steve van der Burg)
