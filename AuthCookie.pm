@@ -4,8 +4,185 @@ use mod_perl qw(1.07 StackedHandlers MethodHandlers Authen Authz);
 use Apache::Constants qw(:common M_GET M_POST AUTH_REQUIRED REDIRECT);
 use vars qw($VERSION);
 
-$VERSION = substr(q$Revision: 1.1 $, 10);
- 
+# $Id: AuthCookie.pm,v 1.2 2000-01-27 22:07:13 ken Exp $
+$VERSION = 2.0;
+
+sub recognize_user ($$) {
+  my ($self, $r) = @_;
+  my $debug = $r->dir_config("AuthCookieDebug") || 0;
+  my ($auth_type, $auth_name) = ($r->auth_type, $r->auth_name);
+  return unless $auth_type && $auth_name;
+  return unless $r->header_in('Cookie');
+
+  my ($cookie) = $r->header_in('Cookie') =~ /${auth_type}_${auth_name}=([^;]+)/;
+  $r->log_error("cookie ${auth_type}_${auth_name} is $cookie") if $debug >= 2;
+  if (my ($user) = $auth_type->authen_ses_key($r, $cookie)) {
+    $r->log_error("user is $user") if $debug >= 2;
+    $r->connection->user($user);
+  }
+}
+
+
+sub login ($$) {
+  my ($self, $r) = @_;
+  my $debug = $r->dir_config("AuthCookieDebug") || 0;
+
+  my ($auth_type, $auth_name) = ($r->auth_type, $r->auth_name);
+  my %args = $r->args;
+  unless (exists $args{'destination'}) {
+    $r->log_error("No key 'destination' found in posted data");
+    return SERVER_ERROR;
+  }
+  
+  # Get the credentials from the data posted by the client
+  my @credentials;
+  while (exists $args{"credential_" . ($#credentials + 1)}) {
+    $r->log_error("credential_" . ($#credentials + 1) . " " .
+		  $args{"credential_" . ($#credentials + 1)}) if ($debug >= 2);
+    push(@credentials, $args{"credential_" . ($#credentials + 1)});
+  }
+  
+  # Exchange the credentials for a session key.
+  my $ses_key = $self->authen_cred($r, @credentials);
+  $r->log_error("ses_key " . $ses_key) if ($debug >= 2);
+
+  # Send the Set-Cookie header.
+  my $cookie_path = $r->dir_config($auth_name . "Path");
+  $r->err_header_out("Set-Cookie" => "${auth_type}_${auth_name}=$ses_key; path=$cookie_path");
+
+  $r->no_cache(1);
+  $r->err_header_out("Pragma" => "no-cache");
+  $r->header_out("Location" => $args{'destination'});
+  return REDIRECT;
+}
+
+sub identify ($$) {
+  my ($auth_type, $r) = @_;
+  my ($ses_key_cookie, $authen_script, $auth_user, $ses_key);
+  my $debug = $r->dir_config("AuthCookieDebug") || 0;
+  
+  $r->log_error("auth_type " . $auth_type) if ($debug >= 3);
+  return OK unless $r->is_initial_req; # Only authenticate the first internal request
+  
+  if ($r->auth_type ne $auth_type) {
+    # This location requires authentication because we are being called,
+    # but we don't handle this AuthType.
+    $r->log_error($auth_type . "::Auth:authen auth type is " .
+		  $r->auth_type) if ($debug >= 3);
+    return DECLINED;
+  }
+
+  # Ok, the AuthType is $auth_type which we handle, what's the authentication
+  # realm's name?
+  my $auth_name = $r->auth_name;
+  $r->log_error("auth_name " . $auth_name) if $debug >= 2;
+  unless ($auth_name) {
+    $r->log_reason("AuthName not set, AuthType=$auth_type", $r->uri);
+    return SERVER_ERROR;
+  }
+
+  # There should also be a PerlSetVar directive that give us the path
+  # to set in Set-Cookie header for this realm.
+  my $cookie_path = $r->dir_config($auth_name . "Path");
+  unless ($cookie_path) {
+    $r->log_reason("Cookie path ($auth_name\Path) not set, AuthType=$auth_type", $r->uri);
+    return SERVER_ERROR;
+  }
+
+
+  # Get the Cookie header. If there is a session key for this realm, strip
+  # off everything but the value of the cookie.
+  my ($ses_key_cookie) = ($r->header_in("Cookie") || "") =~ /$auth_type\_$auth_name=([^;]+)/;
+  $ses_key_cookie = "" unless defined($ses_key_cookie);
+
+  $r->log_error("ses_key_cookie " . $ses_key_cookie) if ($debug >= 1);
+  $r->log_error("cookie_path " . $cookie_path) if ($debug >= 2);
+  $r->log_error("uri " . $r->uri) if ($debug >= 2);
+
+  if ($ses_key_cookie) {
+    if ($auth_user = $auth_type->authen_ses_key($r, $ses_key_cookie)) {
+      # We have a valid session key, so we return with an OK value.
+      # Tell the rest of Apache what the authentication method and
+      # user is.
+
+      $r->no_cache(1);
+      $r->err_header_out("Pragma", "no-cache");
+      $r->connection->auth_type($auth_type);
+      $r->connection->user($auth_user);
+      $r->log_error("user authenticated as $auth_user")	if $debug >= 1;
+      return OK;
+    } else {
+      # There was a session key set, but it's invalid for some reason. So,
+      # remove it from the client now so when the credential data is posted
+      # we act just like it's a new session starting.
+      
+      $r->err_header_out("Set-Cookie" => 
+			 "$auth_type\_$auth_name=; path=$cookie_path; expires=Mon, 21-May-1971 00:00:00 GMT");
+      $r->log_error("set_cookie " . $r->err_header_out("Set-Cookie"))
+	if $debug >= 2;
+    }
+  }
+
+  # They aren't authenticated, and they tried to get a protected
+  # document. Send them the authen form.  There should be a
+  # PerlSetVar directive that give us the name and location of the
+  # script to execute for the authen page.
+  
+  unless ($authen_script = $r->dir_config($auth_name . "LoginScript")) {
+    $r->log_reason($auth_type . 
+		   "::Auth:authen authentication script not set for auth realm " .
+		   $auth_name, $r->uri);
+    return SERVER_ERROR;
+  }
+  $r->custom_response(AUTH_REQUIRED, $authen_script);
+  
+  return AUTH_REQUIRED;
+}
+
+sub authorize ($$) {
+  my ($auth_type, $r) = @_;
+  my $debug = $r->dir_config("AuthCookieDebug") || 0;
+  
+  return OK unless $r->is_initial_req; #only the first internal request
+  
+  if ($r->auth_type ne $auth_type) {
+    $r->log_error($auth_type . "::Auth:authz auth type is " .
+		  $r->auth_type) if ($debug >= 3);
+    return DECLINED;
+  }
+  
+  my $reqs_arr = $r->requires or return DECLINED;
+  
+  my $user = $r->connection->user;
+  unless ($user) {
+    # user is either undef or =0 which means the authentication failed
+    $r->log_reason("No user authenticated", $r->uri);
+    return FORBIDDEN;
+  }
+  
+  my ($forbidden);
+  foreach my $req (@$reqs_arr) {
+    my ($requirement, $args) = split /\s+/, $req->{requirement}, 2;
+    $args = '' unless defined $args;
+    $r->log_error("requirement := $requirement, $args") if $debug >= 2;
+    
+    next if $requirement eq 'valid-user';
+    next if $requirement eq 'user' and $args =~ m/\b$user\b/;
+
+    # Call a custom method
+    my $ret_val = $auth_type->$requirement($r, $args);
+    $r->log_error("$auth_type->$requirement returned $ret_val") if $debug >= 3;
+    next if $ret_val == OK;
+
+    # Nothing succeeded, deny access to this user.
+    $forbidden = 1;
+    last;
+  }
+
+  return $forbidden ? FORBIDDEN : OK;
+}
+
+
 sub authen ($$) {
     my $that = shift;
     my $r = shift;
