@@ -8,7 +8,7 @@ use mod_perl qw(1.07 StackedHandlers MethodHandlers Authen Authz);
 use Apache::Constants qw(:common M_GET M_POST FORBIDDEN REDIRECT);
 use vars qw($VERSION);
 
-# $Id: AuthCookie.pm,v 2.15 2001-06-01 15:18:10 mschout Exp $
+# $Id: AuthCookie.pm,v 2.16 2001-06-01 15:50:27 mschout Exp $
 $VERSION = '3.00';
 
 sub recognize_user ($$) {
@@ -318,7 +318,7 @@ MethodHandlers, Authen, and Authz compiled in.
  # Usually documents are uncached - turn off here
  PerlSetVar WhatEverCache 1
 
- # Use this to make your cookies persistent (+1 hour here)
+ # Use this to make your cookies persistent (+2 hours here)
  PerlSetVar WhatEverExpires +2h
 
  # These documents require user to be logged in.
@@ -744,7 +744,7 @@ implement anything, though.
 
 =head1 CVS REVISION
 
-$Id: AuthCookie.pm,v 2.15 2001-06-01 15:18:10 mschout Exp $
+$Id: AuthCookie.pm,v 2.16 2001-06-01 15:50:27 mschout Exp $
 
 =head1 AUTHOR
 
