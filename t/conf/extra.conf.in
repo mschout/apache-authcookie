@@ -1,3 +1,7 @@
+<IfDefine MODPERL2>
+  PerlSwitches -I@ServerRoot@/lib
+</IfDefine>
+
 PerlRequire @ServerRoot@/startup.pl
 PerlModule Sample::AuthCookieHandler
 
