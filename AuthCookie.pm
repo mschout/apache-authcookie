@@ -9,7 +9,7 @@ use Apache::AuthCookie::Util;
 use Apache::Util qw(escape_uri);
 use vars qw($VERSION);
 
-# $Id: AuthCookie.pm,v 2.39 2002-09-25 16:44:31 mschout Exp $
+# $Id: AuthCookie.pm,v 2.40 2003-01-08 16:11:10 mschout Exp $
 $VERSION = '3.04';
 
 sub recognize_user ($$) {
@@ -633,7 +633,7 @@ handled for you.  You can implement custom directives, such as
 C<require species hamster>, by defining a method called C<species()>
 in your subclass, which will then be called.  The method will be
 called as C<$r-E<gt>species($r, $args)>, where C<$args> is everything
-on your C<require> line after the word C<hamster>.  The method should
+on your C<require> line after the word C<species>.  The method should
 return OK on success and FORBIDDEN on failure.
 
 Currently users must satisfy ALL of the C<require> directives.  I have
@@ -913,7 +913,7 @@ implement anything, though.
 
 =head1 CVS REVISION
 
-$Id: AuthCookie.pm,v 2.39 2002-09-25 16:44:31 mschout Exp $
+$Id: AuthCookie.pm,v 2.40 2003-01-08 16:11:10 mschout Exp $
 
 =head1 AUTHOR
 

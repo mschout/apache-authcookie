@@ -1,3 +1,6 @@
+Version: CURRENT
+   - fix POD errors in authorize() documentation.
+
 Version: 3.04
    - add _convert_to_get() to login_form(), and make POST -> GET conversion
      skip credentials and destination data so only extra data is copied. This 
