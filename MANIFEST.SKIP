@@ -7,3 +7,4 @@ ssi\.t$
 CVS/
 error_log
 t/httpd.loc
+README
