@@ -15,6 +15,7 @@ t/check/12
 t/check/13
 t/check/16
 t/check/17
+t/check/18
 t/check/3
 t/check/4
 t/check/6
@@ -27,6 +28,7 @@ t/htdocs/docs/logout.pl
 t/htdocs/docs/protected/get_me.html
 t/htdocs/docs/authall/get_me.html
 t/htdocs/docs/authany/get_me.html
+t/htdocs/docs/cookiename/get_me.html
 t/lib/Sample/AuthCookieHandler.pm.mp1
 t/lib/Sample/AuthCookieHandler.pm.mp2
 t/real.t
