@@ -18,8 +18,8 @@ use Data::Dumper; # XXX for debugging
 use Apache::Const qw(:common M_GET HTTP_FORBIDDEN HTTP_MOVED_TEMPORARILY);
 use vars qw($VERSION);
 
-# $Id: AuthCookie.pm.mp2,v 1.3 2003-08-01 22:48:17 mschout Exp $
-$VERSION = '3.04';
+# $Id: AuthCookie.pm.mp2,v 1.4 2003-08-01 23:11:04 mschout Exp $
+$VERSION = '3.05pre';
 
 sub recognize_user {
     my ($self, $r) = @_;
@@ -999,7 +999,7 @@ implement anything, though.
 
 =head1 CVS REVISION
 
-$Id: AuthCookie.pm.mp2,v 1.3 2003-08-01 22:48:17 mschout Exp $
+$Id: AuthCookie.pm.mp2,v 1.4 2003-08-01 23:11:04 mschout Exp $
 
 =head1 AUTHOR
 
