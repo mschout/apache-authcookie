@@ -32,6 +32,28 @@ PerlSetVar AuthCookieDebug 3
  Require user programmer
 </Location>
 
+# must satisfy any requirement
+<Location /docs/authany>
+ PerlSetVar WhatEverSatisfy Any
+ AuthType Sample::AuthCookieHandler
+ AuthName WhatEver
+ PerlAuthenHandler Sample::AuthCookieHandler->authenticate
+ PerlAuthzHandler Sample::AuthCookieHandler->authorize
+ Require user some-user
+ Require user programmer
+</Location>
+
+# must satisfy all requirements
+<Location /docs/authall>
+ PerlSetVar WhatEverSatisfy All
+ AuthType Sample::AuthCookieHandler
+ AuthName WhatEver
+ PerlAuthenHandler Sample::AuthCookieHandler->authenticate
+ PerlAuthzHandler Sample::AuthCookieHandler->authorize
+ Require user some-user
+ Require user programmer
+</Location>
+
 # These documents don't require logging in, but allow it.
 <FilesMatch "\.cgi$">
  AuthType Sample::AuthCookieHandler
