@@ -5,11 +5,11 @@ use strict;
 use Carp;
 use mod_perl qw(1.07 StackedHandlers MethodHandlers Authen Authz);
 use Apache::Constants qw(:common M_GET M_POST FORBIDDEN REDIRECT);
-use CGI::Util ();
+use Apache::AuthCookie::Util;
 use Apache::Util qw(escape_uri);
 use vars qw($VERSION);
 
-# $Id: AuthCookie.pm,v 2.20 2002-01-30 04:15:37 mschout Exp $
+# $Id: AuthCookie.pm,v 2.21 2002-01-30 04:28:31 mschout Exp $
 $VERSION = '3.00';
 
 sub recognize_user ($$) {
@@ -290,7 +290,7 @@ sub cookie_string {
   my $auth_name = $r->auth_name;
   
   if (my $expires = $p{expires} || $r->dir_config("${auth_name}Expires")) {
-    $expires = CGI::Util::expires($expires);
+    $expires = Apache::AuthCookie::Util::expires($expires);
     $string .= "; expires=$expires";
   }
 
@@ -790,7 +790,7 @@ implement anything, though.
 
 =head1 CVS REVISION
 
-$Id: AuthCookie.pm,v 2.20 2002-01-30 04:15:37 mschout Exp $
+$Id: AuthCookie.pm,v 2.21 2002-01-30 04:28:31 mschout Exp $
 
 =head1 AUTHOR
 
