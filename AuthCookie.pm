@@ -6,10 +6,10 @@ use Carp;
 use mod_perl qw(1.07 StackedHandlers MethodHandlers Authen Authz);
 use Apache::Constants qw(:common M_GET M_POST FORBIDDEN REDIRECT);
 use CGI::Util ();
-use URI::Escape qw(uri_escape);
+use Apache::Util qw(escape_uri);
 use vars qw($VERSION);
 
-# $Id: AuthCookie.pm,v 2.19 2002-01-30 04:07:59 mschout Exp $
+# $Id: AuthCookie.pm,v 2.20 2002-01-30 04:15:37 mschout Exp $
 $VERSION = '3.00';
 
 sub recognize_user ($$) {
@@ -43,7 +43,7 @@ sub _convert_to_get {
     my %args = $r->content;
     my @pairs =();
     while (my ($name, $value) = each %args) {
-      push @pairs, uri_escape($name) . '=' . uri_escape($value);
+      push @pairs, escape_uri($name) . '=' . escape_uri($value);
     }
     $r->args(join '&', @pairs) if scalar(@pairs) > 0;
 
@@ -790,7 +790,7 @@ implement anything, though.
 
 =head1 CVS REVISION
 
-$Id: AuthCookie.pm,v 2.19 2002-01-30 04:07:59 mschout Exp $
+$Id: AuthCookie.pm,v 2.20 2002-01-30 04:15:37 mschout Exp $
 
 =head1 AUTHOR
 
