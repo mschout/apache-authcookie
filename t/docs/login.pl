@@ -5,6 +5,13 @@ my $r = Apache->request;
 
 $r->status(200);
 my $uri = $r->prev->uri;
+
+# if there are args, append that to the uri
+my $args = $r->prev->args;
+if ($args) {
+    $uri .= "?$args";
+}
+
 my $reason = $r->prev->subprocess_env("AuthCookieReason");
 
 my $form = <<HERE;
