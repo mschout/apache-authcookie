@@ -18,7 +18,7 @@ use Data::Dumper; # XXX for debugging
 use Apache::Const qw(:common M_GET HTTP_FORBIDDEN HTTP_MOVED_TEMPORARILY);
 use vars qw($VERSION);
 
-# $Id: AuthCookie.pm.mp2,v 1.12 2004-05-31 22:56:48 mschout Exp $
+# $Id: AuthCookie.pm.mp2,v 1.13 2004-08-19 02:26:31 mschout Exp $
 $VERSION = '3.06';
 
 sub recognize_user {
@@ -209,7 +209,9 @@ sub login {
 
     $self->handle_cache($r);
 
-    $r->server->log_error("redirect to $args{destination}");
+    if ($debug >= 2) {
+        $r->server->log_error("redirect to $args{destination}");
+    }
 
     $r->headers_out->set("Location" => $args{'destination'});
 
@@ -238,7 +240,9 @@ sub authenticate {
         return OK;
     }
 
-    $r->server->log_error("r=$r authtype=". $r->auth_type);
+    if ($debug >= 3) {
+        $r->server->log_error("r=$r authtype=". $r->auth_type);
+    }
 
     if ($r->auth_type ne $auth_type) {
         # This location requires authentication because we are being called,
@@ -1027,7 +1031,7 @@ implement anything, though.
 
 =head1 CVS REVISION
 
-$Id: AuthCookie.pm.mp2,v 1.12 2004-05-31 22:56:48 mschout Exp $
+$Id: AuthCookie.pm.mp2,v 1.13 2004-08-19 02:26:31 mschout Exp $
 
 =head1 AUTHOR
 

@@ -9,6 +9,7 @@ Version: 3.06
    - Add support for ${auth_name}CookieName to change the name of the cookie
      used for each auth name.  Default remains ${auth_name}_${auth_type} if
      not set.
+   - make some debug log_error() calls conditional on $debug
 
 Version: 3.05
    - Fix POD documentation bug (thanks Steve van der Burg)
