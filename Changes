@@ -1,4 +1,4 @@
-Version: CURRENT
+Version: 3.02
    - Add support for AuthNameSatisfy directive (can be Any/All, default: Any)
    - Move cookie path setting into get_cookie_path() so that users can
      overload this function if they desire (Thanks Raj Chandran)
