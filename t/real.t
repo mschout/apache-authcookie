@@ -78,6 +78,18 @@ my %requests = (
            method  => 'GET',
            headers => {Cookie => 'Sample::AuthCookieHandler_WhatEver=some-user:mypassword'}
           },
+
+    # should get the login form (unauthenticated)
+    # check that destination is right.
+    16 => {uri     => '/docs/protected/get_me.html',
+           method  => 'POST',
+           content => 'foo=bar'
+          },
+
+    # same as #16, but in GET mode.  Result should be the same
+    17 => {uri     => '/docs/protected/get_me.html?foo=bar',
+           method  => 'GET'
+          },
 );
 
 my %special_tests = (
