@@ -59,13 +59,20 @@ my %requests =
 	  headers=>{Cookie=>'Sample::AuthCookieHandler_WhatEver=programmer:Hero;'},
 	 },
 
+   # Should fail
+   10 => {uri=>'protected/get_me.html',
+	  method=>'GET',
+	  headers=>{Cookie=>'Sample::AuthCookieHandler_WhatEver=some-user:duck;'},
+	 },
+
   );
 
 my %special_tests = 
   (
-   5 => sub {print "code: ", $_[0]->code(), "\n"; $_[0]->code() == 302},
-   8 => sub {$_[0]->header('Set-Cookie') 
-	       eq 'Sample::AuthCookieHandler_WhatEver=; path=/; expires=Mon, 21-May-1971 00:00:00 GMT'},
+   5  => sub {print "code: ", $_[0]->code(), "\n"; $_[0]->code() == 302},
+   8  => sub {$_[0]->header('Set-Cookie') 
+		eq 'Sample::AuthCookieHandler_WhatEver=; path=/; expires=Mon, 21-May-1971 00:00:00 GMT'},
+   10 => sub {print "code: ", $_[0]->code(), "\n"; $_[0]->code() == 403},
   );
 
 print "1.." . (2 + keys %requests) . "\n";
@@ -221,7 +228,7 @@ PerlSetVar AuthCookieDebug 3
  AuthName WhatEver
  PerlAuthenHandler Sample::AuthCookieHandler->authenticate
  PerlAuthzHandler Sample::AuthCookieHandler->authorize
- require valid-user
+ require user programmer
 </Location>
 
 # These documents don't require logging in, but allow it.
