@@ -9,7 +9,7 @@ use Apache::AuthCookie::Util;
 use Apache::Util qw(escape_uri);
 use vars qw($VERSION);
 
-# $Id: AuthCookie.pm,v 2.32 2002-06-21 04:13:19 mschout Exp $
+# $Id: AuthCookie.pm,v 2.33 2002-08-30 23:28:50 mschout Exp $
 $VERSION = '3.02';
 
 sub recognize_user ($$) {
@@ -548,7 +548,7 @@ client.
   | Set-Cookie header with this|  u |u     /     \   | invalid cookie|
   | session key. Client then   |  r |e    /       \  +---------------+
   | returns session key with   |  n |    /  pass   \               ^    
-  | sucsesive requests         |    |   /  session  \              |    
+  | successive requests        |    |   /  session  \              |
   +----------------------------+    |  /   key to    \    return   |
                |                    +-| authen_ses_key|------------+
                V                       \             /     False
@@ -675,7 +675,7 @@ again').
   example 'custom_errors'
 
   sub custom_errors {
-    my ($r,$msg,$CODE) = @_;
+    my ($self,$r,$CODE,$msg) = @_;
     # return custom message else use the server's standard message
     $r->custom_response($CODE, $msg) if $msg;
     return($CODE);
@@ -883,7 +883,7 @@ implement anything, though.
 
 =head1 CVS REVISION
 
-$Id: AuthCookie.pm,v 2.32 2002-06-21 04:13:19 mschout Exp $
+$Id: AuthCookie.pm,v 2.33 2002-08-30 23:28:50 mschout Exp $
 
 =head1 AUTHOR
 

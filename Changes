@@ -1,3 +1,6 @@
+Version: CURRENT
+   - various POD typos fixed (Eric Cholet)
+
 Version: 3.02
    - Add support for AuthNameSatisfy directive (can be Any/All, default: Any)
    - Move cookie path setting into get_cookie_path() so that users can
