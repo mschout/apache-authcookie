@@ -4,12 +4,12 @@ use strict;
 
 use Carp;
 use mod_perl qw(1.07 StackedHandlers MethodHandlers Authen Authz);
-use Apache::Constants qw(:common M_GET M_POST FORBIDDEN REDIRECT);
+use Apache::Constants qw(:common FORBIDDEN REDIRECT);
 use Apache::AuthCookie::Util;
 use Apache::Util qw(escape_uri);
 use vars qw($VERSION);
 
-# $Id: AuthCookie.pm,v 2.22 2002-01-30 16:30:37 mschout Exp $
+# $Id: AuthCookie.pm,v 2.23 2002-01-30 16:41:02 mschout Exp $
 $VERSION = '3.00';
 
 sub recognize_user ($$) {
@@ -792,7 +792,7 @@ implement anything, though.
 
 =head1 CVS REVISION
 
-$Id: AuthCookie.pm,v 2.22 2002-01-30 16:30:37 mschout Exp $
+$Id: AuthCookie.pm,v 2.23 2002-01-30 16:41:02 mschout Exp $
 
 =head1 AUTHOR
 
