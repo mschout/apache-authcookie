@@ -4,8 +4,8 @@ use mod_perl qw(1.07 StackedHandlers MethodHandlers Authen Authz);
 use Apache::Constants qw(:common M_GET M_POST AUTH_REQUIRED REDIRECT);
 use vars qw($VERSION);
 
-# $Id: AuthCookie.pm,v 2.1 2000-02-11 04:46:59 ken Exp $
-$VERSION = sprintf '%d.%03d', q$Revision: 2.1 $ =~ /: (\d+).(\d+)/;
+# $Id: AuthCookie.pm,v 2.2 2000-03-14 17:46:42 ken Exp $
+$VERSION = sprintf '%d.%03d', q$Revision: 2.2 $ =~ /: (\d+).(\d+)/;
 
 sub recognize_user ($$) {
   my ($self, $r) = @_;
@@ -47,8 +47,7 @@ sub login ($$) {
   $r->log_error("ses_key " . $ses_key) if ($debug >= 2);
 
   # Send the Set-Cookie header.
-  my $cookie_path = $r->dir_config($auth_name . "Path");
-  $r->err_header_out("Set-Cookie" => "${auth_type}_${auth_name}=$ses_key; path=$cookie_path");
+  $r->err_header_out("Set-Cookie" => $self->_cookie_string($r, "$auth_type\_$auth_name", $ses_key));
 
   if ($r->method eq 'POST') {
     $r->method('GET');
@@ -68,9 +67,8 @@ sub logout($$) {
   my ($auth_type, $auth_name) = ($r->auth_type, $r->auth_name);
   
   # Send the Set-Cookie header to expire the auth cookie.
-  my $path = $r->dir_config("${auth_name}Path") || '/';
-  $r->err_header_out("Set-Cookie" => 
-		     "${auth_type}_$auth_name=; path=$path; expires=Mon, 21-May-1971 00:00:00 GMT");
+  my $str = $self->_cookie_string($r, "$auth_type\_$auth_name", '');
+  $r->err_header_out("Set-Cookie" => "$str; expires=Mon, 21-May-1971 00:00:00 GMT");
   $r->log_error("set_cookie " . $r->err_header_out("Set-Cookie")) if $debug >= 2;
   $r->no_cache(1);
   $r->err_header_out("Pragma" => "no-cache");
@@ -109,22 +107,12 @@ sub authenticate ($$) {
     return SERVER_ERROR;
   }
 
-  # There should also be a PerlSetVar directive that give us the path
-  # to set in Set-Cookie header for this realm.
-  my $cookie_path = $r->dir_config($auth_name . "Path");
-  unless ($cookie_path) {
-    $r->log_reason("Cookie path ($auth_name\Path) not set, AuthType=$auth_type", $r->uri);
-    return SERVER_ERROR;
-  }
-
-
   # Get the Cookie header. If there is a session key for this realm, strip
   # off everything but the value of the cookie.
   my ($ses_key_cookie) = ($r->header_in("Cookie") || "") =~ /$auth_type\_$auth_name=([^;]+)/;
   $ses_key_cookie = "" unless defined($ses_key_cookie);
 
   $r->log_error("ses_key_cookie " . $ses_key_cookie) if ($debug >= 1);
-  $r->log_error("cookie_path " . $cookie_path) if ($debug >= 2);
   $r->log_error("uri " . $r->uri) if ($debug >= 2);
 
   if ($ses_key_cookie) {
@@ -144,8 +132,8 @@ sub authenticate ($$) {
       # remove it from the client now so when the credential data is posted
       # we act just like it's a new session starting.
       
-      $r->err_header_out("Set-Cookie" => 
-			 "$auth_type\_$auth_name=; path=$cookie_path; expires=Mon, 21-May-1971 00:00:00 GMT");
+      my $str = $auth_type->_cookie_string($r, "$auth_type\_$auth_name", '');
+      $r->err_header_out("Set-Cookie" => "$str; expires=Mon, 21-May-1971 00:00:00 GMT");
       $r->log_error("set_cookie " . $r->err_header_out("Set-Cookie"))
 	if $debug >= 2;
     }
@@ -165,6 +153,25 @@ sub authenticate ($$) {
   $r->custom_response(AUTH_REQUIRED, $authen_script);
   
   return AUTH_REQUIRED;
+}
+
+sub _cookie_string {
+  shift;
+  my ($r, $key, $val) = @_;
+
+  my $string = "$key=$val";
+
+  my $auth_name = $r->auth_name;
+  if (my $path = $r->dir_config("${auth_name}Path")) {
+    $string .= "; path=$path";
+  }
+  #$r->log_error("Attribute ${auth_name}Path not set") unless $path;
+
+  if (my $domain = $r->dir_config("${auth_name}Domain")) {
+    $string .= "; domain=$domain";
+  }
+
+  return $string;
 }
 
 sub authorize ($$) {
