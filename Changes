@@ -1,9 +1,23 @@
 Revision history for Perl extension Apache::AuthCookie.
 
-2.0
+2.001 date: 2000/02/11 04:46:59;
+ - The login forms may now use the POST method instead of the GET method.
+   This is a big deal, because with GET the user's credentials get logged
+   to access logs, they remain in the user's browser history, and so on.
+   Thanks to cholet@logilune.com (Eric Cholet) for the patch and prodding.
+
+ - There is now a proper test suite, which will fire up an httpd and make
+   requests of it.  The test code is adapted from Eric's old example
+   (eg/) suite.
+
+ - I've added a logout() method to help unset cookies.  The example
+   logout.pl now uses logout().  Thanks to Aaron Ross
+   (ross@mathforum.com).
+
+2.000 date: 2000/02/02 13:18:23;
   - Now owned by Ken Williams (ken@forum.swarthmore.edu)
 
-  - Created indentify() and authorize() methods to replace authen()
+  - Created authenticate() and authorize() methods to replace authen()
     and authz().  authen() and authz() are now deprecated and will 
     disappear in a later version.
 
