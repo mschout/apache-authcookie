@@ -9,8 +9,8 @@ use Apache::AuthCookie::Util;
 use Apache::Util qw(escape_uri);
 use vars qw($VERSION);
 
-# $Id: AuthCookie.pm,v 2.38 2002-09-24 03:18:59 mschout Exp $
-$VERSION = '3.03';
+# $Id: AuthCookie.pm,v 2.39 2002-09-25 16:44:31 mschout Exp $
+$VERSION = '3.04';
 
 sub recognize_user ($$) {
   my ($self, $r) = @_;
@@ -46,6 +46,10 @@ sub _convert_to_get {
 
     my @pairs =();
     while (my ($name, $value) = each %$args) {
+      # we dont want to copy login data, only extra data
+      next if $name eq 'destination'
+           or $name =~ /^credential_\d+$/;
+
       $value = '' unless defined $value;
       push @pairs, escape_uri($name) . '=' . escape_uri($value);
     }
@@ -207,8 +211,14 @@ sub authenticate ($$) {
 }
 
 sub login_form {  
+  my $self = shift;
+
   my $r = Apache->request or die "no request";
   my $auth_name = $r->auth_name;
+
+  my %args = $r->method eq 'POST' ? $r->content : $r->args;
+
+  $self->_convert_to_get($r, \%args) if $r->method eq 'POST';
 
   # There should be a PerlSetVar directive that gives us the URI of
   # the script to execute for the login form.
@@ -903,7 +913,7 @@ implement anything, though.
 
 =head1 CVS REVISION
 
-$Id: AuthCookie.pm,v 2.38 2002-09-24 03:18:59 mschout Exp $
+$Id: AuthCookie.pm,v 2.39 2002-09-25 16:44:31 mschout Exp $
 
 =head1 AUTHOR
 
