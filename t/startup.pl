@@ -1,6 +1,3 @@
-use lib qw(lib ../blib/lib);
-
-use Apache::AuthCookie;
-use Sample::AuthCookieHandler;
+use lib qw(../blib/lib lib);
 
 1;
