@@ -16,10 +16,7 @@ WriteMakefile(
     },
     'clean'        => {
         FILES => "@CLEAN_FILES"
-    },
-    'dist'         => {PREOP=>('rm -f README; '.
-                              'pod2text -80 < AuthCookie.pm > README; '.
-                              'cp -f README $(DISTNAME)-$(VERSION);')}
+    }
 );
 
 # inspired by Apache::Peek 1.01
