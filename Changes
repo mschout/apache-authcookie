@@ -1,5 +1,7 @@
 Version: CURRENT
-   - put cookie removeal code in remove_cookie() method, put cache handling
+   - login(): set Location header with err_headers_out rather than headers_out
+     (Casey West)
+   - put cookie removal code in remove_cookie() method, put cache handling
      code in handle_cache() (Mark A. Hershberger)
    - reorganized tree to support multiple mod_perl versions.
    - rewrote tests to use Apache::Test framework from CPAN.
