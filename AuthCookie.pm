@@ -4,8 +4,8 @@ use mod_perl qw(1.07 StackedHandlers MethodHandlers Authen Authz);
 use Apache::Constants qw(:common M_GET M_POST FORBIDDEN REDIRECT);
 use vars qw($VERSION);
 
-# $Id: AuthCookie.pm,v 2.4 2000-03-15 20:53:20 ken Exp $
-$VERSION = sprintf '%d.%03d', q$Revision: 2.4 $ =~ /: (\d+).(\d+)/;
+# $Id: AuthCookie.pm,v 2.5 2000-03-24 15:20:30 ken Exp $
+$VERSION = sprintf '%d.%03d', q$Revision: 2.5 $ =~ /: (\d+).(\d+)/;
 
 sub recognize_user ($$) {
   my ($self, $r) = @_;
@@ -217,234 +217,10 @@ sub authorize ($$) {
   return $forbidden ? FORBIDDEN : OK;
 }
 
-
-sub authen ($$) {
-    my $that = shift;
-    my $r = shift;
-    my($ses_key_cookie, $cookie_path, $authen_script);
-    my($auth_user, $auth_name, $auth_type, $ses_key);
-
-    my $debug = $r->dir_config("AuthCookieDebug") || 0;
-
-    $r->log_error("that " . $that) if ($debug >= 3);
-    #only the first internal request
-    return OK unless $r->is_initial_req;
-
-    ($auth_type) = ($that =~ /^([^:]+)/);
-    $r->log_error("auth_type " . $auth_type) if ($debug >= 2);
-
-    if ($r->auth_type ne $auth_type)
-    {
-	# This location requires authentication because we are being called,
-	# but we don't handle this AuthType.
-	$r->log_error($auth_type . "::Auth:authen auth type is " .
-	$r->auth_type) if ($debug >= 3);
-	return DECLINED;
-    }
-
-    # Ok, the AuthType is $auth_type which we handle, what's the authentication
-    # realm's name?
-    $auth_name = $r->auth_name;
-    $r->log_error("auth_name " . $auth_name) if ($debug >= 2);
-    if (!($auth_name))
-    {
-	$r->log_reason($auth_type . "::Auth:authen need AuthName ", $r->uri);
-	return SERVER_ERROR;
-    }
-
-    # There should also be a PerlSetVar directive that give us the path
-    # to set in Set-Cookie header for this realm.
-    $cookie_path = $r->dir_config($auth_name . "Path");
-    if (!($cookie_path)) {
-	$r->log_reason($auth_type . "::Auth:authen path not set for " .
-	    "auth realm " .  $auth_name, $r->uri);
-	return SERVER_ERROR;
-    }
-
-
-    # Get the Cookie header. If there is a session key for this realm, strip
-    # off everything but the value of the cookie.
-    ($ses_key_cookie) = ( ($r->header_in("Cookie") || "") =~ 
-	/${auth_type}_${auth_name}=([^;]+)/);
-    $ses_key_cookie = "" unless defined($ses_key_cookie);
-    $ses_key = $ses_key_cookie;
-
-    $r->log_error("ses_key_cookie " . $ses_key_cookie) if ($debug >= 1);
-    $r->log_error("cookie_path " . $cookie_path) if ($debug >= 2);
-    $r->log_error("uri " . $r->uri) if ($debug >= 2);
-
-    if (! $ses_key_cookie && defined($r->args))
-    {
-	# No session key set, but the method is post. We should be
-	# coming back with the users credentials.
-
-	# If not, we are eating up the posted content so the
-	# user will be SOL
-	my %args = $r->args;
-	if ($args{'AuthName'} ne $auth_name ||
-	    $args{'AuthType'} ne $r->auth_type)
-	{
-	    $r->log_reason($auth_type . "::Auth:authen credentials are " .
-		"not for this realm", $r->uri);
-	    return SERVER_ERROR;
-	}
-
-	# Get the credentials from the data posted by the client
-	my @credentials;
-	while ($args{"credential_" . ($#credentials + 1)})
-	{
-	    $r->log_error("credential_" . ($#credentials + 1) . " " .
-	    $args{"credential_" . ($#credentials + 1)}) if ($debug >= 2);
-	    push(@credentials, $args{"credential_" . ($#credentials + 1)});
-	}
-
-	# Exchange the credentials for a session key. If they credentials
-	# fail this should return nothing, which will fall trough to call
-	# the get credentials script again
-	$ses_key = $that->authen_cred($r, @credentials);
-	$r->log_error("ses_key " . $ses_key) if ($debug >= 2);
-    }
-    elsif (! $ses_key_cookie && $r->method_number != M_GET)
-    {
-	# They aren't authenticated, but they are trying a POST or
-	# something, this is not allowed.
-	$r->log_reason($auth_type . "::Auth:authen auth header is not set " .
-	     "and method is not GET ", $r->uri);
-	return SERVER_ERROR;
-    }
-
-    if ($ses_key) {
-	# We have a session key. So, lets see if it's valid. If it is
-	# we return with an OK value. If not then we fall through to
-	# call the get credentials script.
-	if ($auth_user = $that->authen_ses_key($r, $ses_key)) {
-	    if (!($ses_key_cookie)) {
-		# They session key is valid, but it's not yet set on
-		# the client. So, send the Set-Cookie header.
-		$r->err_header_out("Set-Cookie" => $auth_type . "_" .
-		    $auth_name .  "=" . $ses_key . "; path=" .  $cookie_path);
-		$r->log_error("set_cookie " . $r->err_header_out("Set-Cookie"))
-		    if ($debug >= 2);
-
-		# Redirect the client to the same page, but without the
-		# query string in the URL. This forces the
-		# client to reload the page and keeps it
-		# from displaying the credentials in the "Location".
-		$r->no_cache(1);
-                $r->err_header_out("Pragma", "no-cache");
-                $r->header_out("Location" => $r->uri);
-                return REDIRECT;
-	    }
-	    # Tell the rest of Apache what the authentication method and
-	    # user is.
-	    $r->no_cache(1);
-	    $r->err_header_out("Pragma", "no-cache");
-	    $r->connection->auth_type($auth_type);
-	    $r->connection->user($auth_user);
-	    $r->log_error("user authenticated as " . $auth_user)
-		if ($debug >= 1);
-	    return OK;
-	}
-    }
-
-    # There was a session key set, but it's invalid for some reason. So,
-    # remove it from the client now so when the credential data is posted
-    # we act just like it's a new session starting.
-    if ($ses_key_cookie) {
-	$r->err_header_out("Set-Cookie" => $auth_type . "_" . $auth_name .
-	    "=; path=" .  $cookie_path .
-	    "; expires=Mon, 21-May-1971 00:00:00 GMT");
-	$r->log_error("set_cookie " . $r->err_header_out("Set-Cookie"))
-	    if ($debug >= 2);
-    }
-
-    # They aren't authenticated, and they tried to get a protected
-    # document. Send them the authen form.
-
-    if (defined($r->args)) {
-	# Redirect the client to the same page, but without the
-	# query string in the URL. This forces the
-	# client to reload the page and keeps it
-	# from displaying the credentials in the "Location".
-	$r->err_header_out("Pragma", "no-cache");
-	$r->header_out("Location" => $r->uri);
-	return REDIRECT;
-    } else {
-	# There should also be a PerlSetVar directive that give us the name
-	# and location of the script to execute for the authen page.
-	$authen_script = $r->dir_config($auth_name . "LoginScript")
-	    || "";
-	if (!($authen_script)) {
-	    $r->log_reason($auth_type . 
-		"::Auth:authen authentication script not set for auth realm " .
-		$auth_name, $r->uri);
-	    return SERVER_ERROR;
-	}
-	$r->custom_response(AUTH_REQUIRED, $authen_script);
-
-	return AUTH_REQUIRED;
-    }
-}
-
-sub authz ($$) {
-    my $that = shift;
-    my $r = shift;
-    my($auth_name, $auth_type);
-
-    my $debug = $r->dir_config("AuthCookieDebug") || 0;
-
-    return OK unless $r->is_initial_req; #only the first internal request
-
-    ($auth_type) = ($that =~ /^([^:]+)/);
-
-    if ($r->auth_type ne $auth_type) {
-	$r->log_error($auth_type . "::Auth:authz auth type is " .
-	    $r->auth_type) if ($debug >= 3);
-	return DECLINED;
-    }
-
-    my $reqs_arr = ($r->requires || "");
-    return OK unless $reqs_arr;
-
-    my $user = $r->connection->user;
-    if (!($user)) {
-	# user is either undef or =0 which means the authentication failed
-	$r->log_reason("No user authenticated", $r->uri);
-	return FORBIDDEN;
-    }
-
-    my($reqs, $requirement, $args, $restricted);
-    foreach $reqs (@$reqs_arr) {
-        ($requirement, $args) = split /\s+/, $reqs->{requirement}, 2;
-	$args = "" unless defined($args);
-	$r->log_error("requirement := $requirement, $args") if ($debug >= 2);
-
-	if ($requirement eq "valid-user") {
-	    return OK;
-	} elsif ($requirement eq "user") {
-	    return OK if ($args =~ m/\b$user\b/);
-	} else {
-	    my $req_method;
-	    if ($req_method = $that->can($requirement)) {
-		my $ret_val = &$req_method($that, $r, $args);
-		 $r->log_error($that . 
-		   " called requirement method " . $requirement . 
-		   " which returned " . $ret_val) if ($debug >= 3);
-		return OK if ($ret_val == OK);
-	    } else {
-		$r->log_error($that . 
-		    " tried to call undefined requirement method " .
-		    $requirement);
-	    }
-	}
-        $restricted++;
-    }
-
-    return OK unless $restricted;
-    return FORBIDDEN;
-}
-
 1;
+
+
+
 __END__
 
 =head1 NAME
@@ -469,7 +245,7 @@ C<use mod_perl qw(1.07 StackedHandlers MethodHandlers Authen Authz);>
 
  # These documents require user to be logged in.
  <Location /protected>
-  AuthType Sample
+  AuthType Sample::AuthCookieHandler
   AuthName WhatEver
   PerlAuthenHandler Sample::AuthCookieHandler->authenticate
   PerlAuthzHandler Sample::AuthCookieHandler->authorize
@@ -478,14 +254,14 @@ C<use mod_perl qw(1.07 StackedHandlers MethodHandlers Authen Authz);>
 
  # These documents don't require logging in, but allow it.
  <FilesMatch "\.ok$">
-  AuthType Sample
+  AuthType Sample::AuthCookieHandler
   AuthName WhatEver
   PerlFixupHandler Sample::AuthCookieHandler->recognize_user
  </FilesMatch>
 
  # This is the action of the login.pl script above.
  <Files LOGIN>
-  AuthType Sample
+  AuthType Sample::AuthCookieHandler
   AuthName WhatEver
   SetHandler perl-script
   PerlHandler Sample::AuthCookieHandler->login
