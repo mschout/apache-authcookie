@@ -9,7 +9,7 @@ use Apache::AuthCookie::Util;
 use Apache::Util qw(escape_uri);
 use vars qw($VERSION);
 
-# $Id: AuthCookie.pm.mp1,v 1.1 2003-05-28 05:33:12 mschout Exp $
+# $Id: AuthCookie.pm.mp1,v 1.2 2003-05-28 16:16:39 mschout Exp $
 $VERSION = '3.04';
 
 sub recognize_user ($$) {
@@ -32,6 +32,38 @@ sub recognize_user ($$) {
   }
 
   return OK;
+}
+
+sub handle_cache {
+  my $self = shift;
+
+  my $r = Apache->request;
+
+  my $auth_name = $r->auth_name;
+  return unless $auth_name;
+
+  unless ($r->dir_config("${auth_name}Cache")) {
+    $r->no_cache(1);
+    $r->err_header_out(Pragma => 'no-cache');
+  }
+}
+
+sub remove_cookie {
+  my $self = shift;
+
+  my $r = Apache->request;
+
+  my ($auth_type, $auth_name) = ($r->auth_type, $r->auth_name);
+  my $debug = $r->dir_config("AuthCookieDebug") || 0;
+
+  my $str = $self->cookie_string( request => $r,
+                                  key     => "$auth_type\_$auth_name",
+                                  value   => '',
+                                  expires => 'Mon, 21-May-1971 00:00:00 GMT' );
+
+  $r->err_headers_out->add("Set-Cookie" => "$str");
+  $r->log_error("removed_cookie " . $r->err_header_out("Set-Cooke"))
+    if $debug >= 2;
 }
 
 # convert current request to GET
@@ -103,10 +135,8 @@ sub login ($$) {
 
   $self->send_cookie($ses_key);
 
-  unless ($r->dir_config("${auth_name}Cache")) {
-    $r->no_cache(1);
-    $r->err_header_out("Pragma" => "no-cache");
-  }
+  $self->handle_cache;
+
   $r->header_out("Location" => $args{'destination'});
   return REDIRECT;
 }
@@ -117,17 +147,9 @@ sub logout($$) {
   
   my ($auth_type, $auth_name) = ($r->auth_type, $r->auth_name);
   
-  # Send the Set-Cookie header to expire the auth cookie.
-  my $str = $self->cookie_string( request => $r,
-                                  key     => "$auth_type\_$auth_name", 
-                                  value   => '',
-                                  expires => 'Mon, 21-May-1971 00:00:00 GMT' );
-  $r->err_headers_out->add("Set-Cookie" => "$str");
-  $r->log_error("set_cookie " . $r->err_header_out("Set-Cookie")) if $debug >= 2;
-  unless ($r->dir_config("${auth_name}Cache")) {
-    $r->no_cache(1);
-    $r->err_header_out("Pragma" => "no-cache");
-  }
+  $self->remove_cookie;
+
+  $self->handle_cache;
 
   #my %args = $r->args;
   #if (exists $args{'redirect'}) {
@@ -190,15 +212,7 @@ sub authenticate ($$) {
       # There was a session key set, but it's invalid for some reason. So,
       # remove it from the client now so when the credential data is posted
       # we act just like it's a new session starting.
-      
-      my $str = $auth_type->cookie_string(
-        request => $r,
-        key     => "$auth_type\_$auth_name",
-        value   => '',
-        expires => 'Mon, 21-May-1971 00:00:00 GMT'
-      );
-      $r->err_headers_out->add("Set-Cookie" => "$str");
-      $r->log_error("set_cookie " . $r->err_header_out("Set-Cookie")) if $debug >= 2;
+      $auth_type->remove_cookie;
       $r->subprocess_env('AuthCookieReason', 'bad_cookie');
     }
   } else {
@@ -913,7 +927,7 @@ implement anything, though.
 
 =head1 CVS REVISION
 
-$Id: AuthCookie.pm.mp1,v 1.1 2003-05-28 05:33:12 mschout Exp $
+$Id: AuthCookie.pm.mp1,v 1.2 2003-05-28 16:16:39 mschout Exp $
 
 =head1 AUTHOR
 
