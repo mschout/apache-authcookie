@@ -9,6 +9,7 @@ Apache::test->write_httpd_conf( %params, include => join('', <DATA>) );
 WriteMakefile(
     'NAME'         => 'Apache::AuthCookie',
     'VERSION_FROM' => 'AuthCookie.pm',
+    'PREREQ_PM'    => { 'CGI::Util' => 0 },
     'clean'        => {FILES => 't/httpd.conf t/httpd.loc t/error_log t/httpd'}
 );
 
