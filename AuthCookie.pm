@@ -3,12 +3,13 @@ package Apache::AuthCookie;
 use strict;
 
 use Carp;
-use CGI::Util ();
 use mod_perl qw(1.07 StackedHandlers MethodHandlers Authen Authz);
 use Apache::Constants qw(:common M_GET M_POST FORBIDDEN REDIRECT);
+use CGI::Util ();
+use URI::Escape qw(uri_escape);
 use vars qw($VERSION);
 
-# $Id: AuthCookie.pm,v 2.18 2001-10-25 14:11:03 mschout Exp $
+# $Id: AuthCookie.pm,v 2.19 2002-01-30 04:07:59 mschout Exp $
 $VERSION = '3.00';
 
 sub recognize_user ($$) {
@@ -29,6 +30,27 @@ sub recognize_user ($$) {
   return OK;
 }
 
+# convert current request to GET
+sub _convert_to_get {
+    my ($self, $r) = @_;
+
+    return unless $r->method eq 'POST';
+
+    my $debug = $r->dir_config("AuthCookieDebug") || 0;
+
+    $r->log_error("Converting POST -> GET") if $debug >= 2;
+
+    my %args = $r->content;
+    my @pairs =();
+    while (my ($name, $value) = each %args) {
+      push @pairs, uri_escape($name) . '=' . uri_escape($value);
+    }
+    $r->args(join '&', @pairs) if scalar(@pairs) > 0;
+
+    $r->method('GET');
+    $r->method_number(Apache::Constants::M_GET);
+    $r->headers_in->unset('Content-Length');
+}
 
 sub login ($$) {
   my ($self, $r) = @_;
@@ -36,9 +58,13 @@ sub login ($$) {
 
   my ($auth_type, $auth_name) = ($r->auth_type, $r->auth_name);
   my %args = $r->method eq 'POST' ? $r->content : $r->args;
+
+  $self->_convert_to_get($r) if $r->method eq 'POST';
+
   unless (exists $args{'destination'}) {
-    $r->log_error("No key 'destination' found in posted data");
-    return SERVER_ERROR;
+    $r->log_error("No key 'destination' found in form data");
+    $r->subprocess_env('AuthCookieReason', 'no_cookie');
+    return $auth_type->login_form;
   }
   
   # Get the credentials from the data posted by the client
@@ -51,15 +77,16 @@ sub login ($$) {
   
   # Exchange the credentials for a session key.
   my $ses_key = $self->authen_cred($r, @credentials);
+  unless ($ses_key) {
+    $r->log_error("Bad credentials") if $debug >=2;
+    $r->subprocess_env('AuthCookieReason', 'bad_credentials');
+    return $auth_type->login_form;
+  }
+
   $r->log_error("ses_key " . $ses_key) if ($debug >= 2);
 
   $self->send_cookie($ses_key);
 
-  if ($r->method eq 'POST') {
-    $r->method('GET');
-    $r->method_number(M_GET);
-    $r->headers_in->unset('Content-Length');
-  }
   unless ($r->dir_config("${auth_name}Cache")) {
     $r->no_cache(1);
     $r->err_header_out("Pragma" => "no-cache");
@@ -674,15 +701,34 @@ See the login.pl script in t/eg/.
 
 =back
 
-In addition, you might want your login page to be able to tell the
-difference between a user that sent an incorrect auth cookie, and a
-user that sent no auth cookie at all.  These typically correspond,
-respectively, to users who logged in incorrectly or aren't allowed to
-access the given page, and users who are trying to log in for the
-first time.  To help you differentiate between the two, B<AuthCookie>
-will set C<$r-E<gt>subprocess_env('AuthCookieReason')> to either
-C<bad_cookie> or C<no_cookie>.  You can examine this value in your
-login form by examining
+In addition, you might want your login page to be able to tell why
+the user is being asked to log in.  In other words, if the user sent
+bad credentials, then it might be useful to display an error message
+saying that the given username or password are invalid.  Also, it
+might be useful to determine the difference between a user that sent
+an invalid auth cookie, and a user that sent no auth cookie at all.  To
+cope with these situations, B<AuthCookie> will set
+C<$r-E<gt>subprocess_env('AuthCookieReason')> to one of the following values.
+
+=over 4
+
+=item I<no_cookie>
+
+The user presented no cookie at all.  Typically this means the user is
+trying to log in for the first time.
+
+=item I<bad_cookie>
+
+The cookie the user presented is invalid.  Typically this means that the user
+is not allowed access to the given page.
+
+=item I<bad_credentials>
+
+The user tried to log in, but the credentials that were passed are invalid.
+
+=back
+
+You can examine this value in your login form by examining
 C<$r-E<gt>prev-E<gt>subprocess_env('AuthCookieReason')> (because it's
 a sub-request).
 
@@ -744,7 +790,7 @@ implement anything, though.
 
 =head1 CVS REVISION
 
-$Id: AuthCookie.pm,v 2.18 2001-10-25 14:11:03 mschout Exp $
+$Id: AuthCookie.pm,v 2.19 2002-01-30 04:07:59 mschout Exp $
 
 =head1 AUTHOR
 
