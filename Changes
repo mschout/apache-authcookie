@@ -1,9 +1,11 @@
-Version: CURRENT
+Version: 3.00
    - New maintiner: Michael Schout <mschout@gkg.net>
    - changed to hard coded $VERSION rather than RCS Revision style.
    - Revamped testing code to use Apache::test (with minor mods).
    - Added support for ${AuthName}Expires parameter that can be used
      to make your cookie persistent.
+   - CGI::Util is now used for parsing the "Expires" parameter. If you are 
+     missing this package, you probably need to upgrade your CGI.pm package.
 
 Version: 2.011  Date: 2000/06/17 08:01:19
    Several people have requested a mechanism for the login script to be
