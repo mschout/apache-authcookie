@@ -4,8 +4,8 @@ use mod_perl qw(1.07 StackedHandlers MethodHandlers Authen Authz);
 use Apache::Constants qw(:common M_GET M_POST FORBIDDEN REDIRECT);
 use vars qw($VERSION);
 
-# $Id: AuthCookie.pm,v 2.5 2000-03-24 15:20:30 ken Exp $
-$VERSION = sprintf '%d.%03d', q$Revision: 2.5 $ =~ /: (\d+).(\d+)/;
+# $Id: AuthCookie.pm,v 2.6 2000-03-26 18:28:32 ken Exp $
+$VERSION = sprintf '%d.%03d', q$Revision: 2.6 $ =~ /: (\d+).(\d+)/;
 
 sub recognize_user ($$) {
   my ($self, $r) = @_;
@@ -217,6 +217,16 @@ sub authorize ($$) {
   return $forbidden ? FORBIDDEN : OK;
 }
 
+sub key {
+  my $self = shift;
+  my $r = Apache->request;
+
+  my $allcook = ($r->header_in("Cookie") || "");
+  my ($type, $name) = ($r->auth_type, $r->auth_name);
+  return ($allcook =~ /(?:^|\s)${type}_$name=([^;]*)/)[0];
+}
+
+
 1;
 
 
@@ -286,7 +296,7 @@ accesses. AuthCookie will verify the session key and re-authenticate
 the user.
 
 All you have to do is write a custom module that inherits from
-AuthCookie.  Your module implements two functions:
+AuthCookie.  Your module is a class which implements two methods:
 
 =over 4
 
@@ -421,6 +431,105 @@ client.
 =for html
 </PRE>
 
+=head1 METHODS
+
+C<Apache::AuthCookie> has several methods you should know about.  Here
+is the documentation for each. =)
+
+=over 4
+
+=item * authenticate()
+
+This method is one you'll use in a server config file (httpd.conf,
+.htaccess, ...) as a PerlAuthenHandler.  If the user provided a
+session key in a cookie, the C<authen_ses_key()> method will get
+called to check whether the key is valid.  If not, or if there is no
+key provided, we redirect to the login form.
+
+=item * authorize()
+
+This will step through the C<require> directives you've given for
+protected documents and make sure the user passes muster.  The
+C<require valid-user> and C<require user joey-jojo> directives are
+handled for you.  You can implement custom directives, such as
+C<require species hamster>, by defining a method called C<hamster()>
+in your subclass, which will then be called.  The method will be
+called as C<$r-E<gt>hamster($r, $args)>, where C<$args> is everything
+on your C<require> line after the word C<hamster>.  The method should
+return OK on success and FORBIDDEN on failure.
+
+Currently users must satisfy ALL of the C<require> directives.  I have
+heard that other Apache modules let the user satisfy ANY of the
+C<require> directives.  I don't know which is correct, I haven't found
+any Apache docs on the matter.  If you need one behavior or the other,
+be careful.  I may change it if I discover that ANY is correct.
+
+=item * authen_cred()
+
+You must define this method yourself in your subclass of
+C<Apache::AuthCookie>.  Its job is to create the session key that will
+be preserved in the user's cookie.  The arguments passed to it are:
+
+ sub authen_cred ($$\@) {
+   my $self = shift;  # Package name (same as AuthName directive)
+   my $r    = shift;  # Apache request object
+   my @cred = @_;     # Credentials from login form
+
+   ...blah blah blah, create a session key...
+   return $session_key;
+ }
+
+The only limitation on the session key is that you should be able to
+look at it later and determine the user's username.  You are
+responsible for implementing your own session key format.  A typical
+format is to make a string that contains the username, an expiration
+time, whatever else you need, and an MD5 hash of all that data
+together with a secret key.  The hash will ensure that the user
+doesn't tamper with the session key.  More info in the Eagle book.
+
+=item * authen_ses_key()
+
+You must define this method yourself in your subclass of
+Apache::AuthCookie.  Its job is to look at a session key and determine
+whether it is valid.  If so, it returns the username of the
+authenticated user.
+
+ sub authen_ses_key ($$$) {
+   my ($self, $r, $session_key) = @_;
+   ...blah blah blah, check whether $session_key is valid...
+   return $ok ? $username : undef;
+ }
+
+=item * login()
+
+This method handles the submission of the login form.  It will call
+the C<authen_cred()> method, passing it C<$r> and all the submitted
+data with names like C<"credential_#">, where # is a number.  These will
+be passed in a simple array, so the prototype is
+C<$self-E<gt>authen_cred($r, @credentials)>.  After calling
+C<authen_cred()>, we set the user's cookie and redirect to the
+URL contained in the C<"destination"> submitted form field.
+
+=item * logout()
+
+This is simply a convenience method that unsets the session key for
+you.  You can call it in your logout scripts.
+
+=item * recognize_user()
+
+If the user has provided a valid session key but the document isn't
+protected, this method will set C<$r-E<gt>connection-E<gt>user>
+anyway.  Use it as a PerlFixupHandler, unless you have a better idea.
+
+=item * key($r)
+
+This method will return the current session key, if any.  This can be
+handy inside a method that implements a C<require> directive check
+(like the C<species> method discussed above) if you put any extra
+information like clearances or whatever into the session key.
+
+=back
+
 =head1 UPGRADING FROM VERSION 1.4
 
 There are a few interface changes that you need to be aware of
@@ -520,11 +629,9 @@ be lost.
 
 =item *
 
-There ought to be a way to solve the GET/POST problems in the
-LIMITATIONS section.  They both involve being able to change a request
-back & forth between GET & POST.  The second problem also involves
-being able to re-insert the POSTed content into the request stream after
-the user authenticates.  If you knows of a way, please drop me a note.
+There ought to be a way to solve the POST problem in the LIMITATIONS
+section.  It involves being able to re-insert the POSTed content into
+the request stream after the user authenticates.
 
 It might be nice if the logout method could accept some parameters
 that could make it easy to redirect the user to another URI, or
