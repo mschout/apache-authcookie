@@ -15,13 +15,16 @@ as the first argument.  The affected methods are:
    send_cookie($ses_key)     send_cookie($r, $ses_key)
    key()                     key($r)
 
+So, for example, instead of $auth_type->login_form(), you now need to call
+$auth_type->login_form($r).
+
 Also Note that the Apache interface for retrieving the auth type and username
-has changed in mod_perl 2 as well, so you will need to update these calls in 
-your AuthCookie subclass as well:
+has changed in mod_perl 2, so you will need to update these calls in your
+AuthCookie subclass as well:
 
    modperl 1.x                modperl 2.x
    --------------------       ----------------
    $r->auth_type              $r->ap_auth_type
    $r->connection->user       $r->user
 
-$Id: README.modperl2,v 1.1 2003-08-01 22:59:06 mschout Exp $
+$Id: README.modperl2,v 1.2 2003-08-01 23:02:45 mschout Exp $
