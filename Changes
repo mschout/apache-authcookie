@@ -1,3 +1,9 @@
+Version: 3.06
+   - when redirecting, set Location with headers_out() not err_headers_out().
+     apache prefers Location in headers_out, even if the status code is not
+     200.
+   - Apache::unescape_url() -> Apache::URI::unescape_url()
+
 Version: 3.05
    - Fix POD documentation bug (thanks Steve van der Burg)
    - login(): set Location header with err_headers_out rather than headers_out
