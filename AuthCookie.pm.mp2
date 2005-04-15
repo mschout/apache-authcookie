@@ -18,7 +18,7 @@ use Data::Dumper; # XXX for debugging
 use Apache::Const qw(:common M_GET HTTP_FORBIDDEN HTTP_MOVED_TEMPORARILY);
 use vars qw($VERSION);
 
-# $Id: AuthCookie.pm.mp2,v 1.16 2005-04-15 03:46:01 mschout Exp $
+# $Id: AuthCookie.pm.mp2,v 1.17 2005-04-15 03:57:14 mschout Exp $
 $VERSION = '3.07pre';
 
 sub recognize_user {
@@ -29,9 +29,9 @@ sub recognize_user {
     my $auth_type = $r->auth_type;
     my $auth_name = $r->auth_name;
 
-    return unless $auth_type and $auth_name;
+    return DECLINED unless $auth_type and $auth_name;
 
-    return unless $r->headers_in->get('Cookie');
+    return DECLINED unless $r->headers_in->get('Cookie');
 
     my $cookie = $self->key($r);
     my $cookie_name = $self->cookie_name($r);
@@ -39,7 +39,7 @@ sub recognize_user {
     $r->server->log_error("cookie $cookie_name is $cookie")
         if $debug >= 2;
 
-    return unless $cookie;
+    return DECLINED unless $cookie;
 
     my ($user,@args) = $auth_type->authen_ses_key($r, $cookie);
 
@@ -162,7 +162,7 @@ sub _get_form_data {
 
     if (defined $data) {
         %args = map { Apache::URI::unescape_url($_) }
-                    split /[=&;]/, $data;
+                split /[=&;]/, $data;
     }
 
     return %args;
@@ -1039,7 +1039,7 @@ implement anything, though.
 
 =head1 CVS REVISION
 
-$Id: AuthCookie.pm.mp2,v 1.16 2005-04-15 03:46:01 mschout Exp $
+$Id: AuthCookie.pm.mp2,v 1.17 2005-04-15 03:57:14 mschout Exp $
 
 =head1 AUTHOR
 
