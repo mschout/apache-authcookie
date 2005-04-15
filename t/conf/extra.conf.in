@@ -82,6 +82,15 @@ PerlSetVar AuthCookieDebug 3
  PerlHandler Sample::AuthCookieHandler->login
 </Files>
 
+# login action that sets HttpOnly
+<Files LOGIN-HTTPONLY>
+ PerlSetVar WhatEverHttpOnly On
+ AuthType Sample::AuthCookieHandler
+ AuthName WhatEver
+ SetHandler perl-script
+ PerlHandler Sample::AuthCookieHandler->login
+</Files>
+
 <Location /perl-status>
  SetHandler perl-script
  PerlHandler Apache::Status

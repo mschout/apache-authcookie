@@ -4,6 +4,7 @@ Version: 3.07pre
    - make sure recognize_user() returns an Apache constant in all cases.
      Returns DECLINED in cases where we were returning undef before.
      (Thanks Vivek)
+   - Add support for MS HttpOnly cookie property.
 
 Version: 3.06
   ** BUG FIX: AuthNameSatisfy (Any|All) directives were broken. AuthCookie
