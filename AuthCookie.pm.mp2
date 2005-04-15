@@ -18,8 +18,8 @@ use Data::Dumper; # XXX for debugging
 use Apache::Const qw(:common M_GET HTTP_FORBIDDEN HTTP_MOVED_TEMPORARILY);
 use vars qw($VERSION);
 
-# $Id: AuthCookie.pm.mp2,v 1.15 2005-01-20 05:34:45 mschout Exp $
-$VERSION = '3.06';
+# $Id: AuthCookie.pm.mp2,v 1.16 2005-04-15 03:46:01 mschout Exp $
+$VERSION = '3.07pre';
 
 sub recognize_user {
     my ($self, $r) = @_;
@@ -158,8 +158,12 @@ sub _get_form_data {
         $data = $r->args;
     }
 
-    my %args = map { Apache::URI::unescape_url($_) }
-               split /[=&;]/, $data;
+    my %args = ();
+
+    if (defined $data) {
+        %args = map { Apache::URI::unescape_url($_) }
+                    split /[=&;]/, $data;
+    }
 
     return %args;
 }
@@ -1035,7 +1039,7 @@ implement anything, though.
 
 =head1 CVS REVISION
 
-$Id: AuthCookie.pm.mp2,v 1.15 2005-01-20 05:34:45 mschout Exp $
+$Id: AuthCookie.pm.mp2,v 1.16 2005-04-15 03:46:01 mschout Exp $
 
 =head1 AUTHOR
 

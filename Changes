@@ -1,5 +1,6 @@
-Version: CURRENT
+Version: 3.07pre
    - POD fixes.
+   - MP2: fix uninitialized warnings if no POST/GET data (RT 11371)
 
 Version: 3.06
   ** BUG FIX: AuthNameSatisfy (Any|All) directives were broken. AuthCookie
