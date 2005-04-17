@@ -14,11 +14,10 @@ use Apache2::Response;
 use Apache2::Util;
 use Apache2::URI;
 use APR::Table;
-use Data::Dumper; # XXX for debugging
 use Apache2::Const qw(:common M_GET HTTP_FORBIDDEN HTTP_MOVED_TEMPORARILY);
 use vars qw($VERSION);
 
-# $Id: AuthCookie.pm,v 1.2 2005-04-17 05:48:42 mschout Exp $
+# $Id: AuthCookie.pm,v 1.3 2005-04-17 06:21:31 mschout Exp $
 $VERSION = '3.07pre';
 
 sub recognize_user {
@@ -1050,7 +1049,7 @@ implement anything, though.
 
 =head1 CVS REVISION
 
-$Id: AuthCookie.pm,v 1.2 2005-04-17 05:48:42 mschout Exp $
+$Id: AuthCookie.pm,v 1.3 2005-04-17 06:21:31 mschout Exp $
 
 =head1 AUTHOR
 
