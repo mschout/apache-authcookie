@@ -12,7 +12,7 @@ my %makeconf = (
     'NAME'         => 'Apache::AuthCookie',
     'VERSION_FROM' => 'lib/Apache/AuthCookie.pm',
     'PREREQ_PM'    => {
-        'Apache::Test' => 1.09
+        'Apache::Test' => 1.22
     },
     'clean'        => {
         FILES => "@CLEAN_FILES"
