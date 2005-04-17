@@ -1,16 +1,16 @@
 use ExtUtils::MakeMaker;
 use File::Spec;
+use File::Copy;
 
 my @CLEAN_FILES = ();
 my $mp_version = mod_perl_version();
-build_prepare($mp_version);
 test_prepare($mp_version);
 
 test_configure();
 
 my %makeconf = (
     'NAME'         => 'Apache::AuthCookie',
-    'VERSION_FROM' => 'AuthCookie.pm',
+    'VERSION_FROM' => 'lib/Apache/AuthCookie.pm',
     'PREREQ_PM'    => {
         'Apache::Test' => 1.09
     },
@@ -20,7 +20,8 @@ my %makeconf = (
 );
 
 if ($mp_version == 2) {
-    $makeconf->{PREREQ_PM}{mod_perl} = '1.9913';
+    # 1.9922 is 2.0.0 RC5. mod_perl package renames happend at this release.
+    $makeconf->{PREREQ_PM}{mod_perl} = '1.9922';
 }
 
 WriteMakefile(%makeconf);
@@ -73,46 +74,25 @@ sub test_prepare {
     push @CLEAN_FILES, $outfile;
 }
 
-sub build_prepare {
-    my $mp_version = shift;
-
-    my $outfile = 'AuthCookie.pm';
-
-    my $infile = "AuthCookie.pm.mp${mp_version}";
-
-    die "whoops, $infile doesnt exist!" unless -f $infile;
-
-    # remove old copy of the file if its already there.
-    if (-f $outfile) {
-        unlink $outfile or die "unlink($outfile): $!";
-    }
-
-    # copy source file to the outfile
-    require File::Copy;
-    File::Copy::copy($infile, $outfile);
-
-    push @CLEAN_FILES, $outfile;
-}
-
 sub mod_perl_version {
     eval {
         require mod_perl
     };
-    if ($@) {
-        die "Can't find mod_perl installed: $@\n";
-    }
+    unless ($@) {
+        if ($mod_perl::VERSION >= 1.99) {
+            # mod_perl 2 prior to RC5 (1.99_21 or earlier)
+            die "mod_perl 2.0.0 RC5 or later is required for this module";
+        }
 
-    # version 3 does not exist yet, but we check here for sanity.
-    if ($mod_perl::VERSION >= 3) {
-        die "mod_perl version $mod_perl::VERSION is not supported\n";
-    }
-    elsif ($mod_perl::VERSION >= 1.99) {
-        return 2;
-    }
-    elsif ($mod_perl::VERSION >= 1.0) {
         return 1;
     }
-    else {
-        die "mod_perl version $mod_perl::VERSION is not supported\n";
+
+    eval {
+        require mod_perl2;
+    };
+    unless ($@) {
+        return 2;
     }
+
+    die "mod_perl version $mod_perl::VERSION is not supported\n";
 }
