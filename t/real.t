@@ -3,7 +3,6 @@ use strict;
 use warnings FATAL => 'all';
 use lib 'lib';
 
-use Apache::AuthCookie;
 use Apache::Test;
 use Apache::TestUtil;
 use Apache::TestRequest qw(GET POST GET_BODY);
