@@ -1,6 +1,6 @@
 lib/Apache/AuthCookie.pm
+lib/Apache/AuthCookie/Util.pm
 lib/Apache2/AuthCookie.pm
-AuthCookie/Util.pm
 README
 README.modperl2
 MANIFEST
