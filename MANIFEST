@@ -1,5 +1,5 @@
-AuthCookie.pm.mp1
-AuthCookie.pm.mp2
+lib/Apache/AuthCookie.pm
+lib/Apache2/AuthCookie.pm
 AuthCookie/Util.pm
 README
 README.modperl2
@@ -32,3 +32,4 @@ t/htdocs/docs/cookiename/get_me.html
 t/lib/Sample/AuthCookieHandler.pm.mp1
 t/lib/Sample/AuthCookieHandler.pm.mp2
 t/real.t
+META.yml                                 Module meta-data (added by MakeMaker)
