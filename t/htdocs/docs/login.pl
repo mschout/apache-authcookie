@@ -4,7 +4,8 @@ use strict;
 use mod_perl;
 use constant MP2 => ($mod_perl::VERSION >= 1.99);
 
-my $r = Apache->request;
+my $r = MP2 ? Apache2::RequestUtil->request
+            : Apache->request;
 
 # Setting the status to 200 here causes the default apache 403 page to be
 # appended to the custom error document.  We understand but the user may not

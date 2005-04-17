@@ -4,10 +4,12 @@ use mod_perl;
 use constant MODPERL2 => ($mod_perl::VERSION >= 1.99);
 
 if (MODPERL2) {
-    require Apache::Access;
+    require Apache2::Access;
 }
 
-my $r = Apache->request;
+my $r = MODPERL2 ? Apache2::RequestUtil->request
+                 : Apache->request;
+
 my $auth_type = $r->auth_type;
 
 # Delete the cookie, etc.
