@@ -1,24 +1,24 @@
-package Apache::AuthCookie;
+package Apache2::AuthCookie;
 
 use strict;
 
 use Carp;
-use mod_perl qw(1.99 StackedHandlers MethodHandlers Authen Authz);
+use mod_perl2 qw(1.9922 StackedHandlers MethodHandlers Authen Authz);
 
 use Apache::AuthCookie::Util;
-use Apache::RequestRec;
-use Apache::RequestUtil;
-use Apache::Log;
-use Apache::Access;
-use Apache::Response;
-use Apache::Util;
-use Apache::URI;
+use Apache2::RequestRec;
+use Apache2::RequestUtil;
+use Apache2::Log;
+use Apache2::Access;
+use Apache2::Response;
+use Apache2::Util;
+use Apache2::URI;
 use APR::Table;
 use Data::Dumper; # XXX for debugging
-use Apache::Const qw(:common M_GET HTTP_FORBIDDEN HTTP_MOVED_TEMPORARILY);
+use Apache2::Const qw(:common M_GET HTTP_FORBIDDEN HTTP_MOVED_TEMPORARILY);
 use vars qw($VERSION);
 
-# $Id: AuthCookie.pm,v 1.1 2005-04-17 05:47:38 mschout Exp $
+# $Id: AuthCookie.pm,v 1.2 2005-04-17 05:48:42 mschout Exp $
 $VERSION = '3.07pre';
 
 sub recognize_user {
@@ -130,7 +130,7 @@ sub _convert_to_get {
 
 sub escape_uri {
     my ($r, $string) = @_;
-    return Apache::Util::escape_path($string, $r->pool);
+    return Apache2::Util::escape_path($string, $r->pool);
 }
 
 # get GET or POST data and return hash containing the data.
@@ -161,7 +161,7 @@ sub _get_form_data {
     my %args = ();
 
     if (defined $data) {
-        %args = map { Apache::URI::unescape_url($_) }
+        %args = map { Apache2::URI::unescape_url($_) }
                 split /[=&;]/, $data;
     }
 
@@ -521,12 +521,12 @@ sub _check_request_rec {
     my $func = (caller)[3];
 
     unless (defined $r) {
-        croak "missing Apache::RequestRec argument to $func.",
+        croak "missing Apache2::RequestRec argument to $func.",
               "module not ported to mod_perl v2?";
     }
 
-    unless (ref $r and $r->isa('Apache::RequestRec')) {
-        croak "'$r' is not an Apache::RequestRec object.",
+    unless (ref $r and $r->isa('Apache2::RequestRec')) {
+        croak "'$r' is not an Apache2::RequestRec object.",
               "module not ported to mod_perl v2?";
     }
 }
@@ -537,7 +537,7 @@ __END__
 
 =head1 NAME
 
-Apache::AuthCookie - Perl Authentication and Authorization via cookies
+Apache2::AuthCookie - Perl Authentication and Authorization via cookies
 
 =head1 SYNOPSIS
 
@@ -1050,7 +1050,7 @@ implement anything, though.
 
 =head1 CVS REVISION
 
-$Id: AuthCookie.pm,v 1.1 2005-04-17 05:47:38 mschout Exp $
+$Id: AuthCookie.pm,v 1.2 2005-04-17 05:48:42 mschout Exp $
 
 =head1 AUTHOR
 
