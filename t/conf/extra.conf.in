@@ -1,4 +1,4 @@
-<IfDefine MODPERL2>
+<IfDefine APACHE2>
   PerlSwitches -I@ServerRoot@/lib
 </IfDefine>
 
@@ -51,7 +51,7 @@ PerlSetVar AuthCookieDebug 3
  PerlFixupHandler Sample::AuthCookieHandler->recognize_user
 </FilesMatch>
 
-<IfDefine MODPERL2>
+<IfDefine APACHE2>
  PerlModule ModPerl::Registry
 
  <FilesMatch "\.pl$">
@@ -62,7 +62,7 @@ PerlSetVar AuthCookieDebug 3
   AuthName WhatEver
  </FilesMatch>
 </IfDefine>
-<IfDefine !MODPERL2>
+<IfDefine APACHE1>
  PerlModule Apache::Registry
 
  <FilesMatch "\.pl$">
@@ -79,7 +79,12 @@ PerlSetVar AuthCookieDebug 3
  AuthType Sample::AuthCookieHandler
  AuthName WhatEver
  SetHandler perl-script
- PerlHandler Sample::AuthCookieHandler->login
+ <IfDefine APACHE1>
+   PerlHandler Sample::AuthCookieHandler->login
+ </IfDefine>
+ <IfDefine APACHE2>
+   PerlResponseHandler Sample::AuthCookieHandler->login
+ </IfDefine>
 </Files>
 
 # login action that sets HttpOnly
@@ -88,10 +93,18 @@ PerlSetVar AuthCookieDebug 3
  AuthType Sample::AuthCookieHandler
  AuthName WhatEver
  SetHandler perl-script
- PerlHandler Sample::AuthCookieHandler->login
+
+ <IfDefine APACHE1>
+   PerlHandler Sample::AuthCookieHandler->login
+ </IfDefine>
+ <IfDefine APACHE2>
+   PerlResponseHandler Sample::AuthCookieHandler->login
+ </IfDefine>
 </Files>
 
-<Location /perl-status>
- SetHandler perl-script
- PerlHandler Apache::Status
-</Location>
+<IfDefine APACHE1>
+ <Location /perl-status>
+  SetHandler perl-script
+  PerlHandler Apache::Status
+ </Location>
+</IfDefine>
