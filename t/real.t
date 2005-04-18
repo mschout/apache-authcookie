@@ -9,7 +9,7 @@ use Apache::TestRequest qw(GET POST GET_BODY);
 
 Apache::TestRequest::user_agent( reset => 1, requests_redirectable => 0 );
 
-plan tests => 21;
+plan tests => 21, need_lwp;
 
 ok 1;  # we loaded.
 
