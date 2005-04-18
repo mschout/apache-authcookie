@@ -1,6 +1,8 @@
 Version: 3.0795
    - fix "authorize user" error log that was missing a debug level check
      (thanks Barry)
+   - fix test cases 3, 6, 18 for Win32
+   - clean up t/real.t
 
 Version: 3.07
  *** mod_perl2 users: THIS RELEASE IS INCOMPATIBLE WITH PAST RELEASES    ***
