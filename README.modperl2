@@ -1,3 +1,11 @@
+**** NOTICE: Version 3.07 is incompatible with previous releases. ***
+
+As of release 3.07, you must be running mod_perl 2.0.0 RC5 or later.  Please
+note that in mod_perl 2.0.0 RC5 many packages were reneamed.  See the mod_perl
+documentation for updating your code for 2.0.0 RC5.
+
+*****
+
 Notes for migrating from mod_perl version 1.x to mod_perl version 2:
 
 API changes:
@@ -27,4 +35,4 @@ AuthCookie subclass as well:
    $r->auth_type              $r->ap_auth_type
    $r->connection->user       $r->user
 
-$Id: README.modperl2,v 1.2 2003-08-01 23:02:45 mschout Exp $
+$Id: README.modperl2,v 1.3 2005-04-18 05:19:59 mschout Exp $
