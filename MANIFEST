@@ -29,6 +29,7 @@ t/htdocs/docs/protected/get_me.html
 t/htdocs/docs/authall/get_me.html
 t/htdocs/docs/authany/get_me.html
 t/htdocs/docs/cookiename/get_me.html
+t/htdocs/docs/stimeout/get_me.html
 t/lib/Sample/AuthCookieHandler.pm.mp1
 t/lib/Sample/AuthCookieHandler.pm.mp2
 t/real.t

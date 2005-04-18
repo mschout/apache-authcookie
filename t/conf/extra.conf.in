@@ -44,6 +44,16 @@ PerlSetVar AuthCookieDebug 3
  Require user programmer
 </Location>
 
+<Location /docs/stimeout>
+ PerlSetVar WhatEverSessionTimeout +10m
+ AuthType Sample::AuthCookieHandler
+ AuthName WhatEver
+ PerlAuthenHandler Sample::AuthCookieHandler->authenticate
+ PerlAuthzHandler Sample::AuthCookieHandler->authorize
+ Require user some-user
+ Require user programmer
+</Location>
+
 # These documents don't require logging in, but allow it.
 <FilesMatch "\.cgi$">
  AuthType Sample::AuthCookieHandler

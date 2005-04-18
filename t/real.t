@@ -9,7 +9,7 @@ use Apache::TestRequest qw(GET POST GET_BODY);
 
 Apache::TestRequest::user_agent( reset => 1, requests_redirectable => 0 );
 
-plan tests => 20;
+plan tests => 21;
 
 ok 1;  # we loaded.
 
@@ -33,6 +33,7 @@ ok test_17();
 ok test_18();
 ok test_19();
 ok test_20();
+ok test_21();
 
 sub test_3 {
     my $url = '/docs/index.html';
@@ -313,6 +314,21 @@ sub test_20 {
     return 1;
 }
 
+# test SessionTimeout
+sub test_21 {
+    my $r = GET(
+        '/docs/stimeout/get_me.html',
+        Cookie => 'Sample::AuthCookieHandler_WhatEver=programmer:Hero'
+    );
+
+    # print STDERR "# Cookie", $r->header('Set-Cookie');
+
+    return 0 unless
+        $r->header('Set-Cookie') =~
+            /^Sample::AuthCookieHandler_WhatEver=.*expires=.+/;
+
+    return 1;
+}
 
 # get the "expected output" file for a given test and return its contents.
 sub get_expected {
@@ -326,3 +342,4 @@ sub get_expected {
     return $data;
 }
 
+# vim: ft=perl ts=4 ai et sw=4
