@@ -1,4 +1,4 @@
-Version: 3.07pre
+Version: 3.07
  *** mod_perl2 users: THIS RELEASE IS INCOMPATIBLE WITH PAST RELEASES    ***
  *** If you are running mod_perl2, you must update to at least           ***
  *** mod_perl 2.0.0 RC5.  The mod_perl2 version of AuthCookie has been   ***
