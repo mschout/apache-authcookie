@@ -9,7 +9,7 @@ use Apache::AuthCookie::Util;
 use Apache::Util qw(escape_uri);
 use vars qw($VERSION);
 
-# $Id: AuthCookie.pm,v 1.1 2005-04-17 05:47:38 mschout Exp $
+# $Id: AuthCookie.pm,v 1.2 2005-04-18 05:14:11 mschout Exp $
 $VERSION = '3.07pre';
 
 sub recognize_user ($$) {
@@ -30,6 +30,12 @@ sub recognize_user ($$) {
   my ($user,@args) = $auth_type->authen_ses_key($r, $cookie);
   if ($user and scalar @args == 0) {
     $r->log_error("user is $user") if $debug >= 2;
+
+    # if SessionTimeout is on, send new cookie with new Expires.
+    if (my $expires = $r->dir_config("${auth_name}SessionTimeout")) {
+      $self->send_cookie($cookie, {expires => $expires});
+    }
+
     $r->connection->user($user);
   } elsif (scalar @args > 0 and $auth_type->can('custom_errors')) {
     return $auth_type->custom_errors($r, $user, @args);
@@ -221,6 +227,11 @@ sub authenticate ($$) {
       $r->connection->user($auth_user);
       $r->log_error("user authenticated as $auth_user") if $debug >= 1;
 
+      # if SessionTimeout is on, send cookie with new expires
+      if (my $expires = $r->dir_config("${auth_name}SessionTimeout")) {
+        $auth_type->send_cookie($ses_key_cookie, {expires => $expires});
+      }
+
       return OK;
     } elsif (scalar @args > 0 and $auth_type->can('custom_errors')) {
       return $auth_type->custom_errors($r, $auth_user, @args);
@@ -351,21 +362,24 @@ sub authorize ($$) {
 }
 
 sub send_cookie {
-  my ($self, $ses_key) = @_;
+  my ($self, $ses_key, $cookie_args) = @_;
   my $r = Apache->request();
+
+  $cookie_args = {} unless defined $cookie_args;
 
   my $cookie_name = $self->cookie_name($r);
 
   my $cookie = $self->cookie_string( request => $r,
                                      key     => $cookie_name,
-                                     value   => $ses_key );
+                                     value   => $ses_key,
+                                     %$cookie_args );
 
-  # add P3P header if user has configured it.    
+  # add P3P header if user has configured it.
   my $auth_name = $r->auth_name;
   if (my $p3p = $r->dir_config("${auth_name}P3P")) {
     $r->err_header_out(P3P => $p3p);
   }
-                                   
+
   $r->err_headers_out->add("Set-Cookie" => $cookie);
 }
 
@@ -393,7 +407,7 @@ sub cookie_string {
   my $string = sprintf '%s=%s', @p{'key','value'};
 
   my $auth_name = $r->auth_name;
-  
+
   if (my $expires = $p{expires} || $r->dir_config("${auth_name}Expires")) {
     $expires = Apache::AuthCookie::Util::expires($expires);
     $string .= "; expires=$expires";
@@ -468,6 +482,12 @@ MethodHandlers, Authen, and Authz compiled in.
 
  # Use this to only send over a secure connection
  PerlSetVar WhatEverSecure 1
+
+ # Use this if you want user session cookies to expire if the user
+ # doesn't request a auth-required or recognize_user page for some
+ # time period.  If set, a new cookie (with updated expire time)
+ # is set on every request.
+ PerlSetVar WhatEverSessionTimeout +30m
 
  # to enable the HttpOnly cookie property, use HttpOnly.
  # this is an MS extension.  See
@@ -973,7 +993,7 @@ implement anything, though.
 
 =head1 CVS REVISION
 
-$Id: AuthCookie.pm,v 1.1 2005-04-17 05:47:38 mschout Exp $
+$Id: AuthCookie.pm,v 1.2 2005-04-18 05:14:11 mschout Exp $
 
 =head1 AUTHOR
 
@@ -995,3 +1015,5 @@ the same terms as Perl itself.
 L<perl(1)>, L<mod_perl(1)>, L<Apache(1)>.
 
 =cut
+
+# vim: sw=2 ts=2 ai et

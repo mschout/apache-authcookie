@@ -17,7 +17,7 @@ use APR::Table;
 use Apache2::Const qw(:common M_GET HTTP_FORBIDDEN HTTP_MOVED_TEMPORARILY);
 use vars qw($VERSION);
 
-# $Id: AuthCookie.pm,v 1.3 2005-04-17 06:21:31 mschout Exp $
+# $Id: AuthCookie.pm,v 1.4 2005-04-18 05:14:11 mschout Exp $
 $VERSION = '3.07pre';
 
 sub recognize_user {
@@ -44,6 +44,12 @@ sub recognize_user {
 
     if ($user and scalar @args == 0) {
         $r->server->log_error("user is $user") if $debug >= 2;
+
+        # send cookie with update expires timestamp if session timeout is on
+        if (my $expires = $r->dir_config("${auth_name}SessionTimeout")) {
+            $self->send_cookie($r, $cookie, {expires => $expires});
+        }
+
         $r->user($user);
     }
     elsif (scalar @args > 0 and $auth_type->can('custom_errors')) {
@@ -283,6 +289,12 @@ sub authenticate {
             $r->server->log_error("user authenticated as $auth_user")
                 if $debug >= 1;
 
+            # send new cookie if SessionTimeout is on
+            if (my $expires = $r->dir_config("${auth_name}SessionTimeout")) {
+                $auth_type->send_cookie($r, $ses_key_cookie,
+                                        {expires => $expires});
+            }
+
             return OK;
         }
         elsif (scalar @args > 0 and $auth_type->can('custom_errors')) {
@@ -425,15 +437,18 @@ sub authorize {
 }
 
 sub send_cookie {
-    my ($self, $r, $ses_key) = @_;
+    my ($self, $r, $ses_key, $cookie_args) = @_;
     _check_request_rec(@_);
+
+    $cookie_args = {} unless defined $cookie_args;
 
     my $cookie_name = $self->cookie_name($r);
 
     my $cookie = $self->cookie_string(
         request => $r,
         key     => $cookie_name,
-        value   => $ses_key
+        value   => $ses_key,
+        %$cookie_args
     );
 
     my $auth_name = $r->auth_name;
@@ -561,6 +576,12 @@ MethodHandlers, Authen, and Authz compiled in.
 
  # Use this to only send over a secure connection
  PerlSetVar WhatEverSecure 1
+
+ # Use this if you want user session cookies to expire if the user
+ # doesn't request a auth-required or recognize_user page for some
+ # time period.  If set, a new cookie (with updated expire time)
+ # is set on every request.
+ PerlSetVar WhatEverSessionTimeout +30m
 
  # to enable the HttpOnly cookie property, use HttpOnly.
  # this is an MS extension.  See:
@@ -1049,7 +1070,7 @@ implement anything, though.
 
 =head1 CVS REVISION
 
-$Id: AuthCookie.pm,v 1.3 2005-04-17 06:21:31 mschout Exp $
+$Id: AuthCookie.pm,v 1.4 2005-04-18 05:14:11 mschout Exp $
 
 =head1 AUTHOR
 
@@ -1071,3 +1092,5 @@ the same terms as Perl itself.
 L<perl(1)>, L<mod_perl(1)>, L<Apache(1)>.
 
 =cut
+
+# vim: sw=4 ts=4 ai et
