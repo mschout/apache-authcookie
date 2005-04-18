@@ -1,3 +1,7 @@
+Version: 3.0795
+   - fix "authorize user" error log that was missing a debug level check
+     (thanks Barry)
+
 Version: 3.07
  *** mod_perl2 users: THIS RELEASE IS INCOMPATIBLE WITH PAST RELEASES    ***
  *** If you are running mod_perl2, you must update to at least           ***
