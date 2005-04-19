@@ -1,4 +1,4 @@
-Version: 3.0795
+Version: 3.08
    - fix "authorize user" error log that was missing a debug level check
      (thanks Barry)
    - fix test cases 3, 6, 18 for Win32
