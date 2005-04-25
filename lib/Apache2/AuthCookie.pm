@@ -17,7 +17,7 @@ use APR::Table;
 use Apache2::Const qw(:common M_GET HTTP_FORBIDDEN HTTP_MOVED_TEMPORARILY);
 use vars qw($VERSION);
 
-# $Id: AuthCookie.pm,v 1.8 2005-04-19 04:51:27 mschout Exp $
+# $Id: AuthCookie.pm,v 1.9 2005-04-25 20:23:39 mschout Exp $
 $VERSION = '3.08';
 
 sub recognize_user {
@@ -73,7 +73,6 @@ sub cookie_name {
 
 sub handle_cache {
     my ($self, $r) = @_;
-    _check_request_rec(@_);
 
     my $auth_name = $r->auth_name;
 
@@ -87,7 +86,6 @@ sub handle_cache {
 
 sub remove_cookie {
     my ($self, $r) = @_;
-    _check_request_rec(@_);
 
     my $cookie_name = $self->cookie_name($r);
 
@@ -319,7 +317,6 @@ sub authenticate {
 
 sub login_form {
     my ($self, $r) = @_;
-    _check_request_rec(@_);
 
     my $auth_name = $r->auth_name;
 
@@ -439,7 +436,6 @@ sub authorize {
 
 sub send_cookie {
     my ($self, $r, $ses_key, $cookie_args) = @_;
-    _check_request_rec(@_);
 
     $cookie_args = {} unless defined $cookie_args;
 
@@ -511,7 +507,6 @@ sub cookie_string {
 
 sub key {
     my ($self, $r) = @_;
-    _check_request_rec(@_);
 
     my $cookie_name = $self->cookie_name($r);
 
@@ -526,24 +521,6 @@ sub get_cookie_path {
     my $auth_name = $r->auth_name;
 
     return $r->dir_config("${auth_name}Path");
-}
-
-# this just checks that the second arg is an Apache::RequestRec object.
-# if not, an exception is thrown.
-sub _check_request_rec {
-    my ($self, $r) = @_;
-
-    my $func = (caller)[3];
-
-    unless (defined $r) {
-        croak "missing Apache2::RequestRec argument to $func.",
-              "module not ported to mod_perl v2?";
-    }
-
-    unless (ref $r and $r->isa('Apache2::RequestRec')) {
-        croak "'$r' is not an Apache2::RequestRec object.",
-              "module not ported to mod_perl v2?";
-    }
 }
 
 1;
@@ -1071,7 +1048,7 @@ implement anything, though.
 
 =head1 CVS REVISION
 
-$Id: AuthCookie.pm,v 1.8 2005-04-19 04:51:27 mschout Exp $
+$Id: AuthCookie.pm,v 1.9 2005-04-25 20:23:39 mschout Exp $
 
 =head1 AUTHOR
 

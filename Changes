@@ -1,5 +1,8 @@
 Version: CURRENT
    - POD doc fixes.
+   - MP2: remove _check_request_req() - this was only necessary when
+     running under both MP1 and MP2.  Package name change eliminates the
+     need for this.
 
 Version: 3.08
    - fix "authorize user" error log that was missing a debug level check
