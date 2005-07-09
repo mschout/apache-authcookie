@@ -17,7 +17,7 @@ use APR::Table;
 use Apache2::Const qw(:common M_GET HTTP_FORBIDDEN HTTP_MOVED_TEMPORARILY);
 use vars qw($VERSION);
 
-# $Id: AuthCookie.pm,v 1.9 2005-04-25 20:23:39 mschout Exp $
+# $Id: AuthCookie.pm,v 1.10 2005-07-09 18:41:20 mschout Exp $
 $VERSION = '3.08';
 
 sub recognize_user {
@@ -177,6 +177,7 @@ sub login {
     my $debug = $r->dir_config("AuthCookieDebug") || 0;
 
     my $auth_type = $r->auth_type;
+    my $auth_name = $r->auth_name;
 
     my %args = $self->_get_form_data($r);
 
@@ -192,11 +193,14 @@ sub login {
 
     # Get the credentials from the data posted by the client
     my @credentials;
-    while (exists $args{"credential_" . scalar(@credentials)}) {
-        my $key = 'credential_'.scalar(@credentials);
+    for (my $i = 0; exists $args{"credential_$i"}; $i++) {
+        my $key = "credential_$i";
         $r->server->log_error("$key $args{$key}") if $debug >= 2;
         push @credentials, $args{$key};
     }
+
+    # save creds in pnotes so login form script can use them if it wants to
+    $r->pnotes("${auth_name}Creds", \@credentials);
 
     # Exchange the credentials for a session key.
     my $ses_key = $self->authen_cred($r, @credentials);
@@ -1048,7 +1052,7 @@ implement anything, though.
 
 =head1 CVS REVISION
 
-$Id: AuthCookie.pm,v 1.9 2005-04-25 20:23:39 mschout Exp $
+$Id: AuthCookie.pm,v 1.10 2005-07-09 18:41:20 mschout Exp $
 
 =head1 AUTHOR
 
