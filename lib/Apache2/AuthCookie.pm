@@ -12,12 +12,12 @@ use Apache2::Log;
 use Apache2::Access;
 use Apache2::Response;
 use Apache2::Util;
-use Apache2::URI;
+use Apache2::AuthCookie::Util;
 use APR::Table;
 use Apache2::Const qw(:common M_GET HTTP_FORBIDDEN HTTP_MOVED_TEMPORARILY);
 use vars qw($VERSION);
 
-# $Id: AuthCookie.pm,v 1.11 2005-07-09 19:19:03 mschout Exp $
+# $Id: AuthCookie.pm,v 1.12 2005-07-09 19:30:38 mschout Exp $
 $VERSION = '3.09_01';
 
 sub recognize_user {
@@ -164,7 +164,7 @@ sub _get_form_data {
     my %args = ();
 
     if (defined $data) {
-        %args = map { Apache2::URI::unescape_url($_) }
+        %args = map { Apache2::AuthCookie::Util::unescape_uri($_) }
                 split /[=&;]/, $data;
     }
 
@@ -1052,7 +1052,7 @@ implement anything, though.
 
 =head1 CVS REVISION
 
-$Id: AuthCookie.pm,v 1.11 2005-07-09 19:19:03 mschout Exp $
+$Id: AuthCookie.pm,v 1.12 2005-07-09 19:30:38 mschout Exp $
 
 =head1 AUTHOR
 

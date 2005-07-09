@@ -8,6 +8,9 @@ Version: CURRENT
    - make login() stash credentials in $r->pnotes("${AuthName}Creds") so
      that the login form can access the user-supplied credentials if the
      login fails.
+   - bug fix: use of Apache2::URI::unescape_url() does not handle
+     '+' to ' ' conversion.  This caused problems for credentials
+     that contain spaces.
 
 Version: 3.08
    - fix "authorize user" error log that was missing a debug level check
