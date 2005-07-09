@@ -12,6 +12,8 @@ my $r = MP2 ? Apache2::RequestUtil->request
 # $r->status(200);
 my $uri = $r->prev->uri;
 
+my $creds = $r->prev->pnotes("WhatEverCreds");
+
 # if there are args, append that to the uri
 my $args = $r->prev->args;
 if ($args) {
@@ -26,6 +28,14 @@ my $form = <<HERE;
 <TITLE>Enter Login and Password</TITLE>
 </HEAD>
 <BODY onLoad="document.forms[0].credential_0.focus();">
+HERE
+
+# output creds in a comment so the test case can see them.
+if (defined $creds) {
+    $form .= "<!-- creds: @{$creds} -->\n";
+}
+
+$form .= <<HERE;
 <FORM METHOD="POST" ACTION="/LOGIN">
 <TABLE WIDTH=60% ALIGN=CENTER VALIGN=CENTER>
 <TR><TD ALIGN=CENTER>
