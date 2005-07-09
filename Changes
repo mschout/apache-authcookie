@@ -3,6 +3,11 @@ Version: CURRENT
    - MP2: remove _check_request_req() - this was only necessary when
      running under both MP1 and MP2.  Package name change eliminates the
      need for this.
+   - test suite converted to Test::More style test suites.
+   - descriptive test descriptions added
+   - make login() stash credentials in $r->pnotes("${AuthName}Creds") so
+     that the login form can access the user-supplied credentials if the
+     login fails.
 
 Version: 3.08
    - fix "authorize user" error log that was missing a debug level check
