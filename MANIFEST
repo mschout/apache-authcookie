@@ -11,16 +11,6 @@ t/Skeleton/AuthCookieHandler.pm
 t/TEST.PL
 t/conf/extra.conf.in
 t/startup.pl
-t/check/12
-t/check/13
-t/check/16
-t/check/17
-t/check/18
-t/check/3
-t/check/4
-t/check/6
-t/check/7
-t/check/9
 t/htdocs/docs/echo_cookie.pl
 t/htdocs/docs/index.html
 t/htdocs/docs/login.pl
