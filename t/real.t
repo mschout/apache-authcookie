@@ -16,7 +16,7 @@ use Apache::TestRequest qw(GET POST GET_BODY);
 
 Apache::TestRequest::user_agent( reset => 1, requests_redirectable => 0 );
 
-plan tests => 29, need_lwp;
+plan tests => 30, need_lwp;
 
 ok 1;  # we loaded.
 
@@ -257,6 +257,19 @@ ok 1;  # we loaded.
     ]);
 
     like($r->content, qr/creds: fail Hero/s, 'WhatEverCreds pnotes works');
+}
+
+# regression - Apache2::URI::unescape_url() does not handle '+' to ' '
+# conversion.
+{
+    my $r = POST('/LOGIN', [
+        destination  => '/docs/protected/get_me.html',
+        credential_0 => 'fail',
+        credential_1 => 'one two'
+    ]);
+
+    like($r->content, qr/creds: fail one two/,
+         'read form data handles "+" conversion');
 }
 
 # remove CR's from a string.  Win32 apache apparently does line ending
