@@ -9,7 +9,7 @@ use Apache::AuthCookie::Util;
 use Apache::Util qw(escape_uri);
 use vars qw($VERSION);
 
-# $Id: AuthCookie.pm,v 1.7 2005-07-09 19:19:01 mschout Exp $
+# $Id: AuthCookie.pm,v 1.8 2006-01-19 15:36:54 mschout Exp $
 $VERSION = '3.09_01';
 
 sub recognize_user ($$) {
@@ -613,6 +613,18 @@ command
 into your server setup file and your cookies for this AuthCookie realm will be
 named MyCustomName.  Default is AuthType_AuthName.
 
+=item 6.
+
+By default users must satisfy ALL of the C<require> directives.  If you
+want authentication to succeed if ANY C<require> directives are met, use the
+C<Satisfy> directive.  For instance, if your AuthName is C<WhatEver>, you can
+put the command
+
+ PerlSetVar WhatEverSatisfy Any
+
+into your server startup file and authentication for this realm will succeed if
+ANY of the C<require> directives are met.
+
 =back
 
 This is the flow of the authentication handler, less the details of the
@@ -718,12 +730,6 @@ in your subclass, which will then be called.  The method will be
 called as C<$r-E<gt>species($r, $args)>, where C<$args> is everything
 on your C<require> line after the word C<species>.  The method should
 return OK on success and FORBIDDEN on failure.
-
-Currently users must satisfy ALL of the C<require> directives.  I have
-heard that other Apache modules let the user satisfy ANY of the
-C<require> directives.  I don't know which is correct, I haven't found
-any Apache docs on the matter.  If you need one behavior or the other,
-be careful.  I may change it if I discover that ANY is correct.
 
 =item * authen_cred()
 
@@ -996,7 +1002,7 @@ implement anything, though.
 
 =head1 CVS REVISION
 
-$Id: AuthCookie.pm,v 1.7 2005-07-09 19:19:01 mschout Exp $
+$Id: AuthCookie.pm,v 1.8 2006-01-19 15:36:54 mschout Exp $
 
 =head1 AUTHOR
 
