@@ -3,7 +3,7 @@ package Apache2::AuthCookie;
 use strict;
 
 use Carp;
-use mod_perl2 qw(1.9922 StackedHandlers MethodHandlers Authen Authz);
+use mod_perl2 qw(1.9922);
 
 use Apache::AuthCookie::Util;
 use Apache2::RequestRec;
@@ -17,7 +17,7 @@ use APR::Table;
 use Apache2::Const qw(:common M_GET HTTP_FORBIDDEN HTTP_MOVED_TEMPORARILY);
 use vars qw($VERSION);
 
-# $Id: AuthCookie.pm,v 1.12 2005-07-09 19:30:38 mschout Exp $
+# $Id: AuthCookie.pm,v 1.13 2006-01-19 15:28:35 mschout Exp $
 $VERSION = '3.09_01';
 
 sub recognize_user {
@@ -1052,7 +1052,7 @@ implement anything, though.
 
 =head1 CVS REVISION
 
-$Id: AuthCookie.pm,v 1.12 2005-07-09 19:30:38 mschout Exp $
+$Id: AuthCookie.pm,v 1.13 2006-01-19 15:28:35 mschout Exp $
 
 =head1 AUTHOR
 

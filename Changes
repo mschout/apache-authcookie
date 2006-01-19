@@ -11,6 +11,8 @@ Version: CURRENT
    - bug fix: use of Apache2::URI::unescape_url() does not handle
      '+' to ' ' conversion.  This caused problems for credentials
      that contain spaces.
+   - MP2: remove mod_perl features from "use mod_perl2" line. This is 
+     no longer supported by mod_perl2.
 
 Version: 3.08
    - fix "authorize user" error log that was missing a debug level check
