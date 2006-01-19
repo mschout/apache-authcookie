@@ -5,8 +5,8 @@ use Apache2::URI;
 sub unescape_uri {
     my $string = shift;
 
-    Apache2::URI::unescape_url($string);
     $string =~ tr/+/ /;
+    Apache2::URI::unescape_url($string);
 
     return $string;
 }
