@@ -3,7 +3,8 @@ package Apache2::AuthCookie;
 use strict;
 
 use Carp;
-use mod_perl2 qw(1.9922);
+use CGI '3.12';
+use mod_perl2 '1.9922';
 
 use Apache::AuthCookie::Util;
 use Apache2::RequestRec;
@@ -17,7 +18,7 @@ use APR::Table;
 use Apache2::Const qw(:common M_GET HTTP_FORBIDDEN HTTP_MOVED_TEMPORARILY);
 use vars qw($VERSION);
 
-# $Id: AuthCookie.pm,v 1.14 2006-01-19 15:36:54 mschout Exp $
+# $Id: AuthCookie.pm,v 1.15 2006-01-19 17:04:27 mschout Exp $
 $VERSION = '3.09_01';
 
 sub recognize_user {
@@ -142,33 +143,9 @@ sub _get_form_data {
 
     my $data = '';
 
-    if ($r->method eq 'POST') {
-        # $r->content doesnt exist anymore. This is the Apache::compat
-        # version.  Maybe there is more efficient way to do this...
-        $r->setup_client_block;
+    my $cgi = CGI->new($r);
 
-        return unless $r->should_client_block;
-
-        my $buf;
-        while (my $read_len = $r->get_client_block($buf, 8192)) {
-            if ($read_len == -1) {
-                die "get_client_block() error";
-            }
-            $data .= $buf;
-        }
-    }
-    else {
-        $data = $r->args;
-    }
-
-    my %args = ();
-
-    if (defined $data) {
-        %args = map { Apache2::AuthCookie::Util::unescape_uri($_) }
-                split /[=&;]/, $data;
-    }
-
-    return %args;
+    return $cgi->Vars();
 }
 
 sub login {
@@ -1058,7 +1035,7 @@ implement anything, though.
 
 =head1 CVS REVISION
 
-$Id: AuthCookie.pm,v 1.14 2006-01-19 15:36:54 mschout Exp $
+$Id: AuthCookie.pm,v 1.15 2006-01-19 17:04:27 mschout Exp $
 
 =head1 AUTHOR
 
