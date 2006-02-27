@@ -17,6 +17,7 @@ Version: CURRENT
      several form data handling bugs)
    - In a subrequest, copy $r->prev->user to $r->user (or r->connection->user 
      for MP1)
+   - remove Apache2::AuthCookie::Util - no longer necessary
 
 Version: 3.08
    - fix "authorize user" error log that was missing a debug level check
