@@ -9,7 +9,7 @@ use Apache::AuthCookie::Util;
 use Apache::Util qw(escape_uri);
 use vars qw($VERSION);
 
-# $Id: AuthCookie.pm,v 1.8 2006-01-19 15:36:54 mschout Exp $
+# $Id: AuthCookie.pm,v 1.9 2006-02-27 18:03:44 mschout Exp $
 $VERSION = '3.09_01';
 
 sub recognize_user ($$) {
@@ -191,7 +191,12 @@ sub authenticate ($$) {
   my $debug = $r->dir_config("AuthCookieDebug") || 0;
   
   $r->log_error("auth_type " . $auth_type) if ($debug >= 3);
-  return OK unless $r->is_initial_req; # Only authenticate the first internal request
+
+  unless ($r->is_initial_req) {
+    # we are in a subrequest.  Jus tcopy user from previous request.
+    $r->connection->user($r->prev->connection->user);
+    return OK;
+  }
   
   if ($r->auth_type ne $auth_type) {
     # This location requires authentication because we are being called,
@@ -1002,7 +1007,7 @@ implement anything, though.
 
 =head1 CVS REVISION
 
-$Id: AuthCookie.pm,v 1.8 2006-01-19 15:36:54 mschout Exp $
+$Id: AuthCookie.pm,v 1.9 2006-02-27 18:03:44 mschout Exp $
 
 =head1 AUTHOR
 

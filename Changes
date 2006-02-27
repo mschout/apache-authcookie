@@ -15,6 +15,8 @@ Version: CURRENT
      no longer supported by mod_perl2.
    - MP2: _get_form_data() - switch to CGI.pm to handle form data (fixes
      several form data handling bugs)
+   - In a subrequest, copy $r->prev->user to $r->user (or r->connection->user 
+     for MP1)
 
 Version: 3.08
    - fix "authorize user" error log that was missing a debug level check

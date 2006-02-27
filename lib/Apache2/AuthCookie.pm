@@ -13,12 +13,11 @@ use Apache2::Log;
 use Apache2::Access;
 use Apache2::Response;
 use Apache2::Util;
-use Apache2::AuthCookie::Util;
 use APR::Table;
 use Apache2::Const qw(:common M_GET HTTP_FORBIDDEN HTTP_MOVED_TEMPORARILY);
 use vars qw($VERSION);
 
-# $Id: AuthCookie.pm,v 1.15 2006-01-19 17:04:27 mschout Exp $
+# $Id: AuthCookie.pm,v 1.16 2006-02-27 18:03:44 mschout Exp $
 $VERSION = '3.09_01';
 
 sub recognize_user {
@@ -224,7 +223,8 @@ sub authenticate {
     $r->server->log_error("auth_type " . $auth_type) if ($debug >= 3);
 
     unless ($r->is_initial_req) {
-        # only authenticate the first internal redirect
+        # we are in a subrequest.  Just copy user from previous request.
+        $r->user( $r->prev->user );
         return OK;
     }
 
@@ -1035,7 +1035,7 @@ implement anything, though.
 
 =head1 CVS REVISION
 
-$Id: AuthCookie.pm,v 1.15 2006-01-19 17:04:27 mschout Exp $
+$Id: AuthCookie.pm,v 1.16 2006-02-27 18:03:44 mschout Exp $
 
 =head1 AUTHOR
 
