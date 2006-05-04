@@ -1,4 +1,4 @@
-Version: CURRENT
+Version: 3.09
    - POD doc fixes.
    - MP2: remove _check_request_req() - this was only necessary when
      running under both MP1 and MP2.  Package name change eliminates the
@@ -16,8 +16,10 @@ Version: CURRENT
    - MP2: _get_form_data() - switch to CGI.pm to handle form data (fixes
      several form data handling bugs)
    - In a subrequest, copy $r->prev->user to $r->user (or r->connection->user 
-     for MP1)
+     for MP1).
    - remove Apache2::AuthCookie::Util - no longer necessary
+   - multi-valued form fields are now handled properly in POST -> GET conversion
+   - MP2: require CGI.pm 3.12 or later
 
 Version: 3.08
    - fix "authorize user" error log that was missing a debug level check
