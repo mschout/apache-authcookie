@@ -9,7 +9,7 @@ use Apache::AuthCookie::Util;
 use Apache::Util qw(escape_uri);
 use vars qw($VERSION);
 
-# $Id: AuthCookie.pm,v 1.9 2006-02-27 18:03:44 mschout Exp $
+# $Id: AuthCookie.pm,v 1.10 2006-05-04 05:04:43 mschout Exp $
 $VERSION = '3.09_01';
 
 sub recognize_user ($$) {
@@ -106,8 +106,12 @@ sub _convert_to_get {
            or $name =~ /^credential_\d+$/;
 
       $value = '' unless defined $value;
-      push @pairs, escape_uri($name) . '=' . escape_uri($value);
+
+      for my $v (split /\0/, $value) {
+        push @pairs, escape_uri($name) . '=' . escape_uri($v);
+      }
     }
+
     $r->args(join '&', @pairs) if scalar(@pairs) > 0;
 
     $r->method('GET');
@@ -115,12 +119,31 @@ sub _convert_to_get {
     $r->headers_in->unset('Content-Length');
 }
 
+sub _get_form_data {
+    my ($self, $r) = @_;
+
+    my @pairs = $r->method eq 'POST' ? $r->content : $r->args;
+
+    my %vars = ();
+
+    while (my ($name, $value) = splice @pairs, 0, 2) {
+      unless (defined $vars{$name}) {
+        $vars{$name} = $value;
+      }
+      else {
+        $vars{$name} .= "\0$value";
+      }
+    }
+
+    return %vars;
+}
+
 sub login ($$) {
   my ($self, $r) = @_;
   my $debug = $r->dir_config("AuthCookieDebug") || 0;
 
   my ($auth_type, $auth_name) = ($r->auth_type, $r->auth_name);
-  my %args = $r->method eq 'POST' ? $r->content : $r->args;
+  my %args = $self->_get_form_data($r);
 
   $self->_convert_to_get($r, \%args) if $r->method eq 'POST';
 
@@ -265,7 +288,7 @@ sub login_form {
   my $r = Apache->request or die "no request";
   my $auth_name = $r->auth_name;
 
-  my %args = $r->method eq 'POST' ? $r->content : $r->args;
+  my %args = $self->_get_form_data($r);
 
   $self->_convert_to_get($r, \%args) if $r->method eq 'POST';
 
@@ -1007,7 +1030,7 @@ implement anything, though.
 
 =head1 CVS REVISION
 
-$Id: AuthCookie.pm,v 1.9 2006-02-27 18:03:44 mschout Exp $
+$Id: AuthCookie.pm,v 1.10 2006-05-04 05:04:43 mschout Exp $
 
 =head1 AUTHOR
 
