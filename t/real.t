@@ -3,9 +3,7 @@
 # of the entire page.  The problem is on win32, some responses come back with
 # dos-style line endings (not all of them though).  Not sure what MacOS does
 # and I don't have a Mac to test with.  Currently, we just strip CR's out of
-# responses to make the tests pass on Unix and Win32.
-
-use strict;
+# responses to make the tests pass on Unix and Win32.  use strict;
 use warnings FATAL => 'all';
 use lib 'lib';
 
@@ -16,7 +14,7 @@ use Apache::TestRequest qw(GET POST GET_BODY);
 
 Apache::TestRequest::user_agent( reset => 1, requests_redirectable => 0 );
 
-plan tests => 32, need_lwp;
+plan tests => 35, need_lwp;
 
 ok 1;  # we loaded.
 
@@ -295,6 +293,31 @@ ok 1;  # we loaded.
 
     like($r->content, qr/creds: fail one\/two/,
          'read form data handles "/" conversion with encoded +');
+}
+
+# make sure multi-valued form data is preserved.
+{
+    my $r = POST('/docs/protected/xyz', [
+        one => 'abc',
+        one => 'def'
+    ]);
+
+    # check and make sure we are at the login form now.
+    like($r->content, qr/Failure reason: 'no_cookie'/,
+         'login form was returned');
+
+    # check for multi-valued form data.
+    like($r->content, qr/one=abc&one=def/,
+         'post conversion perserves multi-valued fields');
+}
+
+# make sure $ENV{REMOTE_USER} gets set up
+{
+    my $r = GET('/docs/protected/echo_user.pl',
+        Cookie => 'Sample::AuthCookieHandler_WhatEver=programmer:Hero'
+    );
+
+    like($r->content, qr/User: programmer/);
 }
 
 # remove CR's from a string.  Win32 apache apparently does line ending
