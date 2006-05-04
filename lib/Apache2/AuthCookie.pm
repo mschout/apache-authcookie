@@ -17,8 +17,8 @@ use APR::Table;
 use Apache2::Const qw(:common M_GET HTTP_FORBIDDEN HTTP_MOVED_TEMPORARILY);
 use vars qw($VERSION);
 
-# $Id: AuthCookie.pm,v 1.17 2006-05-04 05:02:16 mschout Exp $
-$VERSION = '3.09_01';
+# $Id: AuthCookie.pm,v 1.18 2006-05-04 05:08:25 mschout Exp $
+$VERSION = '3.09';
 
 sub recognize_user {
     my ($self, $r) = @_;
@@ -1037,7 +1037,7 @@ implement anything, though.
 
 =head1 CVS REVISION
 
-$Id: AuthCookie.pm,v 1.17 2006-05-04 05:02:16 mschout Exp $
+$Id: AuthCookie.pm,v 1.18 2006-05-04 05:08:25 mschout Exp $
 
 =head1 AUTHOR
 
