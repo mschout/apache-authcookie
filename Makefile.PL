@@ -22,7 +22,8 @@ my %makeconf = (
 
 if ($mp_version == 2) {
     # 1.9922 is 2.0.0 RC5. mod_perl package renames happend at this release.
-    $makeconf->{PREREQ_PM}{mod_perl} = '1.9922';
+    $makeconf{PREREQ_PM}{mod_perl2} = '1.9922';
+    $makeconf{PREREQ_PM}{CGI} = '3.12';
 }
 
 WriteMakefile(%makeconf);
