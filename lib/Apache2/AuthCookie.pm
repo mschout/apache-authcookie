@@ -17,7 +17,7 @@ use APR::Table;
 use Apache2::Const qw(:common M_GET HTTP_FORBIDDEN HTTP_MOVED_TEMPORARILY);
 use vars qw($VERSION);
 
-# $Id: AuthCookie.pm,v 1.16 2006-02-27 18:03:44 mschout Exp $
+# $Id: AuthCookie.pm,v 1.17 2006-05-04 05:02:16 mschout Exp $
 $VERSION = '3.09_01';
 
 sub recognize_user {
@@ -121,7 +121,9 @@ sub _convert_to_get {
              or $name =~ /^credential_\d+$/;
 
         $value = '' unless defined $value;
-        push @pairs, escape_uri($r, $name) . '=' . escape_uri($r, $value);
+        for my $v (split /\0/, $value) {
+            push @pairs, escape_uri($r, $name) . '=' . escape_uri($r, $v);
+        }
     }
 
     $r->args(join '&', @pairs) if scalar(@pairs) > 0;
@@ -1035,7 +1037,7 @@ implement anything, though.
 
 =head1 CVS REVISION
 
-$Id: AuthCookie.pm,v 1.16 2006-02-27 18:03:44 mschout Exp $
+$Id: AuthCookie.pm,v 1.17 2006-05-04 05:02:16 mschout Exp $
 
 =head1 AUTHOR
 
