@@ -16,6 +16,7 @@ t/htdocs/docs/index.html
 t/htdocs/docs/login.pl
 t/htdocs/docs/logout.pl
 t/htdocs/docs/protected/get_me.html
+t/htdocs/docs/protected/echo_user.pl
 t/htdocs/docs/authall/get_me.html
 t/htdocs/docs/authany/get_me.html
 t/htdocs/docs/cookiename/get_me.html
