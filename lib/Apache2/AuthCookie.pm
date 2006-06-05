@@ -17,8 +17,8 @@ use APR::Table;
 use Apache2::Const qw(:common M_GET HTTP_FORBIDDEN HTTP_MOVED_TEMPORARILY);
 use vars qw($VERSION);
 
-# $Id: AuthCookie.pm,v 1.18 2006-05-04 05:08:25 mschout Exp $
-$VERSION = '3.09';
+# $Id: AuthCookie.pm,v 1.19 2006-06-05 01:12:51 mschout Exp $
+$VERSION = '3.10';
 
 sub recognize_user {
     my ($self, $r) = @_;
@@ -225,8 +225,10 @@ sub authenticate {
     $r->server->log_error("auth_type " . $auth_type) if ($debug >= 3);
 
     unless ($r->is_initial_req) {
-        # we are in a subrequest.  Just copy user from previous request.
-        $r->user( $r->prev->user );
+        if (defined $r->prev) {
+            # we are in a subrequest.  Just copy user from previous request.
+            $r->user( $r->prev->user );
+        }
         return OK;
     }
 
@@ -1037,7 +1039,7 @@ implement anything, though.
 
 =head1 CVS REVISION
 
-$Id: AuthCookie.pm,v 1.18 2006-05-04 05:08:25 mschout Exp $
+$Id: AuthCookie.pm,v 1.19 2006-06-05 01:12:51 mschout Exp $
 
 =head1 AUTHOR
 

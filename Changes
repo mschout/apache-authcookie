@@ -1,3 +1,7 @@
+Version: 3.10
+   - Bug Fix: when copying user from prev request, check that $r->prev
+     is defined, not just that $r->is_initial_request is true.
+
 Version: 3.09
    - POD doc fixes.
    - MP2: remove _check_request_req() - this was only necessary when

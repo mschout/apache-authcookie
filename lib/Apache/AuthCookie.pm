@@ -9,8 +9,8 @@ use Apache::AuthCookie::Util;
 use Apache::Util qw(escape_uri);
 use vars qw($VERSION);
 
-# $Id: AuthCookie.pm,v 1.11 2006-05-04 05:08:25 mschout Exp $
-$VERSION = '3.09';
+# $Id: AuthCookie.pm,v 1.12 2006-06-05 01:12:51 mschout Exp $
+$VERSION = '3.10';
 
 sub recognize_user ($$) {
   my ($self, $r) = @_;
@@ -216,8 +216,10 @@ sub authenticate ($$) {
   $r->log_error("auth_type " . $auth_type) if ($debug >= 3);
 
   unless ($r->is_initial_req) {
-    # we are in a subrequest.  Jus tcopy user from previous request.
-    $r->connection->user($r->prev->connection->user);
+    if (defined $r->prev) {
+      # we are in a subrequest.  Jus tcopy user from previous request.
+      $r->connection->user($r->prev->connection->user);
+    }
     return OK;
   }
   
@@ -1030,7 +1032,7 @@ implement anything, though.
 
 =head1 CVS REVISION
 
-$Id: AuthCookie.pm,v 1.11 2006-05-04 05:08:25 mschout Exp $
+$Id: AuthCookie.pm,v 1.12 2006-06-05 01:12:51 mschout Exp $
 
 =head1 AUTHOR
 
