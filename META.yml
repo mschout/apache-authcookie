@@ -1,11 +1,13 @@
 # http://module-build.sourceforge.net/META-spec.html
 #XXXXXXX This is a prototype!!!  It will change in the future!!! XXXXX#
 name:         Apache-AuthCookie
-version:      3.09
+version:      3.10
 version_from: lib/Apache/AuthCookie.pm
 installdirs:  site
 requires:
     Apache::Test:                  1.22
+    CGI:                           3.12
+    mod_perl2:                     1.9922
     Test::More:                    0
 
 distribution_type: module
