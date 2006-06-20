@@ -1,3 +1,6 @@
+Version: CURRENT
+   - Fix tiny  pod doc error.
+
 Version: 3.10
    - Bug Fix: when copying user from prev request, check that $r->prev
      is defined, not just that $r->is_initial_request is true.
