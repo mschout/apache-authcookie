@@ -5,6 +5,7 @@
 ~$
 ssi\.t$
 CVS/
+.svn/
 error_log
 t/httpd.loc
 README
