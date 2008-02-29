@@ -6,7 +6,7 @@ use Apache2::RequestRec;
 use Apache2::RequestIO;
 use vars qw($VERSION @ISA);
 
-$VERSION = substr(q$Revision: 1.2 $, 10);
+$VERSION = substr(q$Revision$, 10);
 @ISA = qw(Apache2::AuthCookie);
 
 sub authen_cred ($$\@) {
