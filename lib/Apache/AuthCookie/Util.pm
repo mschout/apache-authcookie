@@ -63,4 +63,14 @@ sub expire_calc {
     return (time+$offset);
 }
 
+# escape embedded CR, LF, TAB's to prevent possible XSS attacks.
+# see http://www.securiteam.com/securityreviews/5WP0E2KFGK.html
+sub escape_destination {
+    my $text = shift;
+
+    $text =~ s/([\r\n\t])/sprintf("%%%02X", ord $1)/ge;
+
+    return $text;
+}
+
 1;

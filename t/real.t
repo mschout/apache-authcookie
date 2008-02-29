@@ -14,7 +14,7 @@ use Apache::TestRequest qw(GET POST GET_BODY);
 
 Apache::TestRequest::user_agent( reset => 1, requests_redirectable => 0 );
 
-plan tests => 35, need_lwp;
+plan tests => 39, need_lwp;
 
 ok 1;  # we loaded.
 
@@ -281,6 +281,28 @@ ok 1;  # we loaded.
 
     like($r->content, qr/creds: fail one\+two/,
          'read form data handles "+" conversion with encoded +');
+}
+
+# XSS attack prevention.  make sure embedded \r, \n, \t is escaped in the destination.
+{
+    my $r = POST('/LOGIN', [
+        destination  => "/docs/protected/get_me.html\r\nX-Test-Bar: True\r\nX-Test-Foo: True\r\n",
+        credential_0 => 'programmer',
+        credential_1 => 'Hero'
+    ]);
+
+    ok(!defined $r->header('X-Test-Foo'), 'anti XSS injection');
+    ok(!defined $r->header('X-Test-Bar'), 'anti XSS injection');
+
+    # try with escaped CRLF also.
+    $r = POST('/LOGIN', [
+        destination  => "/docs/protected/get_me.html%0d%0aX-Test-Foo: True%0d%0aX-Test-Bar: True\r\n",
+        credential_0 => 'programmer',
+        credential_1 => 'Hero'
+    ]);
+
+    ok(!defined $r->header('X-Test-Foo'), 'anti XSS injection with escaped CRLF');
+    ok(!defined $r->header('X-Test-Bar'), 'anti XSS injection with escaped CRLF');
 }
 
 # make sure '/' in password is preserved.

@@ -10,7 +10,7 @@ use Apache::Util qw(escape_uri);
 use vars qw($VERSION);
 
 # $Id$
-$VERSION = '3.10';
+$VERSION = '3.11';
 
 sub recognize_user ($$) {
   my ($self, $r) = @_;
@@ -186,8 +186,16 @@ sub login ($$) {
 
   $self->handle_cache;
 
-  $r->header_out("Location" => $args{'destination'});
+  $r->header_out(
+    "Location" => $self->untaint_destination($args{'destination'}));
+
   return REDIRECT;
+}
+
+sub untaint_destination {
+  my ($self, $dest) = @_;
+
+  return Apache::AuthCookie::Util::escape_destination($dest);
 }
 
 sub logout($$) {
@@ -874,6 +882,15 @@ This method will return the current session key, if any.  This can be
 handy inside a method that implements a C<require> directive check
 (like the C<species> method discussed above) if you put any extra
 information like clearances or whatever into the session key.
+
+=item * untaint_destination($self, $uri)
+
+This method returns a modified version of the destination parameter
+before embedding it into the response header. Per default it escapes
+CR, LF and TAB characters of the uri to avoid certain types of
+security attacks. You can override it to more limit the allowed
+destinations, e.g., only allow relative uris, only special hosts or
+only limited set of characters.
 
 =back
 
