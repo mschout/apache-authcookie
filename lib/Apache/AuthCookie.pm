@@ -10,7 +10,7 @@ use Apache::Util qw(escape_uri);
 use vars qw($VERSION);
 
 # $Id$
-$VERSION = '3.11';
+$VERSION = '3.12_01';
 
 sub recognize_user ($$) {
   my ($self, $r) = @_;
