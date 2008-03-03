@@ -13,7 +13,8 @@ my %makeconf = (
     'VERSION_FROM' => 'lib/Apache/AuthCookie.pm',
     'PREREQ_PM'    => {
         'Apache::Test' => 1.22,
-        'Test::More'   => 0
+        'Test::More'   => 0,
+        'CGI'          => 0
     },
     'clean'        => {
         FILES => "@CLEAN_FILES"
@@ -21,9 +22,13 @@ my %makeconf = (
 );
 
 if ($mp_version == 2) {
-    # 1.9922 is 2.0.0 RC5. mod_perl package renames happend at this release.
+    # 1.9922 == 2.0.0 RC5. mod_perl -> mod_perl2 renamed here.
     $makeconf{PREREQ_PM}{mod_perl2} = '1.9922';
+    # CGI.pm 3.12 is required to work with mod_perl2
     $makeconf{PREREQ_PM}{CGI} = '3.12';
+}
+elsif ($mp_version == 1) {
+    $makeconf{PREREQ_PM}{mod_perl} = '1.27';
 }
 
 WriteMakefile(%makeconf);
@@ -77,6 +82,7 @@ sub test_prepare {
 }
 
 sub mod_perl_version {
+    # try to figure out what version of mod_perl is installed.
     eval {
         require mod_perl
     };
@@ -96,5 +102,8 @@ sub mod_perl_version {
         return 2;
     }
 
-    die "mod_perl version $mod_perl::VERSION is not supported\n";
+    # we didn't fine a supported version issue a warning, and assume version 2.
+    warn "no supported mod_perl version was found\n";
+
+    return 2;
 }

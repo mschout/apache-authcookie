@@ -1,3 +1,8 @@
+Version: 3.12_01
+   - If no mod_perl version is found, require mod_perl2.  Hopefully CPAN
+     testers will get the right dependencies this way. Also set up PREREQ_PM
+     properly for mod_perl version 1.
+
 Version: 3.11
    - Fix tiny pod doc error.
    - Escape CR and LF in 'destination' field to prevent possible XSS attack
