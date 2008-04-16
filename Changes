@@ -1,7 +1,7 @@
-Version: 3.12_01
-   - If no mod_perl version is found, require mod_perl2.  Hopefully CPAN
-     testers will get the right dependencies this way. Also set up PREREQ_PM
-     properly for mod_perl version 1.
+Version: 3.12
+   - Makefile.PL If no mod_perl version is found, just require mod_perl2.
+     This makes sure that CPAN testers will get the right dependencies.
+     way. Also set up PREREQ_PM properly for mod_perl version 1.
 
 Version: 3.11
    - Fix tiny pod doc error.

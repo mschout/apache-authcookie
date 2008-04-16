@@ -18,7 +18,7 @@ use Apache2::Const qw(:common M_GET HTTP_FORBIDDEN HTTP_MOVED_TEMPORARILY);
 use vars qw($VERSION);
 
 # $Id$
-$VERSION = '3.12_01';
+$VERSION = '3.12';
 
 sub recognize_user {
     my ($self, $r) = @_;
