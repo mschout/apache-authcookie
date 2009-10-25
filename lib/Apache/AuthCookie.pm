@@ -1053,7 +1053,7 @@ $Id$
 
 =head1 AUTHOR
 
-Michael Schout <mschout@gkg.net>
+Michael Schout <mschout@cpan.org>
 
 Originally written by Eric Bartley <bartley@purdue.edu>
 

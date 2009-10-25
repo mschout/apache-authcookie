@@ -1,6 +1,7 @@
 Current:
    - MP2: doc updates: remove beta warnings, change Apache::AuthCookie to
      Apache2::Authcookie where appopriate.
+   - docs: change my email to my cpan address
 
 Version: 3.12
    - Makefile.PL If no mod_perl version is found, just require mod_perl2.
