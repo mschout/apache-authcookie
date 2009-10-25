@@ -595,14 +595,10 @@ MethodHandlers, Authen, and Authz compiled in.
 
 =head1 DESCRIPTION
 
-WARNING! This is an early version of B<Apache::AuthCookie> for mod_perl version
-2.  If you are running under mod_perl version 2, this module should be
-considered of beta quality.  If you are a subclass author and would like to see
-additional changes (besides those listed in README.modperl2) to the interface
-provided by this module under mod_perl version 2, please contact me at
-mschout@gkg.net.  The interface for mod_perl version 1 has not changed.
+This module is for mod_perl version 2.  If you are running mod_perl version 1,
+you should be using B<Apache::AuthCookie> instead.
 
-B<Apache::AuthCookie> allows you to intercept a user's first
+B<Apache2::AuthCookie> allows you to intercept a user's first
 unauthenticated access to a protected document. The user will be
 presented with a custom form where they can enter authentication
 credentials. The credentials are posted to the server where AuthCookie
@@ -773,7 +769,7 @@ client.
 
 =head1 METHODS
 
-C<Apache::AuthCookie> has several methods you should know about.  Here
+C<Apache2::AuthCookie> has several methods you should know about.  Here
 is the documentation for each. =)
 
 =over 4
@@ -801,7 +797,7 @@ return OK on success and HTTP_FORBIDDEN on failure.
 =item * authen_cred()
 
 You must define this method yourself in your subclass of
-C<Apache::AuthCookie>.  Its job is to create the session key that will
+C<Apache2::AuthCookie>.  Its job is to create the session key that will
 be preserved in the user's cookie.  The arguments passed to it are:
 
  sub authen_cred ($$\@) {
@@ -824,7 +820,7 @@ doesn't tamper with the session key.  More info in the Eagle book.
 =item * authen_ses_key()
 
 You must define this method yourself in your subclass of
-Apache::AuthCookie.  Its job is to look at a session key and determine
+Apache2::AuthCookie.  Its job is to look at a session key and determine
 whether it is valid.  If so, it returns the username of the
 authenticated user.
 
@@ -867,7 +863,7 @@ again').
     return($CODE);
   }
           
-  where CODE is a valid code from Apache::Constants
+  where CODE is a valid code from Apache2::Const
 
 =item * login()
 
@@ -925,7 +921,7 @@ only limited set of characters.
 
 =head1 EXAMPLE
 
-For an example of how to use Apache::AuthCookie, you may want to check
+For an example of how to use Apache2::AuthCookie, you may want to check
 out the test suite, which runs AuthCookie through a few of its paces.
 The documents are located in t/eg/, and you may want to peruse
 t/real.t to see the generated httpd.conf file (at the bottom of

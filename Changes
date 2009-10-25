@@ -1,3 +1,7 @@
+Current:
+   - MP2: doc updates: remove beta warnings, change Apache::AuthCookie to
+     Apache2::Authcookie where appopriate.
+
 Version: 3.12
    - Makefile.PL If no mod_perl version is found, just require mod_perl2.
      This makes sure that CPAN testers will get the right dependencies.
