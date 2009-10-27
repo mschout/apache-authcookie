@@ -10,3 +10,4 @@
 ~$
 error_log
 t/httpd.loc
+^t/lib/Sample/AuthCookieHandler.pm$
