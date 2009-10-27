@@ -4,6 +4,7 @@ Current:
    - docs: change my email to my cpan address
    - sign dist with Module::Signature
    - add signature test
+   - MP1: perltidy Apache::AuthCookie sources.
 
 Version: 3.12
    - Makefile.PL If no mod_perl version is found, just require mod_perl2.

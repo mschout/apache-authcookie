@@ -13,80 +13,83 @@ use vars qw($VERSION);
 $VERSION = '3.12';
 
 sub recognize_user ($$) {
-  my ($self, $r) = @_;
-  my $debug = $r->dir_config("AuthCookieDebug") || 0;
-  my ($auth_type, $auth_name) = ($r->auth_type, $r->auth_name);
+    my ($self, $r) = @_;
+    my $debug = $r->dir_config("AuthCookieDebug") || 0;
+    my ($auth_type, $auth_name) = ($r->auth_type, $r->auth_name);
 
-  return DECLINED unless $auth_type && $auth_name;
+    return DECLINED unless $auth_type && $auth_name;
 
-  return DECLINED unless $r->header_in('Cookie');
+    return DECLINED unless $r->header_in('Cookie');
 
-  my $cookie_name = $self->cookie_name($r);
+    my $cookie_name = $self->cookie_name($r);
 
-  my ($cookie) = $r->header_in('Cookie') =~ /$cookie_name=([^;]+)/;
-  $r->log_error("cookie $cookie_name is $cookie") if $debug >= 2;
-  return DECLINED unless $cookie;
+    my ($cookie) = $r->header_in('Cookie') =~ /$cookie_name=([^;]+)/;
+    $r->log_error("cookie $cookie_name is $cookie") if $debug >= 2;
+    return DECLINED unless $cookie;
 
-  my ($user,@args) = $auth_type->authen_ses_key($r, $cookie);
-  if ($user and scalar @args == 0) {
-    $r->log_error("user is $user") if $debug >= 2;
+    my ($user, @args) = $auth_type->authen_ses_key($r, $cookie);
+    if ($user and scalar @args == 0) {
+        $r->log_error("user is $user") if $debug >= 2;
 
-    # if SessionTimeout is on, send new cookie with new Expires.
-    if (my $expires = $r->dir_config("${auth_name}SessionTimeout")) {
-      $self->send_cookie($cookie, {expires => $expires});
+        # if SessionTimeout is on, send new cookie with new Expires.
+        if (my $expires = $r->dir_config("${auth_name}SessionTimeout")) {
+            $self->send_cookie($cookie, { expires => $expires });
+        }
+
+        $r->connection->user($user);
+    }
+    elsif (scalar @args > 0 and $auth_type->can('custom_errors')) {
+        return $auth_type->custom_errors($r, $user, @args);
     }
 
-    $r->connection->user($user);
-  } elsif (scalar @args > 0 and $auth_type->can('custom_errors')) {
-    return $auth_type->custom_errors($r, $user, @args);
-  }
-
-  return OK;
+    return OK;
 }
 
 sub cookie_name {
-  my ($self, $r) = @_;
+    my ($self, $r) = @_;
 
-  my $auth_type = $r->auth_type;
-  my $auth_name = $r->auth_name;
+    my $auth_type = $r->auth_type;
+    my $auth_name = $r->auth_name;
 
-  my $cookie_name = $r->dir_config("${auth_name}CookieName") ||
-                    "${auth_type}_${auth_name}";
+    my $cookie_name = $r->dir_config("${auth_name}CookieName")
+        || "${auth_type}_${auth_name}";
 
-  return $cookie_name;
+    return $cookie_name;
 }
 
 sub handle_cache {
-  my $self = shift;
+    my $self = shift;
 
-  my $r = Apache->request;
+    my $r = Apache->request;
 
-  my $auth_name = $r->auth_name;
-  return unless $auth_name;
+    my $auth_name = $r->auth_name;
+    return unless $auth_name;
 
-  unless ($r->dir_config("${auth_name}Cache")) {
-    $r->no_cache(1);
-    $r->err_header_out(Pragma => 'no-cache');
-  }
+    unless ($r->dir_config("${auth_name}Cache")) {
+        $r->no_cache(1);
+        $r->err_header_out(Pragma => 'no-cache');
+    }
 }
 
 sub remove_cookie {
-  my $self = shift;
+    my $self = shift;
 
-  my $r = Apache->request;
+    my $r = Apache->request;
 
-  my $debug = $r->dir_config("AuthCookieDebug") || 0;
+    my $debug = $r->dir_config("AuthCookieDebug") || 0;
 
-  my $cookie_name = $self->cookie_name($r);
+    my $cookie_name = $self->cookie_name($r);
 
-  my $str = $self->cookie_string( request => $r,
-                                  key     => $cookie_name,
-                                  value   => '',
-                                  expires => 'Mon, 21-May-1971 00:00:00 GMT' );
+    my $str = $self->cookie_string(
+        request => $r,
+        key     => $cookie_name,
+        value   => '',
+        expires => 'Mon, 21-May-1971 00:00:00 GMT'
+    );
 
-  $r->err_headers_out->add("Set-Cookie" => "$str");
-  $r->log_error("removed_cookie " . $r->err_headers_out->get("Set-Cookie"))
-    if $debug >= 2;
+    $r->err_headers_out->add("Set-Cookie" => "$str");
+    $r->log_error("removed_cookie " . $r->err_headers_out->get("Set-Cookie"))
+        if $debug >= 2;
 }
 
 # convert current request to GET
@@ -99,17 +102,19 @@ sub _convert_to_get {
 
     $r->log_error("Converting POST -> GET") if $debug >= 2;
 
-    my @pairs =();
+    my @pairs = ();
     while (my ($name, $value) = each %$args) {
-      # we dont want to copy login data, only extra data
-      next if $name eq 'destination'
-           or $name =~ /^credential_\d+$/;
 
-      $value = '' unless defined $value;
+        # we dont want to copy login data, only extra data
+        next
+            if $name eq 'destination'
+                or $name =~ /^credential_\d+$/;
 
-      for my $v (split /\0/, $value) {
-        push @pairs, escape_uri($name) . '=' . escape_uri($v);
-      }
+        $value = '' unless defined $value;
+
+        for my $v (split /\0/, $value) {
+            push @pairs, escape_uri($name) . '=' . escape_uri($v);
+        }
     }
 
     $r->args(join '&', @pairs) if scalar(@pairs) > 0;
@@ -127,365 +132,387 @@ sub _get_form_data {
     my %vars = ();
 
     while (my ($name, $value) = splice @pairs, 0, 2) {
-      unless (defined $vars{$name}) {
-        $vars{$name} = $value;
-      }
-      else {
-        $vars{$name} .= "\0$value";
-      }
+        unless (defined $vars{$name}) {
+            $vars{$name} = $value;
+        }
+        else {
+            $vars{$name} .= "\0$value";
+        }
     }
 
     return %vars;
 }
 
 sub login ($$) {
-  my ($self, $r) = @_;
-  my $debug = $r->dir_config("AuthCookieDebug") || 0;
+    my ($self, $r) = @_;
+    my $debug = $r->dir_config("AuthCookieDebug") || 0;
 
-  my ($auth_type, $auth_name) = ($r->auth_type, $r->auth_name);
-  my %args = $self->_get_form_data($r);
+    my ($auth_type, $auth_name) = ($r->auth_type, $r->auth_name);
+    my %args = $self->_get_form_data($r);
 
-  $self->_convert_to_get($r, \%args) if $r->method eq 'POST';
+    $self->_convert_to_get($r, \%args) if $r->method eq 'POST';
 
-  unless (exists $args{'destination'}) {
-    $r->log_error("No key 'destination' found in form data");
-    $r->subprocess_env('AuthCookieReason', 'no_cookie');
-    return $auth_type->login_form;
-  }
-  
-  # Get the credentials from the data posted by the client
-  my @credentials;
-  for (my $i = 0; exists $args{"credential_$i"}; $i++) {
-    my $key = "credential_$i";
-    $r->log_error("$key $args{$key}") if $debug >= 2;
-    push @credentials, $args{$key};
-  }
-
-  # save creds in pnotes in case login form script wants to use them.
-  $r->pnotes("${auth_name}Creds", \@credentials);
-
-  # Exchange the credentials for a session key.
-  my $ses_key = $self->authen_cred($r, @credentials);
-  unless ($ses_key) {
-    $r->log_error("Bad credentials") if $debug >=2;
-    $r->subprocess_env('AuthCookieReason', 'bad_credentials');
-    $r->uri($args{'destination'});
-    return $auth_type->login_form;
-  }
-
-  if ($debug >= 2) {
-    if (defined $ses_key) {
-      $r->log_error("ses_key $ses_key");
+    unless (exists $args{'destination'}) {
+        $r->log_error("No key 'destination' found in form data");
+        $r->subprocess_env('AuthCookieReason', 'no_cookie');
+        return $auth_type->login_form;
     }
-    else {
-      $r->log_error("ses_key undefined");
+
+    # Get the credentials from the data posted by the client
+    my @credentials;
+    for (my $i = 0 ; exists $args{"credential_$i"} ; $i++) {
+        my $key = "credential_$i";
+        $r->log_error("$key $args{$key}") if $debug >= 2;
+        push @credentials, $args{$key};
     }
-  }
 
-  $self->send_cookie($ses_key);
+    # save creds in pnotes in case login form script wants to use them.
+    $r->pnotes("${auth_name}Creds", \@credentials);
 
-  $self->handle_cache;
+    # Exchange the credentials for a session key.
+    my $ses_key = $self->authen_cred($r, @credentials);
+    unless ($ses_key) {
+        $r->log_error("Bad credentials") if $debug >= 2;
+        $r->subprocess_env('AuthCookieReason', 'bad_credentials');
+        $r->uri($args{'destination'});
+        return $auth_type->login_form;
+    }
 
-  $r->header_out(
-    "Location" => $self->untaint_destination($args{'destination'}));
+    if ($debug >= 2) {
+        if (defined $ses_key) {
+            $r->log_error("ses_key $ses_key");
+        }
+        else {
+            $r->log_error("ses_key undefined");
+        }
+    }
 
-  return REDIRECT;
+    $self->send_cookie($ses_key);
+
+    $self->handle_cache;
+
+    $r->header_out(
+        "Location" => $self->untaint_destination($args{'destination'}));
+
+    return REDIRECT;
 }
 
 sub untaint_destination {
-  my ($self, $dest) = @_;
+    my ($self, $dest) = @_;
 
-  return Apache::AuthCookie::Util::escape_destination($dest);
+    return Apache::AuthCookie::Util::escape_destination($dest);
 }
 
 sub logout($$) {
-  my ($self,$r) = @_;
-  my $debug = $r->dir_config("AuthCookieDebug") || 0;
-  
-  $self->remove_cookie;
+    my ($self, $r) = @_;
+    my $debug = $r->dir_config("AuthCookieDebug") || 0;
 
-  $self->handle_cache;
+    $self->remove_cookie;
 
-  #my %args = $r->args;
-  #if (exists $args{'redirect'}) {
-  #  $r->err_header_out("Location" => $args{'redirect'});
-  #  return REDIRECT;
-  #} else {
-  #  $r->status(200);
-  #  return OK;
-  #}
+    $self->handle_cache;
+
+    #my %args = $r->args;
+    #if (exists $args{'redirect'}) {
+    #  $r->err_header_out("Location" => $args{'redirect'});
+    #  return REDIRECT;
+    #} else {
+    #  $r->status(200);
+    #  return OK;
+    #}
 }
 
 sub authenticate ($$) {
-  my ($auth_type, $r) = @_;
-  my $auth_user;
-  my $debug = $r->dir_config("AuthCookieDebug") || 0;
-  
-  $r->log_error("auth_type " . $auth_type) if ($debug >= 3);
+    my ($auth_type, $r) = @_;
+    my $auth_user;
+    my $debug = $r->dir_config("AuthCookieDebug") || 0;
 
-  unless ($r->is_initial_req) {
-    if (defined $r->prev) {
-      # we are in a subrequest.  Jus tcopy user from previous request.
-      $r->connection->user($r->prev->connection->user);
+    $r->log_error("auth_type " . $auth_type) if ($debug >= 3);
+
+    unless ($r->is_initial_req) {
+        if (defined $r->prev) {
+            # we are in a subrequest.  Just copy user from previous request.
+            $r->connection->user($r->prev->connection->user);
+        }
+        return OK;
     }
-    return OK;
-  }
-  
-  if ($r->auth_type ne $auth_type) {
-    # This location requires authentication because we are being called,
-    # but we don't handle this AuthType.
-    $r->log_error("AuthType mismatch: $auth_type =/= ".$r->auth_type) if $debug >= 3;
-    return DECLINED;
-  }
 
-  # Ok, the AuthType is $auth_type which we handle, what's the authentication
-  # realm's name?
-  my $auth_name = $r->auth_name;
-  $r->log_error("auth_name " . $auth_name) if $debug >= 2;
-  unless ($auth_name) {
-    $r->log_reason("AuthName not set, AuthType=$auth_type", $r->uri);
-    return SERVER_ERROR;
-  }
-
-  # Get the Cookie header. If there is a session key for this realm, strip
-  # off everything but the value of the cookie.
-  my $cookie_name = $auth_type->cookie_name($r);
-  my ($ses_key_cookie) = ($r->header_in("Cookie") || "") =~ /$cookie_name=([^;]+)/;
-  $ses_key_cookie = "" unless defined($ses_key_cookie);
-
-  $r->log_error("ses_key_cookie " . $ses_key_cookie) if ($debug >= 1);
-  $r->log_error("uri " . $r->uri) if ($debug >= 2);
-
-  if ($ses_key_cookie) {
-    my ($auth_user, @args) = $auth_type->authen_ses_key($r, $ses_key_cookie);
-
-    if ($auth_user and scalar @args == 0) {
-      # We have a valid session key, so we return with an OK value.
-      # Tell the rest of Apache what the authentication method and
-      # user is.
-
-      $r->connection->auth_type($auth_type);
-      $r->connection->user($auth_user);
-      $r->log_error("user authenticated as $auth_user") if $debug >= 1;
-
-      # if SessionTimeout is on, send cookie with new expires
-      if (my $expires = $r->dir_config("${auth_name}SessionTimeout")) {
-        $auth_type->send_cookie($ses_key_cookie, {expires => $expires});
-      }
-
-      return OK;
-    } elsif (scalar @args > 0 and $auth_type->can('custom_errors')) {
-      return $auth_type->custom_errors($r, $auth_user, @args);
-    } else {
-      # There was a session key set, but it's invalid for some reason. So,
-      # remove it from the client now so when the credential data is posted
-      # we act just like it's a new session starting.
-      $auth_type->remove_cookie;
-      $r->subprocess_env('AuthCookieReason', 'bad_cookie');
+    if ($r->auth_type ne $auth_type) {
+        # This location requires authentication because we are being called,
+        # but we don't handle this AuthType.
+        $r->log_error("AuthType mismatch: $auth_type =/= " . $r->auth_type)
+            if $debug >= 3;
+        return DECLINED;
     }
-  } else {
-    $r->subprocess_env('AuthCookieReason', 'no_cookie');
-  }
 
-  # They aren't authenticated, and they tried to get a protected
-  # document.  Send them the authen form.
-  return $auth_type->login_form;
+    # Ok, the AuthType is $auth_type which we handle, what's the authentication
+    # realm's name?
+    my $auth_name = $r->auth_name;
+    $r->log_error("auth_name " . $auth_name) if $debug >= 2;
+    unless ($auth_name) {
+        $r->log_reason("AuthName not set, AuthType=$auth_type", $r->uri);
+        return SERVER_ERROR;
+    }
+
+    # Get the Cookie header. If there is a session key for this realm, strip
+    # off everything but the value of the cookie.
+    my $cookie_name = $auth_type->cookie_name($r);
+    my ($ses_key_cookie) =
+        ($r->header_in("Cookie") || "") =~ /$cookie_name=([^;]+)/;
+    $ses_key_cookie = "" unless defined($ses_key_cookie);
+
+    $r->log_error("ses_key_cookie " . $ses_key_cookie) if ($debug >= 1);
+    $r->log_error("uri " . $r->uri) if ($debug >= 2);
+
+    if ($ses_key_cookie) {
+        my ($auth_user, @args) =
+            $auth_type->authen_ses_key($r, $ses_key_cookie);
+
+        if ($auth_user and scalar @args == 0) {
+
+            # We have a valid session key, so we return with an OK value.
+            # Tell the rest of Apache what the authentication method and
+            # user is.
+
+            $r->connection->auth_type($auth_type);
+            $r->connection->user($auth_user);
+            $r->log_error("user authenticated as $auth_user") if $debug >= 1;
+
+            # if SessionTimeout is on, send cookie with new expires
+            if (my $expires = $r->dir_config("${auth_name}SessionTimeout")) {
+                $auth_type->send_cookie($ses_key_cookie,
+                    { expires => $expires });
+            }
+
+            return OK;
+        }
+        elsif (scalar @args > 0 and $auth_type->can('custom_errors')) {
+            return $auth_type->custom_errors($r, $auth_user, @args);
+        }
+        else {
+
+           # There was a session key set, but it's invalid for some reason. So,
+           # remove it from the client now so when the credential data is posted
+           # we act just like it's a new session starting.
+            $auth_type->remove_cookie;
+            $r->subprocess_env('AuthCookieReason', 'bad_cookie');
+        }
+    }
+    else {
+        $r->subprocess_env('AuthCookieReason', 'no_cookie');
+    }
+
+    # They aren't authenticated, and they tried to get a protected
+    # document.  Send them the authen form.
+    return $auth_type->login_form;
 }
 
-sub login_form {  
-  my $self = shift;
+sub login_form {
+    my $self = shift;
 
-  my $r = Apache->request or die "no request";
-  my $auth_name = $r->auth_name;
+    my $r = Apache->request or die "no request";
+    my $auth_name = $r->auth_name;
 
-  my %args = $self->_get_form_data($r);
+    my %args = $self->_get_form_data($r);
 
-  $self->_convert_to_get($r, \%args) if $r->method eq 'POST';
+    $self->_convert_to_get($r, \%args) if $r->method eq 'POST';
 
-  # There should be a PerlSetVar directive that gives us the URI of
-  # the script to execute for the login form.
-  
-  my $authen_script;
-  unless ($authen_script = $r->dir_config($auth_name . "LoginScript")) {
-    $r->log_reason("PerlSetVar '${auth_name}LoginScript' not set", $r->uri);
-    return SERVER_ERROR;
-  }
-  #$r->log_error("Redirecting to $authen_script");
-  $r->custom_response(FORBIDDEN, $authen_script);
-  
-  return FORBIDDEN;
+    # There should be a PerlSetVar directive that gives us the URI of
+    # the script to execute for the login form.
+
+    my $authen_script;
+    unless ($authen_script = $r->dir_config($auth_name . "LoginScript")) {
+        $r->log_reason("PerlSetVar '${auth_name}LoginScript' not set", $r->uri);
+        return SERVER_ERROR;
+    }
+
+    #$r->log_error("Redirecting to $authen_script");
+    $r->custom_response(FORBIDDEN, $authen_script);
+
+    return FORBIDDEN;
 }
 
 sub satisfy_is_valid {
-  my ($auth_type, $r, $satisfy) = @_;
-  $satisfy = lc $satisfy;
+    my ($auth_type, $r, $satisfy) = @_;
+    $satisfy = lc $satisfy;
 
-  if ($satisfy eq 'any' or $satisfy eq 'all') {
-    return 1;
-  } else { 
-    my $auth_name = $r->auth_name;
-    $r->log_reason("PerlSetVar ${auth_name}Satisfy $satisfy invalid",$r->uri);
-    return 0;
-  }
+    if ($satisfy eq 'any' or $satisfy eq 'all') {
+        return 1;
+    }
+    else {
+        my $auth_name = $r->auth_name;
+        $r->log_reason("PerlSetVar ${auth_name}Satisfy $satisfy invalid",
+            $r->uri);
+        return 0;
+    }
 }
 
 sub get_satisfy {
-  my ($auth_type, $r) = @_;
+    my ($auth_type, $r) = @_;
 
-  my $auth_name = $r->auth_name;
+    my $auth_name = $r->auth_name;
 
-  return lc $r->dir_config("${auth_name}Satisfy") || 'all';
+    return lc $r->dir_config("${auth_name}Satisfy") || 'all';
 }
 
 sub authorize ($$) {
-  my ($auth_type, $r) = @_;
-  my $debug = $r->dir_config("AuthCookieDebug") || 0;
-  
-  $r->log_error('authorize() for '.$r->uri()) if ($debug >= 3);
-  return OK unless $r->is_initial_req; #only the first internal request
-  
-  if ($r->auth_type ne $auth_type) {
-    $r->log_error($auth_type . " auth type is " .
-		  $r->auth_type) if ($debug >= 3);
-    return DECLINED;
-  }
-  
-  my $reqs_arr = $r->requires or return DECLINED;
-  
-  my $user = $r->connection->user;
-  unless ($user) {
-    # user is either undef or =0 which means the authentication failed
-    $r->log_reason("No user authenticated", $r->uri);
-    return FORBIDDEN;
-  }
-  
-  my $satisfy = $auth_type->get_satisfy($r);
-  return SERVER_ERROR unless $auth_type->satisfy_is_valid($r,$satisfy);
-  my $satisfy_all = $satisfy eq 'all';
-  
-  my ($forbidden);
-  foreach my $req (@$reqs_arr) {
-    my ($requirement, $args) = split /\s+/, $req->{requirement}, 2;
-    $args = '' unless defined $args;
-    $r->log_error("requirement := $requirement, $args") if $debug >= 2;
-    
-    if ( lc($requirement) eq 'valid-user' ) {
-      if ($satisfy_all) {
-        next;
-      } else {
-        return OK;
-      }
+    my ($auth_type, $r) = @_;
+    my $debug = $r->dir_config("AuthCookieDebug") || 0;
+
+    $r->log_error('authorize() for ' . $r->uri()) if ($debug >= 3);
+    return OK unless $r->is_initial_req;    #only the first internal request
+
+    if ($r->auth_type ne $auth_type) {
+        $r->log_error($auth_type . " auth type is " . $r->auth_type)
+            if ($debug >= 3);
+        return DECLINED;
     }
 
-    if($requirement eq 'user') {
-      if ($args =~ m/\b$user\b/) {
-        next if $satisfy_all;
-        return OK; # satisfy any
-      }
-     
-      $forbidden = 1;
-      next;
+    my $reqs_arr = $r->requires or return DECLINED;
+
+    my $user = $r->connection->user;
+    unless ($user) {
+
+        # user is either undef or =0 which means the authentication failed
+        $r->log_reason("No user authenticated", $r->uri);
+        return FORBIDDEN;
     }
 
-    # Call a custom method
-    my $ret_val = $auth_type->$requirement($r, $args);
-    $r->log_error("$auth_type->$requirement returned $ret_val") if $debug >= 3;
-    if ($ret_val == OK) {
-      next if $satisfy_all;
-      return OK; # satisfy any
+    my $satisfy = $auth_type->get_satisfy($r);
+    return SERVER_ERROR unless $auth_type->satisfy_is_valid($r, $satisfy);
+    my $satisfy_all = $satisfy eq 'all';
+
+    my ($forbidden);
+    foreach my $req (@$reqs_arr) {
+        my ($requirement, $args) = split /\s+/, $req->{requirement}, 2;
+        $args = '' unless defined $args;
+        $r->log_error("requirement := $requirement, $args") if $debug >= 2;
+
+        if (lc($requirement) eq 'valid-user') {
+            if ($satisfy_all) {
+                next;
+            }
+            else {
+                return OK;
+            }
+        }
+
+        if ($requirement eq 'user') {
+            if ($args =~ m/\b$user\b/) {
+                next if $satisfy_all;
+                return OK;    # satisfy any
+            }
+
+            $forbidden = 1;
+            next;
+        }
+
+        # Call a custom method
+        my $ret_val = $auth_type->$requirement($r, $args);
+        $r->log_error("$auth_type->$requirement returned $ret_val")
+            if $debug >= 3;
+        if ($ret_val == OK) {
+            next if $satisfy_all;
+            return OK;    # satisfy any
+        }
+
+        # Nothing succeeded, deny access to this user.
+        $forbidden = 1;
     }
 
-    # Nothing succeeded, deny access to this user.
-    $forbidden = 1;
-  }
-
-  return $forbidden ? FORBIDDEN : OK;
+    return $forbidden ? FORBIDDEN : OK;
 }
 
 sub send_cookie {
-  my ($self, $ses_key, $cookie_args) = @_;
-  my $r = Apache->request();
+    my ($self, $ses_key, $cookie_args) = @_;
+    my $r = Apache->request();
 
-  $cookie_args = {} unless defined $cookie_args;
+    $cookie_args = {} unless defined $cookie_args;
 
-  my $cookie_name = $self->cookie_name($r);
+    my $cookie_name = $self->cookie_name($r);
 
-  my $cookie = $self->cookie_string( request => $r,
-                                     key     => $cookie_name,
-                                     value   => $ses_key,
-                                     %$cookie_args );
+    my $cookie = $self->cookie_string(
+        request => $r,
+        key     => $cookie_name,
+        value   => $ses_key,
+        %$cookie_args
+    );
 
-  # add P3P header if user has configured it.
-  my $auth_name = $r->auth_name;
-  if (my $p3p = $r->dir_config("${auth_name}P3P")) {
-    $r->err_header_out(P3P => $p3p);
-  }
+    # add P3P header if user has configured it.
+    my $auth_name = $r->auth_name;
+    if (my $p3p = $r->dir_config("${auth_name}P3P")) {
+        $r->err_header_out(P3P => $p3p);
+    }
 
-  $r->err_headers_out->add("Set-Cookie" => $cookie);
+    $r->err_headers_out->add("Set-Cookie" => $cookie);
 }
 
-
 sub cookie_string {
-  my $self = shift;
+    my $self = shift;
 
-  # if passed 3 args, we have old-style call.
-  if (scalar(@_) == 3) {
-    carp "deprecated old style call to ".__PACKAGE__."::cookie_string()";
-    my ($r, $key, $value) = @_;
-    return $self->cookie_string(request=>$r, key=>$key, value=>$value);
-  }
-  # otherwise assume named parameters.
-  my %p = @_;
-  for (qw/request key/) {    
-    croak "missing required parameter $_" unless defined $p{$_};
-  }
-  # its okay if value is undef here.
+    # if passed 3 args, we have old-style call.
+    if (scalar(@_) == 3) {
+        carp "deprecated old style call to "
+            . __PACKAGE__
+            . "::cookie_string()";
+        my ($r, $key, $value) = @_;
+        return $self->cookie_string(request => $r, key => $key,
+            value => $value);
+    }
 
-  my $r = $p{request};
+    # otherwise assume named parameters.
+    my %p = @_;
+    for (qw/request key/) {
+        croak "missing required parameter $_" unless defined $p{$_};
+    }
 
-  $p{value} = '' unless defined $p{value};
+    # its okay if value is undef here.
 
-  my $string = sprintf '%s=%s', @p{'key','value'};
+    my $r = $p{request};
 
-  my $auth_name = $r->auth_name;
+    $p{value} = '' unless defined $p{value};
 
-  if (my $expires = $p{expires} || $r->dir_config("${auth_name}Expires")) {
-    $expires = Apache::AuthCookie::Util::expires($expires);
-    $string .= "; expires=$expires";
-  }
+    my $string = sprintf '%s=%s', @p{ 'key', 'value' };
 
-  $string .= '; path=' . ( $self->get_cookie_path($r) || '/' );
-  #$r->log_error("Attribute ${auth_name}Path not set") unless $path;
+    my $auth_name = $r->auth_name;
 
-  if (my $domain = $r->dir_config("${auth_name}Domain")) {
-    $string .= "; domain=$domain";
-  }
+    if (my $expires = $p{expires} || $r->dir_config("${auth_name}Expires")) {
+        $expires = Apache::AuthCookie::Util::expires($expires);
+        $string .= "; expires=$expires";
+    }
 
-  if ($r->dir_config("${auth_name}Secure")) {
-    $string .= '; secure';
-  }
+    $string .= '; path=' . ($self->get_cookie_path($r) || '/');
 
-  # HttpOnly is an MS extension.  See
-  # http://msdn.microsoft.com/workshop/author/dhtml/httponly_cookies.asp
-  if ($r->dir_config("${auth_name}HttpOnly")) {
-    $string .= '; HttpOnly';
-  }
+    #$r->log_error("Attribute ${auth_name}Path not set") unless $path;
 
-  return $string;
+    if (my $domain = $r->dir_config("${auth_name}Domain")) {
+        $string .= "; domain=$domain";
+    }
+
+    if ($r->dir_config("${auth_name}Secure")) {
+        $string .= '; secure';
+    }
+
+    # HttpOnly is an MS extension.  See
+    # http://msdn.microsoft.com/workshop/author/dhtml/httponly_cookies.asp
+    if ($r->dir_config("${auth_name}HttpOnly")) {
+        $string .= '; HttpOnly';
+    }
+
+    return $string;
 }
 
 sub key {
-  my $self = shift;
-  my $r = Apache->request;
+    my $self = shift;
+    my $r    = Apache->request;
 
-  my $allcook = ($r->header_in("Cookie") || "");
-  my $cookie_name = $self->cookie_name($r);
-  return ($allcook =~ /(?:^|\s)$cookie_name=([^;]*)/)[0];
+    my $allcook = ($r->header_in("Cookie") || "");
+    my $cookie_name = $self->cookie_name($r);
+    return ($allcook =~ /(?:^|\s)$cookie_name=([^;]*)/)[0];
 }
 
 sub get_cookie_path {
     my $self = shift;
-    my $r    = shift || Apache->request;
+    my $r = shift || Apache->request;
 
     my $auth_name = $r->auth_name;
 
