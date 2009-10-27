@@ -10,4 +10,5 @@ t/conf/*.conf
 t/conf/modperl_inc.pl
 t/conf/modperl_startup.pl
 t/htdocs/index.html
+t/lib/Sample/AuthCookieHandler.pm
 *.bak
