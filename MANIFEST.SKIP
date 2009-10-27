@@ -9,5 +9,17 @@
 ^t/db/
 ~$
 error_log
-t/httpd.loc
+^t/httpd.loc
 ^t/lib/Sample/AuthCookieHandler.pm$
+
+# Apache::Test generated files
+^t/lib/Sample/AuthCookieHandler.pm$
+^t/conf/extra.conf$
+^t/conf/httpd.conf$
+^t/conf/modperl_inc.pl$
+^t/conf/modperl_startup.pl$
+^t/conf/apache_test_config.pm$
+^t/htdocs/index.html$
+^t/logs/
+^t/TEST$
+
