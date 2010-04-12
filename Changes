@@ -5,6 +5,8 @@ Current:
    - sign dist with Module::Signature
    - add signature test
    - MP1: perltidy Apache::AuthCookie sources.
+   - update mod_perl2 prereq version (still 2.0.0 RC5, but version number was
+     incorrect in Makefile.PL)
 
 Version: 3.12
    - Makefile.PL If no mod_perl version is found, just require mod_perl2.
