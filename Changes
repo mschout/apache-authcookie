@@ -12,6 +12,9 @@ Revision history for Apache::AuthCookie
      incorrect in Makefile.PL)
    - use Dist::Zilla for building the dist
 
+3.13  2010-04-12
+   - removed: bad dist
+
 Version: 3.12
    - Makefile.PL If no mod_perl version is found, just require mod_perl2.
      This makes sure that CPAN testers will get the right dependencies.
