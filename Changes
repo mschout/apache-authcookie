@@ -1,6 +1,7 @@
 Revision history for Apache::AuthCookie
 
 {{$NEXT}}
+   - enable Dist::Zilla Manifest plugin
 
 3.14  2010-04-12
    - MP2: doc updates: remove beta warnings, change Apache::AuthCookie to
