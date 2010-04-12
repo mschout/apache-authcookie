@@ -1,11 +1,9 @@
 package Apache::AuthCookie::Util;
-BEGIN {
-  $Apache::AuthCookie::Util::VERSION = '3.13';
-}
-
-# ABSTRACT: Internal Utility Functions for AuthCookie
 
 use strict;
+use vars '$VERSION';
+
+$VERSION = do { my @r = (q$Revision$ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r }; # must be all one line, for MakeMaker
 
 # -- expires() shamelessly taken from CGI::Util
 sub expires {
@@ -76,41 +74,3 @@ sub escape_destination {
 }
 
 1;
-
-__END__
-=pod
-
-=head1 NAME
-
-Apache::AuthCookie::Util - Internal Utility Functions for AuthCookie
-
-=head1 VERSION
-
-version 3.13
-
-=head1 AUTHOR
-
-  Michael Schout <mschout@cpan.org>
-
-=head1 COPYRIGHT AND LICENSE
-
-This software is copyright (c) 2000 by Ken Williams.
-
-This is free software; you can redistribute it and/or modify it under
-the same terms as the Perl 5 programming language system itself.
-
-=head1 SOURCE
-
-You can contribute or fork this project via github:
-
-http://github.com/mschout/apache-authcookie
-
- git clone git://github.com/mschout/apache-authcookie.git
-
-=head1 BUGS
-
-Please report any bugs or feature requests to bug-apache-authcookie@rt.cpan.org or through the web interface at:
- http://rt.cpan.org/Public/Dist/Display.html?Name=Apache-AuthCookie
-
-=cut
-

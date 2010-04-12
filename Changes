@@ -1,6 +1,6 @@
 Revision history for Apache::AuthCookie
 
-{{$NEXT}}
+3.13  2010-04-12
    - MP2: doc updates: remove beta warnings, change Apache::AuthCookie to
      Apache2::Authcookie where appopriate.
    - docs: change my email to my cpan address

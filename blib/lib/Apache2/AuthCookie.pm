@@ -1,15 +1,10 @@
 package Apache2::AuthCookie;
-BEGIN {
-  $Apache2::AuthCookie::VERSION = '3.13';
-}
-
-# ABSTRACT: Perl Authentication and Authorization via cookies
 
 use strict;
 
 use Carp;
 use CGI '3.12';
-use mod_perl2 '1.99022';
+use mod_perl2 '1.9922';
 
 use Apache::AuthCookie::Util;
 use Apache2::RequestRec;
@@ -20,6 +15,10 @@ use Apache2::Response;
 use Apache2::Util;
 use APR::Table;
 use Apache2::Const qw(:common M_GET HTTP_FORBIDDEN HTTP_MOVED_TEMPORARILY);
+use vars qw($VERSION);
+
+# $Id$
+$VERSION = '3.12';
 
 sub recognize_user {
     my ($self, $r) = @_;
@@ -518,17 +517,11 @@ sub get_cookie_path {
 
 1;
 
-
-
-=pod
+__END__
 
 =head1 NAME
 
 Apache2::AuthCookie - Perl Authentication and Authorization via cookies
-
-=head1 VERSION
-
-version 3.13
 
 =head1 SYNOPSIS
 
@@ -703,7 +696,8 @@ displaying the user's credentials in the Location field. They don't really
 change AuthCookie's model, but they do add another round-trip request to the
 client.
 
-=for html <PRE>
+=for html
+<PRE>
 
  (-----------------------)     +---------------------------------+
  ( Request a protected   )     | AuthCookie sets custom error    |
@@ -770,7 +764,8 @@ client.
     create must be able to determine if this session_key is valid and
     map it back to the originally authenticated user ID.
 
-=for html </PRE>
+=for html
+</PRE>
 
 =head1 METHODS
 
@@ -1031,11 +1026,21 @@ Now C<authen_ses_key()> looks up the C<$ses_key> passed to it and
 returns the saved login.  I use Oracle to store the session key and
 retrieve it later, see the ToDo section below for some other ideas.
 
+=head1 KNOWN LIMITATIONS
+
+If the first unauthenticated request is a POST, it will be changed to
+a GET after the user fills out the login forms, and POSTed data will
+be lost.
+
 =head2 TO DO
 
 =over 4
 
 =item *
+
+There ought to be a way to solve the POST problem in the LIMITATIONS
+section.  It involves being able to re-insert the POSTed content into
+the request stream after the user authenticates.
 
 It might be nice if the logout method could accept some parameters
 that could make it easy to redirect the user to another URI, or
@@ -1044,7 +1049,13 @@ implement anything, though.
 
 =back
 
-=head1 HISTORY
+=head1 CVS REVISION
+
+$Id$
+
+=head1 AUTHOR
+
+Michael Schout <mschout@cpan.org>
 
 Originally written by Eric Bartley <bartley@purdue.edu>
 
@@ -1061,34 +1072,6 @@ the same terms as Perl itself.
 
 L<perl(1)>, L<mod_perl(1)>, L<Apache(1)>.
 
-=head1 AUTHOR
-
-  Michael Schout <mschout@cpan.org>
-
-=head1 COPYRIGHT AND LICENSE
-
-This software is copyright (c) 2000 by Ken Williams.
-
-This is free software; you can redistribute it and/or modify it under
-the same terms as the Perl 5 programming language system itself.
-
-=head1 SOURCE
-
-You can contribute or fork this project via github:
-
-http://github.com/mschout/apache-authcookie
-
- git clone git://github.com/mschout/apache-authcookie.git
-
-=head1 BUGS
-
-Please report any bugs or feature requests to bug-apache-authcookie@rt.cpan.org or through the web interface at:
- http://rt.cpan.org/Public/Dist/Display.html?Name=Apache-AuthCookie
-
 =cut
-
-
-__END__
-
 
 # vim: sw=4 ts=4 ai et

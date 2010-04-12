@@ -1,0 +1,159 @@
+[Mon Feb 15 23:14:58 2010] [notice] Apache/2.0.53 (Unix) mod_perl/1.999.22 Perl/v5.8.8 configured -- resuming normal operations
+[Mon Feb 15 23:14:58 2010] [info] Server built: Feb 15 2010 22:55:55
+[Mon Feb 15 23:14:58 2010] [debug] prefork.c(956): AcceptMutex: sysvsem (default: sysvsem)
+[Mon Feb 15 23:14:59 2010] [error] auth_type Sample::AuthCookieHandler
+[Mon Feb 15 23:14:59 2010] [error] r=Apache2::RequestRec=SCALAR(0x15e0460) authtype=Sample::AuthCookieHandler
+[Mon Feb 15 23:14:59 2010] [error] auth_name WhatEver
+[Mon Feb 15 23:14:59 2010] [error] ses_key_cookie 
+[Mon Feb 15 23:14:59 2010] [error] uri /docs/protected/get_me.html
+[Mon Feb 15 23:14:59 2010] [error] Converting POST -> GET
+[Mon Feb 15 23:14:59 2010] [error] credential_0 programmer
+[Mon Feb 15 23:14:59 2010] [error] credential_1 Hero
+[Mon Feb 15 23:14:59 2010] [error] ses_key programmer:Hero
+[Mon Feb 15 23:14:59 2010] [error] redirect to /docs/protected/get_me.html
+[Mon Feb 15 23:14:59 2010] [error] auth_type Sample::AuthCookieHandler
+[Mon Feb 15 23:14:59 2010] [error] r=Apache2::RequestRec=SCALAR(0x146b2c0) authtype=Sample::AuthCookieHandler
+[Mon Feb 15 23:14:59 2010] [error] auth_name WhatEver
+[Mon Feb 15 23:14:59 2010] [error] ses_key_cookie programmer:Hero
+[Mon Feb 15 23:14:59 2010] [error] uri /docs/protected/get_me.html
+[Mon Feb 15 23:14:59 2010] [error] user=programmer pass=Hero cookie=programmer:Hero
+[Mon Feb 15 23:14:59 2010] [error] user authenticated as programmer
+[Mon Feb 15 23:14:59 2010] [error] authorize() for /docs/protected/get_me.html
+[Mon Feb 15 23:14:59 2010] [error] authorize user=programmer type=Sample::AuthCookieHandler
+[Mon Feb 15 23:14:59 2010] [error] requirement := user, programmer
+[Mon Feb 15 23:14:59 2010] [error] auth_type Sample::AuthCookieHandler
+[Mon Feb 15 23:14:59 2010] [error] r=Apache2::RequestRec=SCALAR(0x146b2c0) authtype=Sample::AuthCookieHandler
+[Mon Feb 15 23:14:59 2010] [error] auth_name WhatEver
+[Mon Feb 15 23:14:59 2010] [error] ses_key_cookie 
+[Mon Feb 15 23:14:59 2010] [error] uri /docs/protected/get_me.html
+[Mon Feb 15 23:14:59 2010] [error] removed_cookie Sample::AuthCookieHandler_WhatEver=; expires=Mon, 21-May-1971 00:00:00 GMT; path=/
+[Mon Feb 15 23:14:59 2010] [error] auth_type Sample::AuthCookieHandler
+[Mon Feb 15 23:14:59 2010] [error] r=Apache2::RequestRec=SCALAR(0x13b30b0) authtype=Sample::AuthCookieHandler
+[Mon Feb 15 23:14:59 2010] [error] auth_name WhatEver
+[Mon Feb 15 23:14:59 2010] [error] ses_key_cookie some-user:duck
+[Mon Feb 15 23:14:59 2010] [error] uri /docs/protected/get_me.html
+[Mon Feb 15 23:14:59 2010] [error] user=some-user pass=duck cookie=some-user:duck
+[Mon Feb 15 23:14:59 2010] [error] user authenticated as some-user
+[Mon Feb 15 23:14:59 2010] [error] authorize() for /docs/protected/get_me.html
+[Mon Feb 15 23:14:59 2010] [error] authorize user=some-user type=Sample::AuthCookieHandler
+[Mon Feb 15 23:14:59 2010] [error] requirement := user, programmer
+[Mon Feb 15 23:14:59 2010] [error] Converting POST -> GET
+[Mon Feb 15 23:14:59 2010] [error] credential_0 programmer
+[Mon Feb 15 23:14:59 2010] [error] credential_1 Heroo
+[Mon Feb 15 23:14:59 2010] [error] ses_key programmer:Heroo
+[Mon Feb 15 23:14:59 2010] [error] redirect to /docs/protected/get_me.html
+[Mon Feb 15 23:14:59 2010] [error] auth_type Sample::AuthCookieHandler
+[Mon Feb 15 23:14:59 2010] [error] r=Apache2::RequestRec=SCALAR(0x14eaba0) authtype=Sample::AuthCookieHandler
+[Mon Feb 15 23:14:59 2010] [error] auth_name WhatEver
+[Mon Feb 15 23:14:59 2010] [error] ses_key_cookie programmer:Heroo
+[Mon Feb 15 23:14:59 2010] [error] uri /docs/protected/get_me.html
+[Mon Feb 15 23:14:59 2010] [error] user=programmer pass=Heroo cookie=programmer:Heroo
+[Mon Feb 15 23:14:59 2010] [error] removed_cookie Sample::AuthCookieHandler_WhatEver=; expires=Mon, 21-May-1971 00:00:00 GMT; path=/
+[Mon Feb 15 23:14:59 2010] [error] Converting POST -> GET
+[Mon Feb 15 23:14:59 2010] [error] credential_0 fail
+[Mon Feb 15 23:14:59 2010] [error] credential_1 Hero
+[Mon Feb 15 23:14:59 2010] [error] Bad credentials
+[Mon Feb 15 23:14:59 2010] [error] Converting POST -> GET
+[Mon Feb 15 23:14:59 2010] [error] credential_0 some-user
+[Mon Feb 15 23:14:59 2010] [error] credential_1 mypassword
+[Mon Feb 15 23:14:59 2010] [error] ses_key some-user:mypassword
+[Mon Feb 15 23:14:59 2010] [error] redirect to /docs/authany/get_me.html
+[Mon Feb 15 23:14:59 2010] [error] auth_type Sample::AuthCookieHandler
+[Mon Feb 15 23:14:59 2010] [error] r=Apache2::RequestRec=SCALAR(0x1652440) authtype=Sample::AuthCookieHandler
+[Mon Feb 15 23:14:59 2010] [error] auth_name WhatEver
+[Mon Feb 15 23:14:59 2010] [error] ses_key_cookie some-user:mypassword
+[Mon Feb 15 23:14:59 2010] [error] uri /docs/authall/get_me.html
+[Mon Feb 15 23:14:59 2010] [error] user=some-user pass=mypassword cookie=some-user:mypassword
+[Mon Feb 15 23:14:59 2010] [error] user authenticated as some-user
+[Mon Feb 15 23:14:59 2010] [error] authorize() for /docs/authall/get_me.html
+[Mon Feb 15 23:14:59 2010] [error] authorize user=some-user type=Sample::AuthCookieHandler
+[Mon Feb 15 23:14:59 2010] [error] requirement := user, some-user
+[Mon Feb 15 23:14:59 2010] [error] requirement := user, programmer
+[Mon Feb 15 23:14:59 2010] [error] auth_type Sample::AuthCookieHandler
+[Mon Feb 15 23:14:59 2010] [error] r=Apache2::RequestRec=SCALAR(0x1652440) authtype=Sample::AuthCookieHandler
+[Mon Feb 15 23:14:59 2010] [error] auth_name WhatEver
+[Mon Feb 15 23:14:59 2010] [error] ses_key_cookie 
+[Mon Feb 15 23:14:59 2010] [error] uri /docs/protected/get_me.html
+[Mon Feb 15 23:14:59 2010] [error] Converting POST -> GET
+[Mon Feb 15 23:14:59 2010] [error] auth_type Sample::AuthCookieHandler
+[Mon Feb 15 23:14:59 2010] [error] r=Apache2::RequestRec=SCALAR(0x16525e0) authtype=Sample::AuthCookieHandler
+[Mon Feb 15 23:14:59 2010] [error] auth_name WhatEver
+[Mon Feb 15 23:14:59 2010] [error] ses_key_cookie 
+[Mon Feb 15 23:14:59 2010] [error] uri /docs/protected/get_me.html
+[Mon Feb 15 23:14:59 2010] [error] auth_type Sample::AuthCookieHandler
+[Mon Feb 15 23:14:59 2010] [error] r=Apache2::RequestRec=SCALAR(0x1652470) authtype=Sample::AuthCookieHandler
+[Mon Feb 15 23:14:59 2010] [error] auth_name WhatEver
+[Mon Feb 15 23:14:59 2010] [error] ses_key_cookie some-user:mypassword
+[Mon Feb 15 23:14:59 2010] [error] uri /docs/authany/get_me.html
+[Mon Feb 15 23:14:59 2010] [error] user=some-user pass=mypassword cookie=some-user:mypassword
+[Mon Feb 15 23:14:59 2010] [error] user authenticated as some-user
+[Mon Feb 15 23:14:59 2010] [error] authorize() for /docs/authany/get_me.html
+[Mon Feb 15 23:14:59 2010] [error] authorize user=some-user type=Sample::AuthCookieHandler
+[Mon Feb 15 23:14:59 2010] [error] requirement := user, some-user
+[Mon Feb 15 23:14:59 2010] [error] auth_type Sample::AuthCookieHandler
+[Mon Feb 15 23:14:59 2010] [error] r=Apache2::RequestRec=SCALAR(0x1652470) authtype=Sample::AuthCookieHandler
+[Mon Feb 15 23:14:59 2010] [error] auth_name WhatEver
+[Mon Feb 15 23:14:59 2010] [error] ses_key_cookie nouser:mypassword
+[Mon Feb 15 23:14:59 2010] [error] uri /docs/authany/get_me.html
+[Mon Feb 15 23:14:59 2010] [error] user=nouser pass=mypassword cookie=nouser:mypassword
+[Mon Feb 15 23:14:59 2010] [error] removed_cookie Sample::AuthCookieHandler_WhatEver=; expires=Mon, 21-May-1971 00:00:00 GMT; path=/
+[Mon Feb 15 23:14:59 2010] [error] Converting POST -> GET
+[Mon Feb 15 23:14:59 2010] [error] credential_0 programmer
+[Mon Feb 15 23:14:59 2010] [error] credential_1 Heroo
+[Mon Feb 15 23:14:59 2010] [error] ses_key programmer:Heroo
+[Mon Feb 15 23:14:59 2010] [error] redirect to /docs/protected/get_me.html
+[Mon Feb 15 23:14:59 2010] [error] auth_type Sample::AuthCookieHandler
+[Mon Feb 15 23:14:59 2010] [error] r=Apache2::RequestRec=SCALAR(0x1652530) authtype=Sample::AuthCookieHandler
+[Mon Feb 15 23:14:59 2010] [error] auth_name WhatEver
+[Mon Feb 15 23:14:59 2010] [error] ses_key_cookie programmer:Hero
+[Mon Feb 15 23:15:00 2010] [error] uri /docs/stimeout/get_me.html
+[Mon Feb 15 23:15:00 2010] [error] user=programmer pass=Hero cookie=programmer:Hero
+[Mon Feb 15 23:15:00 2010] [error] user authenticated as programmer
+[Mon Feb 15 23:15:00 2010] [error] authorize() for /docs/stimeout/get_me.html
+[Mon Feb 15 23:15:00 2010] [error] authorize user=programmer type=Sample::AuthCookieHandler
+[Mon Feb 15 23:15:00 2010] [error] requirement := user, some-user
+[Mon Feb 15 23:15:00 2010] [error] requirement := user, programmer
+[Mon Feb 15 23:15:00 2010] [error] Converting POST -> GET
+[Mon Feb 15 23:15:00 2010] [error] credential_0 fail
+[Mon Feb 15 23:15:00 2010] [error] credential_1 Hero
+[Mon Feb 15 23:15:00 2010] [error] Bad credentials
+[Mon Feb 15 23:15:00 2010] [error] Converting POST -> GET
+[Mon Feb 15 23:15:00 2010] [error] credential_0 fail
+[Mon Feb 15 23:15:00 2010] [error] credential_1 one two
+[Mon Feb 15 23:15:00 2010] [error] Bad credentials
+[Mon Feb 15 23:15:00 2010] [error] Converting POST -> GET
+[Mon Feb 15 23:15:00 2010] [error] credential_0 fail
+[Mon Feb 15 23:15:00 2010] [error] credential_1 one+two
+[Mon Feb 15 23:15:00 2010] [error] Bad credentials
+[Mon Feb 15 23:15:00 2010] [error] Converting POST -> GET
+[Mon Feb 15 23:15:00 2010] [error] credential_0 programmer
+[Mon Feb 15 23:15:00 2010] [error] credential_1 Hero
+[Mon Feb 15 23:15:00 2010] [error] ses_key programmer:Hero
+[Mon Feb 15 23:15:00 2010] [error] redirect to /docs/protected/get_me.html\r\nX-Test-Bar: True\r\nX-Test-Foo: True\r\n
+[Mon Feb 15 23:15:00 2010] [error] Converting POST -> GET
+[Mon Feb 15 23:15:00 2010] [error] credential_0 programmer
+[Mon Feb 15 23:15:00 2010] [error] credential_1 Hero
+[Mon Feb 15 23:15:00 2010] [error] ses_key programmer:Hero
+[Mon Feb 15 23:15:00 2010] [error] redirect to /docs/protected/get_me.html%0d%0aX-Test-Foo: True%0d%0aX-Test-Bar: True\r\n
+[Mon Feb 15 23:15:00 2010] [error] Converting POST -> GET
+[Mon Feb 15 23:15:00 2010] [error] credential_0 fail
+[Mon Feb 15 23:15:00 2010] [error] credential_1 one/two
+[Mon Feb 15 23:15:00 2010] [error] Bad credentials
+[Mon Feb 15 23:15:00 2010] [error] auth_type Sample::AuthCookieHandler
+[Mon Feb 15 23:15:00 2010] [error] r=Apache2::RequestRec=SCALAR(0x1652520) authtype=Sample::AuthCookieHandler
+[Mon Feb 15 23:15:00 2010] [error] auth_name WhatEver
+[Mon Feb 15 23:15:00 2010] [error] ses_key_cookie 
+[Mon Feb 15 23:15:00 2010] [error] uri /docs/protected/xyz
+[Mon Feb 15 23:15:00 2010] [error] Converting POST -> GET
+[Mon Feb 15 23:15:00 2010] [error] auth_type Sample::AuthCookieHandler
+[Mon Feb 15 23:15:00 2010] [error] r=Apache2::RequestRec=SCALAR(0x1652620) authtype=Sample::AuthCookieHandler
+[Mon Feb 15 23:15:00 2010] [error] auth_name WhatEver
+[Mon Feb 15 23:15:00 2010] [error] ses_key_cookie programmer:Hero
+[Mon Feb 15 23:15:00 2010] [error] uri /docs/protected/echo_user.pl
+[Mon Feb 15 23:15:00 2010] [error] user=programmer pass=Hero cookie=programmer:Hero
+[Mon Feb 15 23:15:00 2010] [error] user authenticated as programmer
+[Mon Feb 15 23:15:00 2010] [error] authorize() for /docs/protected/echo_user.pl
+[Mon Feb 15 23:15:00 2010] [error] authorize user=programmer type=Sample::AuthCookieHandler
+[Mon Feb 15 23:15:00 2010] [error] requirement := user, programmer
+[Mon Feb 15 23:15:00 2010] [info] removed PID file /home/mschout/dev/apache-authcookie/t/logs/httpd.pid (pid=7948)
+[Mon Feb 15 23:15:00 2010] [notice] caught SIGTERM, shutting down
