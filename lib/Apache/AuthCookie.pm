@@ -1051,21 +1051,11 @@ Now C<authen_ses_key()> looks up the C<$ses_key> passed to it and
 returns the saved login.  I use Oracle to store the session key and
 retrieve it later, see the ToDo section below for some other ideas.
 
-=head1 KNOWN LIMITATIONS
-
-If the first unauthenticated request is a POST, it will be changed to
-a GET after the user fills out the login forms, and POSTed data will
-be lost.
-
 =head2 TO DO
 
 =over 4
 
 =item *
-
-There ought to be a way to solve the POST problem in the LIMITATIONS
-section.  It involves being able to re-insert the POSTed content into
-the request stream after the user authenticates.
 
 It might be nice if the logout method could accept some parameters
 that could make it easy to redirect the user to another URI, or

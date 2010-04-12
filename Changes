@@ -2,6 +2,7 @@ Current:
    - MP2: doc updates: remove beta warnings, change Apache::AuthCookie to
      Apache2::Authcookie where appopriate.
    - docs: change my email to my cpan address
+   - docs: remove POST limitations reference (handled by POST to GET conversion)
    - sign dist with Module::Signature
    - add signature test
    - MP1: perltidy Apache::AuthCookie sources.
