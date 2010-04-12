@@ -1,13 +1,19 @@
 Changes
+LICENSE
+MANIFEST
+MANIFEST.SKIP
+META.yml
+Makefile.PL
+README
+README.modperl2
+SIGNATURE
+dist.ini
+weaver.ini
 lib/Apache/AuthCookie.pm
 lib/Apache/AuthCookie/Util.pm
 lib/Apache2/AuthCookie.pm
-Makefile.PL
-MANIFEST			This list of files
-MANIFEST.SKIP
-META.yml
-README
-README.modperl2
+t/Skeleton/AuthCookieHandler.pm
+t/TEST.PL
 t/conf/extra.conf.in
 t/htdocs/docs/authall/get_me.html
 t/htdocs/docs/authany/get_me.html
@@ -23,6 +29,4 @@ t/lib/Sample/AuthCookieHandler.pm.mp1
 t/lib/Sample/AuthCookieHandler.pm.mp2
 t/real.t
 t/signature.t
-t/Skeleton/AuthCookieHandler.pm
 t/startup.pl
-t/TEST.PL

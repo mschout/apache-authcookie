@@ -1,9 +1,8 @@
 package Apache::AuthCookie::Util;
 
-use strict;
-use vars '$VERSION';
+# ABSTRACT: Internal Utility Functions for AuthCookie
 
-$VERSION = do { my @r = (q$Revision$ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r }; # must be all one line, for MakeMaker
+use strict;
 
 # -- expires() shamelessly taken from CGI::Util
 sub expires {

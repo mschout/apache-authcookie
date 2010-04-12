@@ -1,5 +1,7 @@
 package Apache::AuthCookie;
 
+# ABSTRACT: Perl Authentication and Authorization via cookies
+
 use strict;
 
 use Carp;
@@ -7,10 +9,6 @@ use mod_perl qw(1.07 StackedHandlers MethodHandlers Authen Authz);
 use Apache::Constants qw(:common M_GET FORBIDDEN REDIRECT);
 use Apache::AuthCookie::Util;
 use Apache::Util qw(escape_uri);
-use vars qw($VERSION);
-
-# $Id$
-$VERSION = '3.12';
 
 sub recognize_user ($$) {
     my ($self, $r) = @_;
@@ -523,10 +521,6 @@ sub get_cookie_path {
 
 __END__
 
-=head1 NAME
-
-Apache::AuthCookie - Perl Authentication and Authorization via cookies
-
 =head1 SYNOPSIS
 
 Make sure your mod_perl is at least 1.24, with StackedHandlers,
@@ -921,29 +915,6 @@ only limited set of characters.
 
 =back
 
-=head1 UPGRADING FROM VERSION 1.4
-
-There are a few interface changes that you need to be aware of
-when migrating from version 1.x to 2.x.  First, the authen() and
-authz() methods are now deprecated, replaced by the new authenticate()
-and authorize() methods.  The old methods will go away in a couple
-versions, but are maintained intact in this version to ease the task
-of upgrading.  The use of these methods is essentially the same, though.
-
-Second, when you change to the new method names (see previous
-paragraph), you must change the action of your login forms to the
-location /LOGIN (or whatever URL will call your module's login()
-method).  You may also want to change their METHOD to POST instead of
-GET, since that's much safer and nicer to look at (but you can leave
-it as GET if you bloody well want to, for some god-unknown reason).
-
-Third, you must change your login forms (see L<THE LOGIN SCRIPT>
-below) to indicate how requests should be redirected after a
-successful login.
-
-Fourth, you might want to take advantage of the new C<logout()>
-method, though you certainly don't have to.
-
 =head1 EXAMPLE
 
 For an example of how to use Apache::AuthCookie, you may want to check
@@ -1064,24 +1035,11 @@ implement anything, though.
 
 =back
 
-=head1 CVS REVISION
-
-$Id$
-
-=head1 AUTHOR
-
-Michael Schout <mschout@cpan.org>
+=head1 HISTORY
 
 Originally written by Eric Bartley <bartley@purdue.edu>
 
 versions 2.x were written by Ken Williams <ken@forum.swarthmore.edu>
-
-=head1 COPYRIGHT
-
-Copyright (c) 2000 Ken Williams. All rights reserved.
-
-This program is free software; you can redistribute it and/or modify it under
-the same terms as Perl itself.
 
 =head1 SEE ALSO
 

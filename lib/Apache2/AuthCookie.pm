@@ -1,10 +1,12 @@
 package Apache2::AuthCookie;
 
+# ABSTRACT: Perl Authentication and Authorization via cookies
+
 use strict;
 
 use Carp;
 use CGI '3.12';
-use mod_perl2 '1.9922';
+use mod_perl2 '1.99022';
 
 use Apache::AuthCookie::Util;
 use Apache2::RequestRec;
@@ -15,10 +17,6 @@ use Apache2::Response;
 use Apache2::Util;
 use APR::Table;
 use Apache2::Const qw(:common M_GET HTTP_FORBIDDEN HTTP_MOVED_TEMPORARILY);
-use vars qw($VERSION);
-
-# $Id$
-$VERSION = '3.12';
 
 sub recognize_user {
     my ($self, $r) = @_;
@@ -518,10 +516,6 @@ sub get_cookie_path {
 1;
 
 __END__
-
-=head1 NAME
-
-Apache2::AuthCookie - Perl Authentication and Authorization via cookies
 
 =head1 SYNOPSIS
 
@@ -1039,13 +1033,7 @@ implement anything, though.
 
 =back
 
-=head1 CVS REVISION
-
-$Id$
-
-=head1 AUTHOR
-
-Michael Schout <mschout@cpan.org>
+=head1 HISTORY
 
 Originally written by Eric Bartley <bartley@purdue.edu>
 
