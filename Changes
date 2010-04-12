@@ -1,7 +1,5 @@
 Revision history for Apache::AuthCookie
 
-{{$NEXT}}
-
 3.14  2010-04-12
    - MP2: doc updates: remove beta warnings, change Apache::AuthCookie to
      Apache2::Authcookie where appopriate.
