@@ -1,0 +1,29 @@
+=head1 NAME
+
+Apache::AuthCookie::FAQ - Frequently Asked Questions about Apache::AuthCookie.
+
+=head1 DESCRIPTION
+
+This document serves to answer the most frequently asked questions about L<Apache::AuthCookie>.
+
+=head2 How can I protect an entire site (/) with Apache::AuthCookie?
+
+You have to give an Apache C<require> directive that applies to all requests
+for B<except> for your login handler.  The easiest way to do this is to
+override the auth handlers for your login script. For example, if your login
+handler is C</LOGIN>, then you need to use something like the following:
+
+ <Location />
+   AuthType My::AuthCookieHandler
+   AuthName Whatever
+   PerlAuthenHandler Sample::AuthCookieHandler->authenticate
+   PerlAuthzHandler Sample::AuthCookieHandler->authorize
+   require valid-user
+ </Location>
+
+ <Location /LOGIN>
+   PerlAuthenHandler Apache2::Const::OK
+   PerlAuthzHandler Apache2::Const::OK
+ </Location>
+ ...
+
