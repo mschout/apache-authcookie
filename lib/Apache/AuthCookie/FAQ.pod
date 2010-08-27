@@ -1,3 +1,8 @@
+# make Dist::Zilla happy.
+package Apache::AuthCookie::FAQ;
+
+1;
+
 =head1 NAME
 
 Apache::AuthCookie::FAQ - Frequently Asked Questions about Apache::AuthCookie.
