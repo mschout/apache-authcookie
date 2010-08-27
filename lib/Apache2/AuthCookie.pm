@@ -441,16 +441,21 @@ sub send_cookie {
         %$cookie_args
     );
 
-    my $auth_name = $r->auth_name;
-
-    # add a P3P header if user has configured it.
-    if (my $p3p = $r->dir_config("${auth_name}P3P")) {
-        $r->err_headers_out->set(P3P => $p3p);
-    }
+    $self->send_p3p($r);
 
     $r->err_headers_out->add("Set-Cookie" => $cookie);
 }
 
+# send P3P header if configured with ${auth_name}P3P
+sub send_p3p {
+    my ($self, $r) = @_;
+
+    my $auth_name = $r->auth_name;
+
+    if (my $p3p = $r->dir_config("${auth_name}P3P")) {
+        $r->err_headers_out->set(P3P => $p3p);
+    }
+}
 
 # cookie_string takes named parameters:
 #    request
