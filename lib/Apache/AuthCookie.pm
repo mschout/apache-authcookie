@@ -12,6 +12,10 @@ use Apache::Util qw(escape_uri);
 
 sub recognize_user ($$) {
     my ($self, $r) = @_;
+
+    # only check if user is not already set
+    return DECLINED if $r->connection->user;
+
     my $debug = $r->dir_config("AuthCookieDebug") || 0;
     my ($auth_type, $auth_name) = ($r->auth_type, $r->auth_name);
 

@@ -21,6 +21,9 @@ use Apache2::Const qw(:common M_GET HTTP_FORBIDDEN HTTP_MOVED_TEMPORARILY);
 sub recognize_user {
     my ($self, $r) = @_;
 
+    # only check if user is not already set
+    return DECLINED if $r->user;
+
     my $debug = $r->dir_config("AuthCookieDebug") || 0;
 
     my $auth_type = $r->auth_type;
