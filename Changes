@@ -1,6 +1,8 @@
 Revision history for Apache::AuthCookie
 
 {{$NEXT}}
+
+3.15  2010-08-27
    - enable Dist::Zilla Manifest plugin
    - add FAQ
    - add FAQ entry on how to protect an entire site/document root
