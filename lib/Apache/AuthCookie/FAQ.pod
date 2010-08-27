@@ -3,9 +3,17 @@ package Apache::AuthCookie::FAQ;
 
 1;
 
+
+__END__
+=pod
+
 =head1 NAME
 
-Apache::AuthCookie::FAQ - Frequently Asked Questions about Apache::AuthCookie.
+Apache::AuthCookie::FAQ
+
+=head1 VERSION
+
+version 3.15
 
 =head1 DESCRIPTION
 
@@ -31,4 +39,26 @@ handler is C</LOGIN>, then you need to use something like the following:
    PerlAuthzHandler Apache2::Const::OK
  </Location>
  ...
+
+=head1 NAME
+
+Apache::AuthCookie::FAQ - Frequently Asked Questions about Apache::AuthCookie.
+
+=head1 AUTHOR
+
+Michael Schout <mschout@cpan.org>
+
+=head1 COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2000 by Ken Williams.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+=head1 BUGS
+
+Please report any bugs or feature requests to bug-apache-authcookie@rt.cpan.org or through the web interface at:
+ http://rt.cpan.org/Public/Dist/Display.html?Name=Apache-AuthCookie
+
+=cut
 
