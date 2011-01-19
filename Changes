@@ -1,6 +1,7 @@
 Revision history for Apache::AuthCookie
 
 {{$NEXT}}
+   - require Apache::Test 1.32 - fixes ubuntu build issue
    - remove mod_perl/mod_perl2 related prereq's from META.yml.  The correct mod
      perl version is not known until Makefile.PL is run.  CPAN.pm should not
      try to install either one until it is known which one is appropriate.
