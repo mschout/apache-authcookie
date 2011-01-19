@@ -40,26 +40,65 @@ WriteMakefile(%makeconf);
 # inspired by Apache::Peek 1.01
 sub test_configure {
     if (eval { require Apache::TestMM }) {
-        # enable "make test"
-        Apache::TestMM->import(qw(test clean));
-
-        # accept configs from command line.
-        Apache::TestMM::filter_args();
-
-        Apache::TestMM::generate_script('t/TEST');
-
-        push @CLEAN_FILES, 't/TEST';
+        if (running_as_root()) {
+            warn "***: you cannot run the test suite as root. Tests will be skipped\n";
+            *MY::test = \&skip_root_tests;
+        }
+        else {
+            enable_apache_test();
+        }
     }
     else {
         # overload test rule with a no-op
         warn "***: You should install Apache::Test to do real testing\n";
-        *MY::test = sub {
-            return <<'EOF';
-test : pure_all
+        *MY::test = \&skip_no_apache_test;
+    }
+}
+
+sub enable_apache_test {
+    # enable "make test"
+    Apache::TestMM->import(qw(test clean));
+
+    # accept configs from command line.
+    Apache::TestMM::filter_args();
+
+    Apache::TestMM::generate_script('t/TEST');
+
+    push @CLEAN_FILES, 't/TEST';
+}
+
+# Apache::Test just *FAILS* the whole suite if you are running as root.  You
+# cannot run the test suite as root because apache wont spawn root children.
+# So instead, we just skip the whole test suite with a message if it is
+# attempted to run it as root.
+# see: http://www.mail-archive.com/dev@perl.apache.org/msg12535.html
+sub skip_root_tests {
+    return <<'EOF';
+test::
+	@echo
+	@echo Apache::Test tests must be run as a non-privileged user on *nix
+	@echo based filesystems.  There are several reasons, but stemming from
+	@echo the fact that the httpd process is owned by a non privileged user
+	@echo and thus cannot access the test files if they are owned by root.
+	@echo
+	@echo Please rebuild Apache::Test as a non-privileged user and run the
+	@echo tests as that user, then use sudo to install the module.  Or build
+	@echo against your own locally installed version of Perl.
+	@echo
+EOF
+}
+
+sub skip_no_apache_test {
+    return <<'EOF';
+test::
 	@echo \*** This test suite requires Apache::Test available from CPAN
 EOF
-        }
-    }
+}
+
+sub running_as_root {
+    my $user = eval { scalar getpwuid($>) || '' };
+
+    return $user eq 'root' ? 1 : 0;
 }
 
 # select the appropriate test files (MP1 vs MP2) and copy them to the correct
