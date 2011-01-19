@@ -1,6 +1,10 @@
 Revision history for Apache::AuthCookie
 
 {{$NEXT}}
+   - remove mod_perl/mod_perl2 related prereq's from META.yml.  The correct mod
+     perl version is not known until Makefile.PL is run.  CPAN.pm should not
+     try to install either one until it is known which one is appropriate.
+     (RT 64926)
 
 3.15  2010-08-27
    - enable Dist::Zilla Manifest plugin
