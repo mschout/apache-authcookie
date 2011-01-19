@@ -1,4 +1,7 @@
 package Apache::AuthCookie;
+BEGIN {
+  $Apache::AuthCookie::VERSION = '3.16';
+}
 
 # ABSTRACT: Perl Authentication and Authorization via cookies
 
@@ -531,7 +534,17 @@ sub get_cookie_path {
 
 1;
 
-__END__
+
+
+=pod
+
+=head1 NAME
+
+Apache::AuthCookie - Perl Authentication and Authorization via cookies
+
+=head1 VERSION
+
+version 3.16
 
 =head1 SYNOPSIS
 
@@ -704,8 +717,7 @@ the user's credentials in the Location field. They don't really change
 AuthCookie's model, but they do add another round-trip request to the
 client.
 
-=for html
-<PRE>
+=for html <PRE>
 
  (-----------------------)     +---------------------------------+
  ( Request a protected   )     | AuthCookie sets custom error    |
@@ -772,8 +784,7 @@ client.
     create must be able to determine if this session_key is valid and
     map it back to the originally authenticated user ID.
 
-=for html
-</PRE>
+=for html </PRE>
 
 =head1 METHODS
 
@@ -1057,6 +1068,26 @@ versions 2.x were written by Ken Williams <ken@forum.swarthmore.edu>
 
 L<perl(1)>, L<mod_perl(1)>, L<Apache(1)>.
 
+=head1 AUTHOR
+
+  Michael Schout <mschout@cpan.org>
+
+=head1 COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2000 by Ken Williams.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+=head1 BUGS
+
+Please report any bugs or feature requests to bug-apache-authcookie@rt.cpan.org or through the web interface at:
+ http://rt.cpan.org/Public/Dist/Display.html?Name=Apache-AuthCookie
+
 =cut
+
+
+__END__
+
 
 # vim: sw=2 ts=2 ai et
