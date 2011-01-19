@@ -1,7 +1,5 @@
 Revision history for Apache::AuthCookie
 
-{{$NEXT}}
-
 3.17  2011-01-19
    - skip the test suite if running as root.  Apache::Test 1.34 fails the test
      suite if running as root instead of skipping it.  By skipping, AuthCookie can
