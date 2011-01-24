@@ -1,6 +1,8 @@
 Revision history for Apache::AuthCookie
 
 {{$NEXT}}
+
+3.18  2011-01-24
    - remove 3.17's test skip hacks, and bump Apache::Test prerequisite to v1.35
      which fixes this issue.
    - fix MANIFEST.SKIP to ignore generated t/conf/mime.types
