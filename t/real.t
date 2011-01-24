@@ -3,12 +3,12 @@
 # of the entire page.  The problem is on win32, some responses come back with
 # dos-style line endings (not all of them though).  Not sure what MacOS does
 # and I don't have a Mac to test with.  Currently, we just strip CR's out of
-# responses to make the tests pass on Unix and Win32.  use strict;
+# responses to make the tests pass on Unix and Win32.  
+use strict;
 use warnings FATAL => 'all';
 use lib 'lib';
 
-use Apache::Test ':withtestmore';
-use Test::More;
+use Apache::Test '-withtestmore';
 use Apache::TestUtil;
 use Apache::TestRequest qw(GET POST GET_BODY);
 

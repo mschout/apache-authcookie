@@ -5,6 +5,7 @@ Revision history for Apache::AuthCookie
      which fixes this issue.
    - fix MANIFEST.SKIP to ignore generated t/conf/mime.types
    - remove dist.ini, weaver.ini from dists
+   - fixed t/real.t to use correct -withtestmore import syntax
 
 3.17  2011-01-19
    - skip the test suite if running as root.  Apache::Test 1.34 fails the test
