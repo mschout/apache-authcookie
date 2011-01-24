@@ -1,12 +1,11 @@
-package Sample::AuthCookieHandler;
+package Sample::Apache2::AuthCookieHandler;
 use strict;
 use Apache2::Const qw(:common HTTP_FORBIDDEN);
 use Apache2::AuthCookie;
 use Apache2::RequestRec;
 use Apache2::RequestIO;
-use vars qw($VERSION @ISA);
+use vars qw(@ISA);
 
-$VERSION = substr(q$Revision$, 10);
 @ISA = qw(Apache2::AuthCookie);
 
 sub authen_cred ($$\@) {

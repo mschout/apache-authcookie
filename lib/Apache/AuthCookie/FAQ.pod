@@ -21,8 +21,8 @@ handler is C</LOGIN>, then you need to use something like the following:
  <Location />
    AuthType My::AuthCookieHandler
    AuthName Whatever
-   PerlAuthenHandler Sample::AuthCookieHandler->authenticate
-   PerlAuthzHandler Sample::AuthCookieHandler->authorize
+   PerlAuthenHandler My::AuthCookieHandler->authenticate
+   PerlAuthzHandler My::AuthCookieHandler->authorize
    require valid-user
  </Location>
 

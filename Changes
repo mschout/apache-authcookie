@@ -6,6 +6,8 @@ Revision history for Apache::AuthCookie
    - fix MANIFEST.SKIP to ignore generated t/conf/mime.types
    - remove dist.ini, weaver.ini from dists
    - fixed t/real.t to use correct -withtestmore import syntax
+   - rename sample authcookie handlers to Sample::Apache and Sample::Apache2
+     namespaces
 
 3.17  2011-01-19
    - skip the test suite if running as root.  Apache::Test 1.34 fails the test

@@ -4,7 +4,6 @@ use File::Copy;
 
 my @CLEAN_FILES = ();
 my $mp_version = mod_perl_version();
-test_prepare($mp_version);
 
 test_configure();
 
@@ -55,29 +54,6 @@ sub test_configure {
         warn "***: You should install Apache::Test to do real testing\n";
         *MY::test = \&skip_no_apache_test;
     }
-}
-
-# select the appropriate test files (MP1 vs MP2) and copy them to the correct
-# location.
-sub test_prepare {
-    my $mp_version = shift;
-
-    my $file = File::Spec->catfile(qw(t lib Sample),
-                                   "AuthCookieHandler.pm.mp${mp_version}");
-    my $outfile = File::Spec->catfile(qw(t lib Sample),
-                                      "AuthCookieHandler.pm");
-    unless (-f $file) {
-        die "whoops.  I cant find $file\n";
-    }
-
-    if (-f $outfile) {
-        unlink $outfile or die "unlink($outfile): $!";
-    }
-
-    warn "selected $file\n";
-    File::Copy::copy($file, $outfile);
-
-    push @CLEAN_FILES, $outfile;
 }
 
 sub mod_perl_version {

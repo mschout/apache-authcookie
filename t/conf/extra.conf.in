@@ -1,120 +1,154 @@
+PerlRequire @ServerRoot@/startup.pl
+
+<IfDefine APACHE1>
+  PerlModule Sample::Apache::AuthCookieHandler
+  PerlModule Apache::Registry
+</IfDefine>
 <IfDefine APACHE2>
   PerlSwitches -I@ServerRoot@/lib
+  PerlModule Sample::Apache2::AuthCookieHandler
+  PerlModule ModPerl::Registry
 </IfDefine>
-
-PerlRequire @ServerRoot@/startup.pl
-PerlModule Sample::AuthCookieHandler
 
 PerlSetVar WhatEverPath /
 PerlSetVar WhatEverLoginScript /docs/login.pl
 PerlSetVar AuthCookieDebug 3
+PerlSetVar WhatEverCookieName Sample::AuthCookieHandler_WhatEver
 
 <Directory @ServerRoot@>
-    AllowOverride All
+  AllowOverride All
 </Directory>
 
 # These documents require user to be logged in.
 <Location /docs/protected>
- AuthType Sample::AuthCookieHandler
- AuthName WhatEver
- PerlAuthenHandler Sample::AuthCookieHandler->authenticate
- PerlAuthzHandler Sample::AuthCookieHandler->authorize
- require user programmer
+  AuthName WhatEver
+  <IfDefine APACHE1>
+    AuthType Sample::Apache::AuthCookieHandler
+    PerlAuthenHandler Sample::Apache::AuthCookieHandler->authenticate
+    PerlAuthzHandler Sample::Apache::AuthCookieHandler->authorize
+  </IfDefine>
+  <IfDefine APACHE2>
+    AuthType Sample::Apache2::AuthCookieHandler
+    PerlAuthenHandler Sample::Apache2::AuthCookieHandler->authenticate
+    PerlAuthzHandler Sample::Apache2::AuthCookieHandler->authorize
+  </IfDefine>
+  require user programmer
 </Location>
 
 # must satisfy any requirement
 <Location /docs/authany>
- PerlSetVar WhatEverSatisfy Any
- AuthType Sample::AuthCookieHandler
- AuthName WhatEver
- PerlAuthenHandler Sample::AuthCookieHandler->authenticate
- PerlAuthzHandler Sample::AuthCookieHandler->authorize
- Require user some-user
- Require user programmer
+  PerlSetVar WhatEverSatisfy Any
+  AuthName WhatEver
+  <IfDefine APACHE1>
+    AuthType Sample::Apache::AuthCookieHandler
+    PerlAuthenHandler Sample::Apache::AuthCookieHandler->authenticate
+    PerlAuthzHandler Sample::Apache::AuthCookieHandler->authorize
+  </IfDefine>
+  <IfDefine APACHE2>
+    AuthType Sample::Apache2::AuthCookieHandler
+    PerlAuthenHandler Sample::Apache2::AuthCookieHandler->authenticate
+    PerlAuthzHandler Sample::Apache2::AuthCookieHandler->authorize
+  </IfDefine>
+  Require user some-user
+  Require user programmer
 </Location>
 
 # must satisfy all requirements
 <Location /docs/authall>
- PerlSetVar WhatEverSatisfy All
- AuthType Sample::AuthCookieHandler
- AuthName WhatEver
- PerlAuthenHandler Sample::AuthCookieHandler->authenticate
- PerlAuthzHandler Sample::AuthCookieHandler->authorize
- Require user some-user
- Require user programmer
+  PerlSetVar WhatEverSatisfy All
+  AuthName WhatEver
+  <IfDefine APACHE1>
+    AuthType Sample::Apache::AuthCookieHandler
+    PerlAuthenHandler Sample::Apache::AuthCookieHandler->authenticate
+    PerlAuthzHandler Sample::Apache::AuthCookieHandler->authorize
+  </IfDefine>
+  <IfDefine APACHE2>
+    AuthType Sample::Apache2::AuthCookieHandler
+    PerlAuthenHandler Sample::Apache2::AuthCookieHandler->authenticate
+    PerlAuthzHandler Sample::Apache2::AuthCookieHandler->authorize
+  </IfDefine>
+  Require user some-user
+  Require user programmer
 </Location>
 
 <Location /docs/stimeout>
- PerlSetVar WhatEverSessionTimeout +10m
- AuthType Sample::AuthCookieHandler
- AuthName WhatEver
- PerlAuthenHandler Sample::AuthCookieHandler->authenticate
- PerlAuthzHandler Sample::AuthCookieHandler->authorize
- Require user some-user
- Require user programmer
+  PerlSetVar WhatEverSessionTimeout +10m
+  AuthName WhatEver
+  <IfDefine APACHE1>
+    AuthType Sample::Apache::AuthCookieHandler
+    PerlAuthenHandler Sample::Apache::AuthCookieHandler->authenticate
+    PerlAuthzHandler Sample::Apache::AuthCookieHandler->authorize
+  </IfDefine>
+  <IfDefine APACHE2>
+    AuthType Sample::Apache2::AuthCookieHandler
+    PerlAuthenHandler Sample::Apache2::AuthCookieHandler->authenticate
+    PerlAuthzHandler Sample::Apache2::AuthCookieHandler->authorize
+  </IfDefine>
+  Require user some-user
+  Require user programmer
 </Location>
 
 # These documents don't require logging in, but allow it.
 <FilesMatch "\.cgi$">
- AuthType Sample::AuthCookieHandler
- AuthName WhatEver
- PerlFixupHandler Sample::AuthCookieHandler->recognize_user
+  AuthName WhatEver
+  <IfDefine APACHE1>
+    AuthType Sample::Apache::AuthCookieHandler
+    PerlFixupHandler Sample::Apache::AuthCookieHandler->recognize_user
+  </IfDefine>
+  <IfDefine APACHE2>
+    AuthType Sample::Apache2::AuthCookieHandler
+    PerlFixupHandler Sample::Apache2::AuthCookieHandler->recognize_user
+  </IfDefine>
 </FilesMatch>
 
-<IfDefine APACHE2>
- PerlModule ModPerl::Registry
-
- <FilesMatch "\.pl$">
+<FilesMatch "\.pl$">
   SetHandler perl-script
-  PerlResponseHandler ModPerl::Registry
   Options +ExecCGI
-  AuthType Sample::AuthCookieHandler
   AuthName WhatEver
- </FilesMatch>
-</IfDefine>
-<IfDefine APACHE1>
- PerlModule Apache::Registry
-
- <FilesMatch "\.pl$">
-  SetHandler perl-script
-  PerlHandler Apache::Registry
-  Options +ExecCGI
-  AuthType Sample::AuthCookieHandler
-  AuthName WhatEver
- </FilesMatch>
-</IfDefine>
+  <IfDefine APACHE1>
+    PerlHandler Apache::Registry
+    AuthType Sample::Apache::AuthCookieHandler
+  </IfDefine>
+  <IfDefine APACHE2>
+    PerlResponseHandler ModPerl::Registry
+    AuthType Sample::Apache2::AuthCookieHandler
+  </IfDefine>
+</FilesMatch>
 
 # This is the action of the login.pl script above.
 <Files LOGIN>
- AuthType Sample::AuthCookieHandler
- AuthName WhatEver
- SetHandler perl-script
- <IfDefine APACHE1>
-   PerlHandler Sample::AuthCookieHandler->login
- </IfDefine>
- <IfDefine APACHE2>
-   PerlResponseHandler Sample::AuthCookieHandler->login
- </IfDefine>
+  AuthName WhatEver
+  SetHandler perl-script
+  <IfDefine APACHE1>
+    AuthType Sample::Apache::AuthCookieHandler
+    PerlHandler Sample::Apache::AuthCookieHandler->login
+  </IfDefine>
+  <IfDefine APACHE2>
+    AuthType Sample::Apache2::AuthCookieHandler
+    PerlResponseHandler Sample::Apache2::AuthCookieHandler->login
+  </IfDefine>
 </Files>
 
 # login action that sets HttpOnly
 <Files LOGIN-HTTPONLY>
- PerlSetVar WhatEverHttpOnly On
- AuthType Sample::AuthCookieHandler
- AuthName WhatEver
- SetHandler perl-script
-
- <IfDefine APACHE1>
-   PerlHandler Sample::AuthCookieHandler->login
- </IfDefine>
- <IfDefine APACHE2>
-   PerlResponseHandler Sample::AuthCookieHandler->login
- </IfDefine>
+  PerlSetVar WhatEverHttpOnly On
+  AuthName WhatEver
+  SetHandler perl-script
+  <IfDefine APACHE1>
+    AuthType Sample::Apache::AuthCookieHandler
+    PerlHandler Sample::Apache::AuthCookieHandler->login
+  </IfDefine>
+  <IfDefine APACHE2>
+    AuthType Sample::Apache2::AuthCookieHandler
+    PerlResponseHandler Sample::Apache2::AuthCookieHandler->login
+  </IfDefine>
 </Files>
 
 <IfDefine APACHE1>
- <Location /perl-status>
-  SetHandler perl-script
-  PerlHandler Apache::Status
- </Location>
+  <Location /perl-status>
+    SetHandler perl-script
+    PerlHandler Apache::Status
+  </Location>
 </IfDefine>
+
+# vim: filetype=apache sw=2 ts=2 ai et

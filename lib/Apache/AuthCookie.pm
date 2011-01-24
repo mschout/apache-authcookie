@@ -539,7 +539,7 @@ Make sure your mod_perl is at least 1.24, with StackedHandlers,
 MethodHandlers, Authen, and Authz compiled in.
 
  # In httpd.conf or .htaccess:
- PerlModule Sample::AuthCookieHandler
+ PerlModule Sample::Apache::AuthCookieHandler
  PerlSetVar WhatEverPath /
  PerlSetVar WhatEverLoginScript /login.pl
 
@@ -581,26 +581,26 @@ MethodHandlers, Authen, and Authz compiled in.
 
  # These documents require user to be logged in.
  <Location /protected>
-  AuthType Sample::AuthCookieHandler
+  AuthType Sample::Apache::AuthCookieHandler
   AuthName WhatEver
-  PerlAuthenHandler Sample::AuthCookieHandler->authenticate
-  PerlAuthzHandler Sample::AuthCookieHandler->authorize
+  PerlAuthenHandler Sample::Apache::AuthCookieHandler->authenticate
+  PerlAuthzHandler Sample::Apache::AuthCookieHandler->authorize
   require valid-user
  </Location>
 
  # These documents don't require logging in, but allow it.
  <FilesMatch "\.ok$">
-  AuthType Sample::AuthCookieHandler
+  AuthType Sample::Apache::AuthCookieHandler
   AuthName WhatEver
-  PerlFixupHandler Sample::AuthCookieHandler->recognize_user
+  PerlFixupHandler Sample::Apache::AuthCookieHandler->recognize_user
  </FilesMatch>
 
  # This is the action of the login.pl script above.
  <Files LOGIN>
-  AuthType Sample::AuthCookieHandler
+  AuthType Sample::Apache::AuthCookieHandler
   AuthName WhatEver
   SetHandler perl-script
-  PerlHandler Sample::AuthCookieHandler->login
+  PerlHandler Sample::Apache::AuthCookieHandler->login
  </Files>
 
 =head1 DESCRIPTION

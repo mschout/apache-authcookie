@@ -1,11 +1,10 @@
-package Sample::AuthCookieHandler;
+package Sample::Apache::AuthCookieHandler;
 use strict;
 use Apache;
 use Apache::Constants qw(:common);
 use Apache::AuthCookie;
-use vars qw($VERSION @ISA);
+use vars qw(@ISA);
 
-$VERSION = substr(q$Revision$, 10);
 @ISA = qw(Apache::AuthCookie);
 
 sub authen_cred ($$\@) {
