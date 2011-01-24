@@ -8,6 +8,8 @@
 ^t/db/
 ~$
 error_log
+^dist\.ini
+^weaver\.ini
 ^t/httpd.loc
 ^t/lib/Sample/AuthCookieHandler.pm$
 
