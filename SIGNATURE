@@ -1,0 +1,53 @@
+This file contains message digests of all files listed in MANIFEST,
+signed via the Module::Signature module, version 0.64.
+
+To verify the content in this distribution, first make sure you have
+Module::Signature installed, then type:
+
+    % cpansign -v
+
+It will check each file's integrity, as well as the signature's
+validity.  If "==> Signature verified OK! <==" is not displayed,
+the distribution may already have been compromised, and you should
+not run its Makefile.PL or Build.PL.
+
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+SHA1 25cbf7b5278bf864cb279efbf8c4acbc6212b5f6 Changes
+SHA1 7d1820bf12e59c0b8e038142cda4f053e1e2cf12 LICENSE
+SHA1 ca06008e1d9794e853bbf528d586c75fd42906bf MANIFEST
+SHA1 65ac9daeb4b3a197c69eb953500174519565b7b1 MANIFEST.SKIP
+SHA1 2073e42d26fda2e2f8f8204cc0aeabe6e2929d33 META.yml
+SHA1 12c1151249e6c770cbf5fb436f07994cf13c8914 Makefile.PL
+SHA1 b9945378262a25db34dcdba06da956a52876188b README
+SHA1 ccbc46a0385aabadd1e6f4a22f8d4ebb11b44901 README.modperl2
+SHA1 3d660b7ee7542d4007830d8465339c2dcb8b3c37 lib/Apache/AuthCookie.pm
+SHA1 969bdf0df1f648add0e4fa34663c9ffc416562de lib/Apache/AuthCookie/FAQ.pod
+SHA1 e89ae24ad97dd5c92fd0eda0be00e848ddd85ea9 lib/Apache/AuthCookie/Util.pm
+SHA1 84586f6f4e686d4816ecc2c33b0c3a3d5e9abfb0 lib/Apache2/AuthCookie.pm
+SHA1 3ac8de46e7bba83f6969caec3c9c14cbd99881cb t/Skeleton/AuthCookieHandler.pm
+SHA1 b1f854e6edecbdd44fc7b8db719e0fe21d9340d1 t/TEST.PL
+SHA1 7327b0e1654ff25270cbc5cbbb520beb02c682e9 t/conf/extra.conf.in
+SHA1 2156ea84b69ca7fef7b73d72a06c07cb145da7a9 t/htdocs/docs/authall/get_me.html
+SHA1 2156ea84b69ca7fef7b73d72a06c07cb145da7a9 t/htdocs/docs/authany/get_me.html
+SHA1 2156ea84b69ca7fef7b73d72a06c07cb145da7a9 t/htdocs/docs/cookiename/get_me.html
+SHA1 f652127d2be92b35df214c15107725cc0e689a8a t/htdocs/docs/echo_cookie.pl
+SHA1 ff64131e263980ea9575b71dc05c5aa2063e135d t/htdocs/docs/index.html
+SHA1 880dce2befec237938f031b9d384b5ec614fad37 t/htdocs/docs/login.pl
+SHA1 265a521106577a583f7c9996ddcdfc10b6a8c721 t/htdocs/docs/logout.pl
+SHA1 ab072fcdac74514bcec4303267652a373ffa627c t/htdocs/docs/protected/echo_user.pl
+SHA1 2156ea84b69ca7fef7b73d72a06c07cb145da7a9 t/htdocs/docs/protected/get_me.html
+SHA1 2156ea84b69ca7fef7b73d72a06c07cb145da7a9 t/htdocs/docs/stimeout/get_me.html
+SHA1 f9ee8ec602b3eac1ef205afcbfb45815380bd72a t/lib/Sample/Apache/AuthCookieHandler.pm
+SHA1 d7411c352d21011de8fad9d14ab999424ae944fb t/lib/Sample/Apache2/AuthCookieHandler.pm
+SHA1 07317653d24f20b6c185162ad5d22ad73befd026 t/real.t
+SHA1 61cea839dd94aaaeb301ccac9b83cde4c5c91b42 t/signature.t
+SHA1 e91bf0ef7d63322eaf15ca7d9907c6db47ce90ca t/startup.pl
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAk09uFIACgkQ+CqvSzp9LOzFcACgyI+9jjgR2sAvRRUyQ9sK3SA2
+7HgAoKQF8ZFMtKRMfzX5zxgJ2M5BYJP5
+=kJD8
+-----END PGP SIGNATURE-----

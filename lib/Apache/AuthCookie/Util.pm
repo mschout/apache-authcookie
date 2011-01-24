@@ -1,4 +1,7 @@
 package Apache::AuthCookie::Util;
+BEGIN {
+  $Apache::AuthCookie::Util::VERSION = '3.18';
+}
 
 # ABSTRACT: Internal Utility Functions for AuthCookie
 
@@ -73,3 +76,33 @@ sub escape_destination {
 }
 
 1;
+
+__END__
+=pod
+
+=head1 NAME
+
+Apache::AuthCookie::Util - Internal Utility Functions for AuthCookie
+
+=head1 VERSION
+
+version 3.18
+
+=head1 AUTHOR
+
+  Michael Schout <mschout@cpan.org>
+
+=head1 COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2000 by Ken Williams.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+=head1 BUGS
+
+Please report any bugs or feature requests to bug-apache-authcookie@rt.cpan.org or through the web interface at:
+ http://rt.cpan.org/Public/Dist/Display.html?Name=Apache-AuthCookie
+
+=cut
+
