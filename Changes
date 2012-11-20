@@ -1,6 +1,9 @@
 Revision history for Apache::AuthCookie
 
 {{$NEXT}}
+   - split out CGI data handling into ::AuthCookie::Params modules
+   - use Apache::Request/Apache2::Request from libapreq if available. Otherwise,
+     fall back to CGI.pm for handling CGI data.
 
 3.18  2011-01-24
    - remove 3.17's test skip hacks, and bump Apache::Test prerequisite to v1.35

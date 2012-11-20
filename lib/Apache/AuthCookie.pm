@@ -7,6 +7,7 @@ use strict;
 use Carp;
 use mod_perl qw(1.07 StackedHandlers MethodHandlers Authen Authz);
 use Apache::Constants qw(:common M_GET FORBIDDEN REDIRECT);
+use Apache::AuthCookie::Params;
 use Apache::AuthCookie::Util;
 use Apache::Util qw(escape_uri);
 
@@ -96,7 +97,7 @@ sub remove_cookie {
 
 # convert current request to GET
 sub _convert_to_get {
-    my ($self, $r, $args) = @_;
+    my ($self, $r) = @_;
 
     return unless $r->method eq 'POST';
 
@@ -104,17 +105,16 @@ sub _convert_to_get {
 
     $r->log_error("Converting POST -> GET") if $debug >= 2;
 
+    my $args = $self->params($r);
+
     my @pairs = ();
-    while (my ($name, $value) = each %$args) {
 
+    for my $name ($args->param) {
         # we dont want to copy login data, only extra data
-        next
-            if $name eq 'destination'
-                or $name =~ /^credential_\d+$/;
+        next if $name eq 'destination'
+             or $name =~ /^credential_\d+$/;
 
-        $value = '' unless defined $value;
-
-        for my $v (split /\0/, $value) {
+        for my $v ($args->param($name)) {
             push @pairs, escape_uri($name) . '=' . escape_uri($v);
         }
     }
@@ -126,23 +126,10 @@ sub _convert_to_get {
     $r->headers_in->unset('Content-Length');
 }
 
-sub _get_form_data {
+sub params {
     my ($self, $r) = @_;
 
-    my @pairs = $r->method eq 'POST' ? $r->content : $r->args;
-
-    my %vars = ();
-
-    while (my ($name, $value) = splice @pairs, 0, 2) {
-        unless (defined $vars{$name}) {
-            $vars{$name} = $value;
-        }
-        else {
-            $vars{$name} .= "\0$value";
-        }
-    }
-
-    return %vars;
+    return Apache::AuthCookie::Params->new($r);
 }
 
 sub login ($$) {
@@ -150,11 +137,12 @@ sub login ($$) {
     my $debug = $r->dir_config("AuthCookieDebug") || 0;
 
     my ($auth_type, $auth_name) = ($r->auth_type, $r->auth_name);
-    my %args = $self->_get_form_data($r);
 
-    $self->_convert_to_get($r, \%args) if $r->method eq 'POST';
+    my $params = $self->params($r);
 
-    unless (exists $args{'destination'}) {
+    $self->_convert_to_get($r) if $r->method eq 'POST';
+
+    unless (defined $params->param('destination')) {
         $r->log_error("No key 'destination' found in form data");
         $r->subprocess_env('AuthCookieReason', 'no_cookie');
         return $auth_type->login_form;
@@ -162,10 +150,11 @@ sub login ($$) {
 
     # Get the credentials from the data posted by the client
     my @credentials;
-    for (my $i = 0 ; exists $args{"credential_$i"} ; $i++) {
+    for (my $i = 0 ; defined $params->param("credential_$i") ; $i++) {
         my $key = "credential_$i";
-        $r->log_error("$key $args{$key}") if $debug >= 2;
-        push @credentials, $args{$key};
+        my $val = $params->param("credential_$i");
+        $r->log_error("$key $val") if $debug >= 2;
+        push @credentials, $val;
     }
 
     # save creds in pnotes in case login form script wants to use them.
@@ -176,7 +165,7 @@ sub login ($$) {
     unless ($ses_key) {
         $r->log_error("Bad credentials") if $debug >= 2;
         $r->subprocess_env('AuthCookieReason', 'bad_credentials');
-        $r->uri($args{'destination'});
+        $r->uri($params->param('destination'));
         return $auth_type->login_form;
     }
 
@@ -194,7 +183,7 @@ sub login ($$) {
     $self->handle_cache;
 
     $r->header_out(
-        "Location" => $self->untaint_destination($args{'destination'}));
+        "Location" => $self->untaint_destination($params->param('destination')));
 
     return REDIRECT;
 }
@@ -314,9 +303,7 @@ sub login_form {
     my $r = Apache->request or die "no request";
     my $auth_name = $r->auth_name;
 
-    my %args = $self->_get_form_data($r);
-
-    $self->_convert_to_get($r, \%args) if $r->method eq 'POST';
+    $self->_convert_to_get($r) if $r->method eq 'POST';
 
     # There should be a PerlSetVar directive that gives us the URI of
     # the script to execute for the login form.

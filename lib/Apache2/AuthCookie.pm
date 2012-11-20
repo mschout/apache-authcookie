@@ -9,6 +9,7 @@ use CGI '3.12';
 use mod_perl2 '1.99022';
 
 use Apache::AuthCookie::Util;
+use Apache2::AuthCookie::Params;
 use Apache2::RequestRec;
 use Apache2::RequestUtil;
 use Apache2::Log;
@@ -107,7 +108,7 @@ sub remove_cookie {
 
 # convert current request to GET
 sub _convert_to_get {
-    my ($self, $r, $args) = @_;
+    my ($self, $r) = @_;
 
     return unless $r->method eq 'POST';
 
@@ -115,14 +116,16 @@ sub _convert_to_get {
 
     $r->server->log_error("Converting POST -> GET") if $debug >= 2;
 
-    my @pairs =();
-    while (my ($name, $value) = each %$args) {
+    my $args = $self->params($r);
+
+    my @pairs = ();
+
+    for my $name ($args->param) {
         # we dont want to copy login data, only extra data
         next if $name eq 'destination'
              or $name =~ /^credential_\d+$/;
 
-        $value = '' unless defined $value;
-        for my $v (split /\0/, $value) {
+        for my $v ($args->param($name)) {
             push @pairs, escape_uri($r, $name) . '=' . escape_uri($r, $v);
         }
     }
@@ -140,14 +143,10 @@ sub escape_uri {
 }
 
 # get GET or POST data and return hash containing the data.
-sub _get_form_data {
+sub params {
     my ($self, $r) = @_;
 
-    my $data = '';
-
-    my $cgi = CGI->new($r);
-
-    return $cgi->Vars();
+    return Apache2::AuthCookie::Params->new($r);
 }
 
 sub login {
@@ -158,13 +157,13 @@ sub login {
     my $auth_type = $r->auth_type;
     my $auth_name = $r->auth_name;
 
-    my %args = $self->_get_form_data($r);
+    my $params = $self->params($r);
 
     if ($r->method eq 'POST') {
-        $self->_convert_to_get($r, \%args);
+        $self->_convert_to_get($r);
     }
 
-    unless (exists $args{'destination'}) {
+    unless (defined $params->param('destination')) {
         $r->server->log_error("No key 'destination' found in form data");
         $r->subprocess_env('AuthCookieReason', 'no_cookie');
         return $auth_type->login_form($r);
@@ -172,10 +171,11 @@ sub login {
 
     # Get the credentials from the data posted by the client
     my @credentials;
-    for (my $i = 0; exists $args{"credential_$i"}; $i++) {
+    for (my $i = 0; defined $params->param("credential_$i"); $i++) {
         my $key = "credential_$i";
-        $r->server->log_error("$key $args{$key}") if $debug >= 2;
-        push @credentials, $args{$key};
+        my $val = $params->param($key);
+        $r->server->log_error("$key $val") if $debug >= 2;
+        push @credentials, $val;
     }
 
     # save creds in pnotes so login form script can use them if it wants to
@@ -186,7 +186,7 @@ sub login {
     unless ($ses_key) {
         $r->server->log_error("Bad credentials") if $debug >= 2;
         $r->subprocess_env('AuthCookieReason', 'bad_credentials');
-        $r->uri($args{'destination'});
+        $r->uri($params->param('destination'));
         return $auth_type->login_form($r);
     }
 
@@ -200,11 +200,11 @@ sub login {
     $self->handle_cache($r);
 
     if ($debug >= 2) {
-        $r->server->log_error("redirect to $args{destination}");
+        $r->server->log_error("redirect to ", $params->param('destination'));
     }
 
     $r->headers_out->set(
-        "Location" => $self->untaint_destination($args{'destination'}));
+        "Location" => $self->untaint_destination($params->param('destination')));
 
     return HTTP_MOVED_TEMPORARILY;
 }
@@ -313,10 +313,8 @@ sub login_form {
 
     my $auth_name = $r->auth_name;
 
-    my %args = $self->_get_form_data($r);
-
     if ($r->method eq 'POST') {
-        $self->_convert_to_get($r, \%args);
+        $self->_convert_to_get($r);
     }
 
     # There should be a PerlSetVar directive that gives us the URI of
