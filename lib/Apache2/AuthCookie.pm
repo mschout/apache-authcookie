@@ -101,9 +101,7 @@ sub remove_cookie {
     );
 
     $r->err_headers_out->add("Set-Cookie" => "$str");
-    $r->server->log_error("removed_cookie ".
-                          $r->err_headers_out->get("Set-Cookie"))
-        if $debug >= 2;
+    $r->server->log_error("removed cookie $cookie_name") if $debug >= 2;
 }
 
 # convert current request to GET
