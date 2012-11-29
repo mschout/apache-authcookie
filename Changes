@@ -5,6 +5,7 @@ Revision history for Apache::AuthCookie
    - use Apache::Request/Apache2::Request from libapreq if available. Otherwise,
      fall back to CGI.pm for handling CGI data.
    - improve "removed cookie" debug log message
+   - add dependencies: autobox, Class::Load
 
 3.18  2011-01-24
    - remove 3.17's test skip hacks, and bump Apache::Test prerequisite to v1.35
