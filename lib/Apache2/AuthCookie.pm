@@ -16,6 +16,7 @@ use Apache2::Log;
 use Apache2::Access;
 use Apache2::Response;
 use Apache2::Util;
+use Apache::AuthCookie::Autobox;
 use APR::Table;
 use Apache2::Const qw(:common M_GET HTTP_FORBIDDEN HTTP_MOVED_TEMPORARILY);
 
@@ -23,16 +24,16 @@ sub recognize_user {
     my ($self, $r) = @_;
 
     # only check if user is not already set
-    return DECLINED if $r->user;
+    return DECLINED unless $r->user->is_blank;
 
     my $debug = $r->dir_config("AuthCookieDebug") || 0;
 
     my $auth_type = $r->auth_type;
     my $auth_name = $r->auth_name;
 
-    return DECLINED unless $auth_type and $auth_name;
+    return DECLINED if $auth_type->is_blank or $auth_name->is_blank;
 
-    return DECLINED unless $r->headers_in->get('Cookie');
+    return DECLINED if $r->headers_in->get('Cookie')->is_blank;
 
     my $cookie = $self->key($r);
     my $cookie_name = $self->cookie_name($r);
@@ -40,11 +41,11 @@ sub recognize_user {
     $r->server->log_error("cookie $cookie_name is $cookie")
         if $debug >= 2;
 
-    return DECLINED unless $cookie;
+    return DECLINED if $cookie->is_blank;
 
     my ($user,@args) = $auth_type->authen_ses_key($r, $cookie);
 
-    if ($user and scalar @args == 0) {
+    if (!$user->is_blank and scalar @args == 0) {
         $r->server->log_error("user is $user") if $debug >= 2;
 
         # send cookie with update expires timestamp if session timeout is on
@@ -268,7 +269,7 @@ sub authenticate {
     if ($ses_key_cookie) {
         my ($auth_user, @args) = $auth_type->authen_ses_key($r, $ses_key_cookie);
 
-        if ($auth_user and scalar @args == 0) {
+        if (!$auth_user->is_blank and scalar @args == 0) {
             # We have a valid session key, so we return with an OK value.
             # Tell the rest of Apache what the authentication method and
             # user is.
@@ -373,8 +374,8 @@ sub authorize {
 
     $r->server->log_error("authorize user=$user type=$auth_type") if $debug >=3;
 
-    unless ($user) {
-        # user is either undef or =0 which means the authentication failed
+    if ($user->is_blank) {
+        # the authentication failed
         $r->server->log_error("No user authenticated", $r->uri);
         return HTTP_FORBIDDEN;
     }

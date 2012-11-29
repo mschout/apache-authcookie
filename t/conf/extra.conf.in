@@ -51,6 +51,7 @@ PerlSetVar WhatEverCookieName Sample::AuthCookieHandler_WhatEver
   </IfDefine>
   Require user some-user
   Require user programmer
+  Require user 0
 </Location>
 
 # must satisfy all requirements

@@ -14,7 +14,7 @@ use Apache::TestRequest qw(GET POST GET_BODY);
 
 Apache::TestRequest::user_agent( reset => 1, requests_redirectable => 0 );
 
-plan tests => 39, need_lwp;
+plan tests => 42, need_lwp;
 
 ok 1;  # we loaded.
 
@@ -203,6 +203,30 @@ ok 1;  # we loaded.
 
     like($r->content, qr/Congratulations, you got past AuthCookie/,
          'AuthAny access allowed');
+}
+
+# any requirement, username=0 works.
+{
+    my $r = GET(
+        '/docs/authany/get_me.html',
+        Cookie => 'Sample::AuthCookieHandler_WhatEver=0:mypassword'
+    );
+
+    like($r->content, qr/Congratulations, you got past AuthCookie/,
+         'username=0 access allowed');
+}
+
+# login with username=0 works
+{
+    my $r = POST('/LOGIN', [
+        destination  => '/docs/authany/get_me.html',
+        credential_0 => '0',
+        credential_1 => 'mypassword'
+    ]);
+
+    is($r->code, 302, 'username=0 login produces redirect');
+    is($r->header('Location'), '/docs/authany/get_me.html',
+       'redirect header exists, and contains expected url');
 }
 
 # should fail: AuthAny and NONE of the requirements are met.

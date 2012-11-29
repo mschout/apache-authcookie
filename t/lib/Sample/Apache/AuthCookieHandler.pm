@@ -28,13 +28,17 @@ sub authen_ses_key ($$$) {
     my $r = shift;
     my($user, $password) = split(/:/, shift, 2);
 
-    if ($user eq "programmer" && $password eq "Hero") {
-	 $user;
-    } elsif ($user eq "some-user") {
-	$user;
-    } else {
-	 "";
+    if ($user eq 'programmer' && $password eq 'Hero') {
+        return $user;
     }
+    elsif ($user eq 'some-user') {
+        return $user;
+    }
+    elsif ($user eq '0') {
+        return $user;
+    }
+
+    return;
 }
 
 sub dwarf {

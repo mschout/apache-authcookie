@@ -30,12 +30,17 @@ sub authen_ses_key ($$$) {
 
     $r->server->log_error("user=$user pass=$password cookie=$cookie");
 
-    if ($user eq "programmer" && $password eq "Hero") {
-	 $user;
-    } elsif ($user eq "some-user") {
-	$user;
-    } else {
-	 "";
+    if ($user eq 'programmer' && $password eq 'Hero') {
+        return $user;
+    }
+    elsif ($user eq 'some-user') {
+        return $user;
+    }
+    elsif ($user eq '0') {
+        return $user;
+    }
+    else {
+        return;
     }
 }
 
