@@ -6,7 +6,7 @@ use strict;
 
 use Carp;
 use mod_perl qw(1.07 StackedHandlers MethodHandlers Authen Authz);
-use Apache::Constants qw(:common M_GET FORBIDDEN REDIRECT);
+use Apache::Constants qw(:common M_GET FORBIDDEN OK REDIRECT);
 use Apache::AuthCookie::Params;
 use Apache::AuthCookie::Util;
 use Apache::AuthCookie::Autobox;
@@ -316,9 +316,32 @@ sub login_form {
     }
 
     #$r->log_error("Redirecting to $authen_script");
-    $r->custom_response(FORBIDDEN, $authen_script);
+    my $status = $self->login_form_status($r);
+    $status = FORBIDDEN unless defined $status;
 
-    return FORBIDDEN;
+    if ($status == OK) {
+        # custom_response doesn't work for OK, DONE, or DECLINED in apache 1.x
+        $r->internal_redirect($authen_script);
+    }
+    else {
+        $r->custom_response($status, $authen_script);
+    }
+
+    return $status;
+}
+
+sub login_form_status {
+    my ($self, $r) = @_;
+
+    my $ua = $r->headers_in->get('User-Agent')
+        or return FORBIDDEN;
+
+    if (Apache::AuthCookie::Util::understands_forbidden_response($ua)) {
+        return FORBIDDEN;
+    }
+    else {
+        return OK;
+    }
 }
 
 sub satisfy_is_valid {
@@ -877,6 +900,17 @@ implementation will make an internal redirect and display the URL you
 specified with the C<PerlSetVar WhatEverLoginScript> configuration
 directive. You can overwrite this method to provide your own
 mechanism.
+
+=item * login_form_status($r)
+
+This method returns the HTTP status code that will be returned with the login
+form response.  The default behaviour is to return FORBIDDEN, except for some
+known browsers which ignore HTML content for FORBIDDEN responses (e.g.:
+SymbianOS).  You can override this method to return custom codes.
+
+Note that FORBIDDEN is the most correct code to return as the given request was
+not authorized to view the requested page.  You should only change this if
+FORBIDDEN does not work.
 
 =item * logout()
 

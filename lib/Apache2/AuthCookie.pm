@@ -18,7 +18,7 @@ use Apache2::Response;
 use Apache2::Util;
 use Apache::AuthCookie::Autobox;
 use APR::Table;
-use Apache2::Const qw(:common M_GET HTTP_FORBIDDEN HTTP_MOVED_TEMPORARILY);
+use Apache2::Const qw(:common M_GET HTTP_FORBIDDEN HTTP_MOVED_TEMPORARILY HTTP_OK);
 
 sub recognize_user {
     my ($self, $r) = @_;
@@ -325,9 +325,26 @@ sub login_form {
         return SERVER_ERROR;
     }
 
-    $r->custom_response(HTTP_FORBIDDEN, $authen_script);
+    my $status = $self->login_form_status($r);
+    $status = HTTP_FORBIDDEN unless defined $status;
 
-    return HTTP_FORBIDDEN;
+    $r->custom_response($status, $authen_script);
+
+    return $status;
+}
+
+sub login_form_status {
+    my ($self, $r) = @_;
+
+    my $ua = $r->headers_in->get('User-Agent')
+        or return HTTP_FORBIDDEN;
+
+    if (Apache::AuthCookie::Util::understands_forbidden_response($ua)) {
+        return HTTP_FORBIDDEN;
+    }
+    else {
+        return HTTP_OK;
+    }
 }
 
 sub satisfy_is_valid {
@@ -881,6 +898,17 @@ implementation will make an internal redirect and display the URL you
 specified with the C<PerlSetVar WhatEverLoginScript> configuration
 directive. You can overwrite this method to provide your own
 mechanism.
+
+=item * login_form_status($r)
+
+This method returns the HTTP status code that will be returned with the login
+form response.  The default behaviour is to return HTTP_FORBIDDEN, except for
+some known browsers which ignore HTML content for HTTP_FORBIDDEN responses
+(e.g.: SymbianOS).  You can override this method to return custom codes.
+
+Note that HTTP_FORBIDDEN is the most correct code to return as the given
+request was not authorized to view the requested page.  You should only change
+this if HTTP_FORBIDDEN does not work.
 
 =item * logout()
 

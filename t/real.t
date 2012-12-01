@@ -14,7 +14,7 @@ use Apache::TestRequest qw(GET POST GET_BODY);
 
 Apache::TestRequest::user_agent( reset => 1, requests_redirectable => 0 );
 
-plan tests => 42, need_lwp;
+plan tests => 46, need_lwp;
 
 ok 1;  # we loaded.
 
@@ -364,6 +364,26 @@ ok 1;  # we loaded.
     );
 
     like($r->content, qr/User: programmer/);
+}
+
+# test login form response status=OK with SymbianOS
+{
+    my $orig_agent = Apache::TestRequest::user_agent()->agent;
+
+    # should get a 403 response by default
+    my $r = GET('/docs/protected/get_me.html');
+    is $r->code, 403;
+    like $r->content, qr/\bcredential_0\b/, 'got login form';
+
+    Apache::TestRequest::user_agent()
+        ->agent('Mozilla/5.0 (SymbianOS/9.1; U; [en]; Series60/3.0 NokiaE60/4.06.0) AppleWebKit/413 (KHTML, like Gecko) Safari/413');
+
+    # should get a 200 response for SymbianOS
+    $r = GET('/docs/protected/get_me.html');
+    is $r->code, 200;
+    like $r->content, qr/\bcredential_0\b/, 'got login form';
+
+    Apache::TestRequest::user_agent()->agent($orig_agent);
 }
 
 # remove CR's from a string.  Win32 apache apparently does line ending

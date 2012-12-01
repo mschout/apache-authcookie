@@ -72,4 +72,15 @@ sub escape_destination {
     return $text;
 }
 
+# return true if the given user agent understands a HTTP_FORBIDDEN response
+# with custom content. Some agents (e.g.: Symbian OS browser), use their own
+# HTML and completely ignore the HTTP content.
+sub understands_forbidden_response {
+    my $ua = shift;
+
+    return 0 if $ua =~ qr{\AMozilla/5\.0 \(SymbianOS/};
+
+    return 1;
+}
+
 1;
