@@ -9,6 +9,7 @@ Revision history for Apache::AuthCookie
    - allow username to be '0'
    - login_form: return OK for SymbianOS, which ignores content for FORBIDDEN responses.
    - add login_form_status() to override HTTP status returned by login form
+   - recognize_user: return DECLINED if user is not recognized
 
 3.18  2011-01-24
    - remove 3.17's test skip hacks, and bump Apache::Test prerequisite to v1.35

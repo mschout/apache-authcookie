@@ -14,7 +14,7 @@ use Apache::TestRequest qw(GET POST GET_BODY);
 
 Apache::TestRequest::user_agent( reset => 1, requests_redirectable => 0 );
 
-plan tests => 46, need_lwp;
+plan tests => 47, need_lwp;
 
 ok 1;  # we loaded.
 
@@ -384,6 +384,14 @@ ok 1;  # we loaded.
     like $r->content, qr/\bcredential_0\b/, 'got login form';
 
     Apache::TestRequest::user_agent()->agent($orig_agent);
+}
+
+{
+    # recognize user
+    my $body = GET_BODY('/docs/echo-user.pl',
+        Cookie => 'Sample::AuthCookieHandler_WhatEver=programmer:Hero');
+
+    is $body, 'programmer';
 }
 
 # remove CR's from a string.  Win32 apache apparently does line ending

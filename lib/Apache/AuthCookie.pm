@@ -46,7 +46,7 @@ sub recognize_user ($$) {
         return $auth_type->custom_errors($r, $user, @args);
     }
 
-    return OK;
+    return $user->is_blank ? DECLINED : OK;
 }
 
 sub cookie_name {
