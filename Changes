@@ -1,6 +1,8 @@
 Revision history for Apache::AuthCookie
 
 {{$NEXT}}
+
+3.19  2012-12-28
    - split out CGI data handling into ::AuthCookie::Params modules
    - use Apache::Request/Apache2::Request from libapreq if available. Otherwise,
      fall back to CGI.pm for handling CGI data.
