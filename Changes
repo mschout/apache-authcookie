@@ -1,6 +1,8 @@
 Revision history for Apache::AuthCookie
 
 {{$NEXT}}
+   - login_form: return OK for mobile IE 10, which also ignores content for
+     FORBIDDEN response.
 
 3.19  2012-12-28
    - split out CGI data handling into ::AuthCookie::Params modules

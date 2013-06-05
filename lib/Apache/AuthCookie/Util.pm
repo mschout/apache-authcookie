@@ -78,7 +78,8 @@ sub escape_destination {
 sub understands_forbidden_response {
     my $ua = shift;
 
-    return 0 if $ua =~ qr{\AMozilla/5\.0 \(SymbianOS/};
+    return 0 if $ua =~ qr{\AMozilla/5\.0 \(SymbianOS/}  # Symbian phones
+             or $ua =~ qr{\bIEMobile/10};            # Nokia Lumia 920, possibly others?
 
     return 1;
 }
