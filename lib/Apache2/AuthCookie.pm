@@ -18,7 +18,50 @@ use Apache2::Response;
 use Apache2::Util;
 use Apache::AuthCookie::Autobox;
 use APR::Table;
-use Apache2::Const qw(:common M_GET HTTP_FORBIDDEN HTTP_MOVED_TEMPORARILY HTTP_OK);
+use Apache2::Const qw(:common
+    M_GET
+    HTTP_FORBIDDEN
+    HTTP_MOVED_TEMPORARILY
+    HTTP_OK
+    AUTHZ_GRANTED
+    AUTHZ_DENIED
+    AUTHZ_DENIED_NO_USER);
+
+sub authn_handler {
+    my ($self, $r) = @_;
+
+    $r->server->log_error("AUTHN HANDLER ***********");
+}
+
+sub authz_handler  {
+    my ($auth_type, $r, @requires) = @_;
+
+    return AUTHZ_DENIED unless @requires;
+
+    my $debug = $r->dir_config("AuthCookieDebug") || 0;
+
+    my $user = $r->user;
+
+    $r->server->log_error("authz user=$user type=$auth_type req=@requires") if $debug >=3;
+
+    if ($user->is_blank) {
+        # user not yet authenticated
+        $r->server->log_error("No user authenticated", $r->uri);
+        return AUTHZ_DENIED_NO_USER;
+    }
+
+    foreach my $req (@requires) {
+        $r->server->log_error("requirement := $req") if $debug >= 2;
+
+        if (lc $req eq 'valid-user') {
+            return AUTHZ_GRANTED;
+        }
+
+        return $req eq $user ? AUTHZ_GRANTED : AUTHZ_DENIED;
+    }
+
+    return AUTHZ_DENIED;
+}
 
 sub recognize_user {
     my ($self, $r) = @_;
@@ -345,100 +388,6 @@ sub login_form_status {
     else {
         return HTTP_OK;
     }
-}
-
-sub satisfy_is_valid {
-    my ($auth_type, $r, $satisfy) = @_;
-
-    $satisfy = lc $satisfy;
-
-    if ($satisfy eq 'any' or $satisfy eq 'all') {
-        return 1;
-    }
-    else {
-        my $auth_name = $r->auth_name;
-        $r->server->log_error("PerlSetVar ${auth_name}Satisfy $satisfy invalid",$r->uri);
-        return 0;
-    }
-}
-
-sub get_satisfy {
-    my ($auth_type, $r) = @_;
-
-    my $auth_name = $r->auth_name;
-
-    return lc $r->dir_config("${auth_name}Satisfy") || 'all';
-}
-
-sub authorize {
-    my ($auth_type, $r) = @_;
-
-    my $debug = $r->dir_config("AuthCookieDebug") || 0;
-
-    $r->server->log_error('authorize() for '.$r->uri()) if $debug >= 3;
-
-    return OK unless $r->is_initial_req; #only the first internal request
-
-    if ($r->auth_type ne $auth_type) {
-        $r->server->log_error("auth type mismatch $auth_type != ".$r->auth_type)
-            if $debug >= 3;
-        return DECLINED;
-    }
-
-    my $reqs_arr = $r->requires or return DECLINED;
-
-    my $user = $r->user;
-
-    $r->server->log_error("authorize user=$user type=$auth_type") if $debug >=3;
-
-    if ($user->is_blank) {
-        # the authentication failed
-        $r->server->log_error("No user authenticated", $r->uri);
-        return HTTP_FORBIDDEN;
-    }
-
-    my $satisfy = $auth_type->get_satisfy($r);
-    return SERVER_ERROR unless $auth_type->satisfy_is_valid($r,$satisfy);
-    my $satisfy_all = $satisfy eq 'all';
-
-    my ($forbidden);
-    foreach my $req (@$reqs_arr) {
-        my ($requirement, $args) = split /\s+/, $req->{requirement}, 2;
-        $args = '' unless defined $args;
-        $r->server->log_error("requirement := $requirement, $args") if $debug >= 2;
-
-        if (lc($requirement) eq 'valid-user') {
-            if ($satisfy_all) {
-                next;
-            }
-            else {
-                return OK;
-            }
-        }
-
-        if ($requirement eq 'user') {
-            if ($args =~ m/\b$user\b/) {
-                next if $satisfy_all;
-                return OK; # satisfy any
-            }
-
-            $forbidden = 1;
-            next;
-        }
-
-        # Call a custom method
-        my $ret_val = $auth_type->$requirement($r, $args);
-        $r->server->log_error("$auth_type->$requirement returned $ret_val") if $debug >= 3;
-        if ($ret_val == OK) {
-            next if $satisfy_all;
-            return OK; # satisfy any
-        }
-
-        # Nothing succeeded, deny access to this user.
-        $forbidden = 1;
-    }
-
-    return $forbidden ? HTTP_FORBIDDEN : OK;
 }
 
 sub send_cookie {

@@ -1,0 +1,72 @@
+**** IMPORTANT *****
+
+Due to the fact that mod_perl is not even an offical release at this point, and
+the fact that Apache 2.4 has a radically different authentication API, this
+module is alpha software.  The API could very likely change at some point until
+there is a stable mod_perl release for apache 2.4.
+
+Apache 2.4 has significant authentication API changes from previous versions of
+Apache.  At the time of this writing, mod_perl does not have an official
+release for httpd 2.4, but this modules does support it.  In order to migrate
+to Apache 2.4, you will very likely need to update your configuration.
+
+Changes Required to use this module with apache 2.4:
+
+in httpd.conf:
+  Add:
+
+  PerlAddAuthzProvider user Sample::Apache2::AuthCookieHandler->authz_handler
+
+  Note that you can use something other than "user".  e.g.: "my-user" if you
+  have other authentication modules in use that are responsible for "Requires
+  user ..." directives.
+
+  Remove:
+
+    All instances of:
+
+        PerlAuthzHandler Your::AuthCookie::Handler->authorize
+
+Internal Changes:
+
+- authorize() has been removed.
+
+    This is replaced by authz_handler.  It has a different return type than
+    authorize.  It is expected to return AUTHZ_GRANTED, AUTHZ_DENIED, or
+    AUTHZ_DENIED_NO_USER.
+
+- ${auth_name}Satisfy
+
+    Satisfy support is removed as it is no longer needed with httpd 2.4.
+
+    You can handle other non-user requirements with RequireAll, and additional
+    AuthzProvider handlers:
+
+    e.g.:
+
+      PerlAddAuthzProvider user    Your::AuthCookieHandler->authz_handler
+      PerlAddAuthzProvider species Your::AuthCookieHandler->authz_species_handler
+
+      <RequireAll>
+        Require valid-user
+        Require species gerbil
+      </RequireAll>
+
+    see: https://httpd.apache.org/docs/2.4/howto/auth.html#reqaccessctrl
+
+- Unauthorized user response code
+
+    In apache 2.4, in mod_authz_core, if no authz_handlers return
+    AUTHZ_GRANTED, then HTTP_UNAUTHORIZED is returned.  In previous versions,
+    HTTP_FORBIDDEN was returned.  You can get the old behaviour with:
+
+        AuthzSendForbiddenOnFailure On
+
+TODO:
+- add support for mod_auth_socache if possible
+- figure out how to make a release that supports both Apache 2.2 and earlier
+  and also Apache 2.4+.
+- currently, Apache::Test does not set any constants for APACHE24 in the config
+  file so there is no way to make t/extra.conf.in.  Patch sent in to
+  rt.cpan.org for this.
+
