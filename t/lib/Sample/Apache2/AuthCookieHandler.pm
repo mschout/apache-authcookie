@@ -1,12 +1,23 @@
 package Sample::Apache2::AuthCookieHandler;
 use strict;
+use Class::Load 'load_class';
 use Apache2::Const qw(:common HTTP_FORBIDDEN);
 use Apache2::AuthCookie;
 use Apache2::RequestRec;
 use Apache2::RequestIO;
 use vars qw(@ISA);
 
-@ISA = qw(Apache2::AuthCookie);
+use Apache::Test;
+use Apache::TestUtil;
+
+if (have_min_apache_version('2.4.0')) {
+    load_class('Apache24::AuthCookie');
+    @ISA = qw(Apache24::AuthCookie);
+}
+else {
+    load_class('Apache2::AuthCookie');
+    @ISA = qw(Apache2::AuthCookie);
+}
 
 sub authen_cred ($$\@) {
     my $self = shift;
