@@ -1,6 +1,8 @@
 Revision history for Apache::AuthCookie
 
 {{$NEXT}}
+
+3.20  2013-12-09
    - login_form: return OK for mobile IE 10, which also ignores content for
      FORBIDDEN response.
    - test .pl registry scripts: do not try to load mod_perl.pm
