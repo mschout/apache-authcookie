@@ -67,7 +67,7 @@ sub expire_calc {
 sub escape_destination {
     my $text = shift;
 
-    $text =~ s/([\r\n\t])/sprintf("%%%02X", ord $1)/ge;
+    $text =~ s/([\r\n\t\>\<"])/sprintf("%%%02X", ord $1)/ge;
 
     return $text;
 }
