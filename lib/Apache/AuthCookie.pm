@@ -1,6 +1,6 @@
 package Apache::AuthCookie;
 {
-  $Apache::AuthCookie::VERSION = '3.19';
+  $Apache::AuthCookie::VERSION = '3.20';
 }
 
 # ABSTRACT: Perl Authentication and Authorization via cookies
@@ -169,7 +169,7 @@ sub login ($$) {
     unless ($ses_key) {
         $r->log_error("Bad credentials") if $debug >= 2;
         $r->subprocess_env('AuthCookieReason', 'bad_credentials');
-        $r->uri($params->param('destination'));
+        $r->uri($self->untaint_destination($params->param('destination')));
         return $auth_type->login_form;
     }
 
@@ -552,7 +552,7 @@ Apache::AuthCookie - Perl Authentication and Authorization via cookies
 
 =head1 VERSION
 
-version 3.19
+version 3.20
 
 =head1 SYNOPSIS
 

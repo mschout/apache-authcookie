@@ -13,7 +13,7 @@ Apache::AuthCookie::FAQ
 
 =head1 VERSION
 
-version 3.19
+version 3.20
 
 =head1 DESCRIPTION
 

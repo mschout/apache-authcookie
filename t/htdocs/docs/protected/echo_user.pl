@@ -1,6 +1,4 @@
 use strict;
-
-use mod_perl;
 use constant MODPERL2 => ($mod_perl::VERSION >= 1.99);
 
 if (MODPERL2) {

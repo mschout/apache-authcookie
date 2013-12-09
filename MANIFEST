@@ -2,7 +2,6 @@ Changes
 LICENSE
 MANIFEST
 MANIFEST.SKIP
-MANIFEST.bak
 META.yml
 Makefile.PL
 README
@@ -16,6 +15,7 @@ lib/Apache/AuthCookie/Params/Base.pm
 lib/Apache/AuthCookie/Util.pm
 lib/Apache2/AuthCookie.pm
 lib/Apache2/AuthCookie/Params.pm
+t/SMOKE
 t/Skeleton/AuthCookieHandler.pm
 t/TEST.PL
 t/autobox.t
@@ -33,7 +33,6 @@ t/htdocs/docs/protected/get_me.html
 t/htdocs/docs/stimeout/get_me.html
 t/lib/Sample/Apache/AuthCookieHandler.pm
 t/lib/Sample/Apache2/AuthCookieHandler.pm
-t/lib/Sample/AuthCookieHandler.pm
 t/real.t
 t/signature.t
 t/startup.pl

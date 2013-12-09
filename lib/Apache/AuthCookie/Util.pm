@@ -1,6 +1,6 @@
 package Apache::AuthCookie::Util;
 {
-  $Apache::AuthCookie::Util::VERSION = '3.19';
+  $Apache::AuthCookie::Util::VERSION = '3.20';
 }
 
 # ABSTRACT: Internal Utility Functions for AuthCookie
@@ -70,7 +70,7 @@ sub expire_calc {
 sub escape_destination {
     my $text = shift;
 
-    $text =~ s/([\r\n\t])/sprintf("%%%02X", ord $1)/ge;
+    $text =~ s/([\r\n\t\>\<"])/sprintf("%%%02X", ord $1)/ge;
 
     return $text;
 }
@@ -81,7 +81,8 @@ sub escape_destination {
 sub understands_forbidden_response {
     my $ua = shift;
 
-    return 0 if $ua =~ qr{\AMozilla/5\.0 \(SymbianOS/};
+    return 0 if $ua =~ qr{\AMozilla/5\.0 \(SymbianOS/}  # Symbian phones
+             or $ua =~ qr{\bIEMobile/10};            # Nokia Lumia 920, possibly others?
 
     return 1;
 }
@@ -98,7 +99,7 @@ Apache::AuthCookie::Util - Internal Utility Functions for AuthCookie
 
 =head1 VERSION
 
-version 3.19
+version 3.20
 
 =head1 SOURCE
 

@@ -1,7 +1,6 @@
 #!/usr/bin/perl
 
 use strict;
-use mod_perl;
 use constant MP2 => ($mod_perl::VERSION >= 1.99);
 
 my $r = MP2 ? Apache2::RequestUtil->request
