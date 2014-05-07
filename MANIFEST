@@ -6,7 +6,6 @@ MANIFEST.SKIP
 META.yml
 Makefile.PL
 README
-README.apache-2.4
 README.modperl2
 SIGNATURE
 lib/Apache/AuthCookie.pm
@@ -16,9 +15,7 @@ lib/Apache/AuthCookie/Params.pm
 lib/Apache/AuthCookie/Params/Base.pm
 lib/Apache/AuthCookie/Util.pm
 lib/Apache2/AuthCookie.pm
-lib/Apache2/AuthCookie/Base.pm
 lib/Apache2/AuthCookie/Params.pm
-lib/Apache24/AuthCookie.pm
 t/SMOKE
 t/Skeleton/AuthCookieHandler.pm
 t/TEST.PL
