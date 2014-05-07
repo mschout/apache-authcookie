@@ -1,11 +1,9 @@
 # make Dist::Zilla happy.
 package Apache::AuthCookie::FAQ;
 
+# ABSTRACT: Frequently Asked Questions about Apache::AuthCookie.
+
 1;
-
-=head1 NAME
-
-Apache::AuthCookie::FAQ - Frequently Asked Questions about Apache::AuthCookie.
 
 =head1 DESCRIPTION
 
