@@ -2,11 +2,15 @@ Revision history for Apache::AuthCookie
 
 {{$NEXT}}
 
+3.21  2014-05-07
+   - Bad release - deleted
+
 3.20  2013-12-09
    - login_form: return OK for mobile IE 10, which also ignores content for
      FORBIDDEN response.
    - test .pl registry scripts: do not try to load mod_perl.pm
    - escape html tags in destination.
+   - fix abstract in FAQ pod.
 
 3.19  2012-12-28
    - split out CGI data handling into ::AuthCookie::Params modules
