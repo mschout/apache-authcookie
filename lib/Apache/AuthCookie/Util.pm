@@ -1,8 +1,5 @@
 package Apache::AuthCookie::Util;
-{
-  $Apache::AuthCookie::Util::VERSION = '3.20';
-}
-
+$Apache::AuthCookie::Util::VERSION = '3.21';
 # ABSTRACT: Internal Utility Functions for AuthCookie
 
 use strict;
@@ -70,7 +67,7 @@ sub expire_calc {
 sub escape_destination {
     my $text = shift;
 
-    $text =~ s/([\r\n\t\>\<"])/sprintf("%%%02X", ord $1)/ge;
+    $text =~ s/([\r\n\t])/sprintf("%%%02X", ord $1)/ge;
 
     return $text;
 }
@@ -99,7 +96,7 @@ Apache::AuthCookie::Util - Internal Utility Functions for AuthCookie
 
 =head1 VERSION
 
-version 3.20
+version 3.21
 
 =head1 SOURCE
 

@@ -1,5 +1,7 @@
 # make Dist::Zilla happy.
 package Apache::AuthCookie::FAQ;
+$Apache::AuthCookie::FAQ::VERSION = '3.21';
+# ABSTRACT: Frequently Asked Questions about Apache::AuthCookie.
 
 1;
 
@@ -9,11 +11,11 @@ __END__
 
 =head1 NAME
 
-Apache::AuthCookie::FAQ
+Apache::AuthCookie::FAQ - Frequently Asked Questions about Apache::AuthCookie.
 
 =head1 VERSION
 
-version 3.20
+version 3.21
 
 =head1 DESCRIPTION
 
@@ -39,10 +41,6 @@ handler is C</LOGIN>, then you need to use something like the following:
    PerlAuthzHandler Apache2::Const::OK
  </Location>
  ...
-
-=head1 NAME
-
-Apache::AuthCookie::FAQ - Frequently Asked Questions about Apache::AuthCookie.
 
 =head1 SOURCE
 
