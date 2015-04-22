@@ -22,4 +22,5 @@ error_log
 ^t/htdocs/index.html$
 ^t/logs/
 ^t/TEST$
+^t/SMOKE$
 
