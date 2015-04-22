@@ -1,4 +1,4 @@
-package Apache24::AuthCookie;
+package Apache2_4::AuthCookie;
 
 use strict;
 use base 'Apache2::AuthCookie::Base';

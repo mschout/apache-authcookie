@@ -11,8 +11,8 @@ use Apache::Test;
 use Apache::TestUtil;
 
 if (have_min_apache_version('2.4.0')) {
-    load_class('Apache24::AuthCookie');
-    @ISA = qw(Apache24::AuthCookie);
+    load_class('Apache2_4::AuthCookie');
+    @ISA = qw(Apache2_4::AuthCookie);
 }
 else {
     load_class('Apache2::AuthCookie');
