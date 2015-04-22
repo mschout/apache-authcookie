@@ -1,0 +1,100 @@
+=head1 IMPORTANT
+
+Due to the fact that mod_perl is not even an offical release at this point, and
+the fact that Apache 2.4 has a radically different authentication API, this
+module is alpha software.  The API could very likely change at some point until
+there is a stable mod_perl release for apache 2.4.
+
+Apache 2.4 has significant authentication API changes from previous versions of
+Apache.  At the time of this writing, mod_perl does not have an official
+release for httpd 2.4, but this modules does support it.  In order to migrate
+to Apache 2.4, you will very likely need to update your configuration.
+
+
+=head2 Changes Required to Run Under Apache 2.4
+
+=over 4
+
+=item Your AuthCookie Subclass
+
+You must inherit from C<Apache2_4::AuthCookie> instead of C<Apache2::AuthCookie>
+
+=item httpd.conf
+
+=over 4
+
+=item Add a C<PerlAddAuthzProvider> directive that calls C<authz_handler()>
+
+E.g.:
+
+    PerlAddAuthzProvider user Sample::Apache2::AuthCookieHandler->authz_handler
+
+Note that you can use something other than C<user>.  e.g.: C<my-user> if you
+have other authentication modules in use that are responsible for
+C<Requires user ...> directives.
+
+
+=item Remove All Instances of PerlAuthzHandler that call authorize()
+
+E.g.: remove all all instances of:
+
+    PerlAuthzHandler Your::AuthCookie::Handler->authorize
+
+=back
+
+=back
+
+=head2 Important Internal API Changes for Apache 2.4
+
+=over 4
+
+=item authorize() has been removed
+
+In C<Apache2_4::AuthCookie>, C<authorize()> is replaced by C<authz_handler>.
+C<authz_handler> has a different return type from C<authorize>.  Apache expects
+a return value of one of C<AUTHZ_GRANTED>, C<AUTHZ_DENIED>, or
+C<AUTHZ_DENIED_NO_USER>.
+
+=item ${auth_name}Satisfy
+
+Satisfy support is removed as it is no longer needed with httpd 2.4.
+
+You can handle other non-user requirements with RequireAll, and additional
+AuthzProvider handlers:
+
+e.g.:
+
+    PerlAddAuthzProvider user    Your::AuthCookieHandler->authz_handler
+    PerlAddAuthzProvider species Your::AuthCookieHandler->authz_species_handler
+
+    <RequireAll>
+      Require valid-user
+      Require species gerbil
+    </RequireAll>
+
+see: https://httpd.apache.org/docs/2.4/howto/auth.html#reqaccessctrl
+
+=item Unauthorized User HTTP Response Code
+
+In apache 2.4, in mod_authz_core, if no authz_handlers return C<AUTHZ_GRANTED>,
+then C<HTTP_UNAUTHORIZED> is returned.  In previous versions, C<HTTP_FORBIDDEN>
+was returned.  You can get the old behaviour if you want it with:
+
+    AuthzSendForbiddenOnFailure On
+
+=back
+
+=head1 TODO
+
+=over 4
+
+=item *
+
+add support for mod_auth_socache if possible
+
+=item *
+
+figure out how to make a release that supports both Apache 2.2 and earlier
+and also Apache 2.4+.
+
+=back
