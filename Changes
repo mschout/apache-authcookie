@@ -1,6 +1,8 @@
 Revision history for Apache::AuthCookie
 
 {{$NEXT}}
+
+3.23  2015-09-10
    - Improve CGI mode param() handling to avoi CGI.pm's "param() called in list context" warning.
    - add support for Apache 2.4 via mod_perl 1.09.
      ***** IMPORTANT *****
