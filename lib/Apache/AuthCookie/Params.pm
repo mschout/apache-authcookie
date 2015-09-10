@@ -5,7 +5,7 @@ package Apache::AuthCookie::Params;
 use strict;
 use warnings;
 use base 'Apache::AuthCookie::Params::Base';
-use Class::Load qw(try_load_class load_class);
+use Class::Load qw(try_load_class);
 
 sub _new_instance {
     my ($class, $r) = @_;
@@ -20,14 +20,13 @@ sub _new_instance {
         return Apache::Request->new($r);
     }
     else {
-        load_class('CGI');
-
         $r->server->log_error("params: using CGI") if $debug >= 3;
 
         # CGI->new($r) doesn't work for POST->GET conversion in MP1, so get
         # query string manually
         my $qstring = $r->method eq 'POST' ? scalar $r->content : scalar $r->args;
-        return CGI->new($qstring);
+
+        return $class->_cgi_new($qstring);
     }
 
     return;

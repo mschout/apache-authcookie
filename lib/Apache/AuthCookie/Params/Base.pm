@@ -4,6 +4,7 @@ package Apache::AuthCookie::Params::Base;
 
 use strict;
 use warnings;
+use Class::Load qw(load_class);
 
 sub new {
     my ($class, $r) = @_;
@@ -21,6 +22,14 @@ sub new {
     $r->pnotes($class, $obj);
 
     return $obj;
+}
+
+sub _cgi_new {
+    my ($self, $init) = @_;
+
+    load_class('CGI');
+
+    return CGI->new($init);
 }
 
 1;
