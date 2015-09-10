@@ -27,9 +27,9 @@ sub new {
 sub _cgi_new {
     my ($self, $init) = @_;
 
-    load_class('CGI');
+    load_class('Apache::AuthCookie::Params::CGI');
 
-    return CGI->new($init);
+    return Apache::AuthCookie::Params::CGI->new($init);
 }
 
 1;
