@@ -102,7 +102,7 @@ PerlSetVar WhatEverCookieName Sample::AuthCookieHandler_WhatEver
 
   <IfDefine !APACHE2_4>
     # apache 1.x, apache 2.0, apache 2.2
-    Require user some-user
+    Require dwarf
     Require user programmer
   </IfDefine>
   <IfDefine APACHE2_4>
