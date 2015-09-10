@@ -1,6 +1,6 @@
 package Apache::AuthCookie::Params::Base;
 
-# ABSTRACT: Interanal CGI AuthCookie Params Base Class
+# ABSTRACT: Internal CGI AuthCookie Params Base Class
 
 use strict;
 use warnings;
