@@ -11,6 +11,7 @@ error_log
 ^dist\.ini
 ^weaver\.ini
 ^t/httpd.loc
+^MYMETA
 
 # Apache::Test generated files
 ^t/conf/extra.conf$
