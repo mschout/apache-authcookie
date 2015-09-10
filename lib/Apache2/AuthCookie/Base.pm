@@ -225,6 +225,7 @@ sub authenticate {
 
     my $debug = $r->dir_config("AuthCookieDebug") || 0;
 
+    $r->server->log_error("authenticate() entry") if ($debug >= 3);
     $r->server->log_error("auth_type " . $auth_type) if ($debug >= 3);
 
     unless ($r->is_initial_req) {
