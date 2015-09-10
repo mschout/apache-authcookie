@@ -1,9 +1,10 @@
 package Apache::AuthCookie::Params::Base;
 
-# ABSTRACT: Interanal CGI AuthCookie Params Base Class
+# ABSTRACT: Internal CGI AuthCookie Params Base Class
 
 use strict;
 use warnings;
+use Class::Load qw(load_class);
 
 sub new {
     my ($class, $r) = @_;
@@ -21,6 +22,14 @@ sub new {
     $r->pnotes($class, $obj);
 
     return $obj;
+}
+
+sub _cgi_new {
+    my ($self, $init) = @_;
+
+    load_class('Apache::AuthCookie::Params::CGI');
+
+    return Apache::AuthCookie::Params::CGI->new($init);
 }
 
 1;

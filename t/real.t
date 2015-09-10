@@ -14,7 +14,7 @@ use Apache::TestRequest qw(GET POST GET_BODY);
 
 Apache::TestRequest::user_agent( reset => 1, requests_redirectable => 0 );
 
-plan tests => 47, need_lwp;
+plan tests => 49, need_lwp;
 
 ok 1;  # we loaded.
 
@@ -327,6 +327,24 @@ ok 1;  # we loaded.
 
     ok(!defined $r->header('X-Test-Foo'), 'anti XSS injection with escaped CRLF');
     ok(!defined $r->header('X-Test-Bar'), 'anti XSS injection with escaped CRLF');
+}
+
+# embedded html tags in destination
+{
+    my $r = POST('/LOGIN', [
+        destination  => '"><form method="post">Embedded Form</form>'
+    ]);
+
+    like $r->content, qr{"%22%3E%3Cform method=%22post%22%3EEmbedded Form%3C/form%3E"};
+}
+
+# embedded script tags
+{
+    my $r = POST('/LOGIN', [
+        destination => q{"><script>alert('123')</script>}
+    ]);
+
+    ok index($r->content, q{<script>alert('123')</script>}) == -1;
 }
 
 # make sure '/' in password is preserved.

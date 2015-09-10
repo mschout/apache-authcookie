@@ -5,7 +5,7 @@ package Apache2::AuthCookie::Params;
 use strict;
 use warnings;
 use base 'Apache::AuthCookie::Params::Base';
-use Class::Load qw(try_load_class load_class);
+use Class::Load qw(try_load_class);
 
 sub _new_instance {
     my ($class, $r) = @_;
@@ -20,11 +20,9 @@ sub _new_instance {
         return Apache2::Request->new($r);
     }
     else {
-        load_class('CGI');
-
         $r->server->log_error("params: using CGI") if $debug >= 3;
 
-        return CGI->new($r);
+        return $class->_cgi_new($r);
     }
 
     return;
