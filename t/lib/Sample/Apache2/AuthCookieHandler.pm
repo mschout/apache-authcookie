@@ -5,6 +5,7 @@ use Apache2::Const qw(:common HTTP_FORBIDDEN);
 use Apache2::AuthCookie;
 use Apache2::RequestRec;
 use Apache2::RequestIO;
+use Apache::AuthCookie::Autobox;
 use vars qw(@ISA);
 
 use Apache::Test;
@@ -24,6 +25,8 @@ sub authen_cred ($$\@) {
     my $r = shift;
     my @creds = @_;
 
+    $r->server->log_error("authen_cred entry");
+
     return if $creds[0] eq 'fail'; # simulate bad_credentials
 
     # This would really authenticate the credentials 
@@ -38,6 +41,8 @@ sub authen_cred ($$\@) {
 sub authen_ses_key ($$$) {
     my ($self, $r, $cookie) = @_;
     my($user, $password) = split(/:/, $cookie);
+
+    $r->server->log_error("authen_ses_key entry");
 
     $r->server->log_error("user=$user pass=$password cookie=$cookie");
 
@@ -59,22 +64,26 @@ sub dwarf {
     my $self = shift;
     my $r = shift;
 
+    $r->server->log_error("dwarf entry");
+
     my $user = $r->user;
-    if ("bashful doc dopey grumpy happy sleepy sneezy programmer"
-	=~ /\b$user\b/) {
-	# You might be thinking to yourself that there were only 7
-	# dwarves, that's because the marketing folks left out
-	# the often under appreciated "programmer" because:
-	#
-	# 10) He didn't hold 8 to 5 hours.
-	# 9)  Sometimes forgot to shave several days at a time.
-	# 8)  Was always buzzed on caffine.
-	# 7)  Wasn't into heavy labor.
-	# 6)  Prone to "swearing while he worked."
-	# 5)  Wasn't as easily controlled as the other dwarves.
-	# 
-	# 1)  He posted naked pictures of Snow White to the Internet.
-	return OK;
+
+    $r->server->log_error("USER=$user");
+
+    if ("bashful doc dopey grumpy happy sleepy sneezy programmer" =~ /\b$user\b/) {
+        # You might be thinking to yourself that there were only 7
+        # dwarves, that's because the marketing folks left out
+        # the often under appreciated "programmer" because:
+        #
+        # 10) He didn't hold 8 to 5 hours.
+        # 9)  Sometimes forgot to shave several days at a time.
+        # 8)  Was always buzzed on caffine.
+        # 7)  Wasn't into heavy labor.
+        # 6)  Prone to "swearing while he worked."
+        # 5)  Wasn't as easily controlled as the other dwarves.
+        # 
+        # 1)  He posted naked pictures of Snow White to the Internet.
+        return OK;
     }
 
     return HTTP_FORBIDDEN;
