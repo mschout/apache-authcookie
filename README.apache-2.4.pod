@@ -1,29 +1,80 @@
-=head1 IMPORTANT
+=head1 APACHE 2.4 PORTING NOTES
 
-Due to the fact that mod_perl is not even an offical release at this point, and
-the fact that Apache 2.4 has a radically different authentication API, this
-module is alpha software.  The API could very likely change at some point until
-there is a stable mod_perl release for apache 2.4.
+=head2 VERY IMPORTANT!!!
 
-Apache 2.4 has significant authentication API changes from previous versions of
-Apache.  At the time of this writing, mod_perl does not have an official
-release for httpd 2.4, but this modules does support it.  In order to migrate
-to Apache 2.4, you will very likely need to update your configuration.
+Apache 2.4 has a B<VERY> different authentication API from previous versions.
+You will not be able to simply ugrade apache and upgrade AuthCookie in order to
+migrate to Apache 2.4.  You will also need to port your AuthCookie subclass
+over to the Apache 2.4 API, and update your Apache configuration for Apache
+2.4.
 
+This document attempts to help you understand the changes required and
+how to port your module over to Apache 2.4.  If your subclass stopped working
+when you migrated to Apache 2.4, please make sure you have read and understand
+everything in this document before filing a bug report.
 
 =head2 Changes Required to Run Under Apache 2.4
 
 =over 4
 
+=item Mod Perl
+
+You need at least C<mod_perl> version 2.0.9, which is the first official
+release to support Apache 2.4.
+
+=item Apache::Test
+
+You need Apache::Test version 1.39 or later.  Previous versions do not define
+the constant APACHE2_4 which is needed for the test suite.
+
 =item Your AuthCookie Subclass
 
-You must inherit from C<Apache2_4::AuthCookie> instead of C<Apache2::AuthCookie>
+=over 4
+
+=item *
+
+Your module must inherit from C<Apache2_4::AuthCookie> instead of C<Apache2::AuthCookie>
+
+=item *
+
+You must change every method that was called as a C<PerlAuthzHandler> under
+previous versions to return one of the following values:
+
+=over 4
+
+=item Apache2::Const::AUTHZ_DENIED_NO_USER
+
+return this constant if C<< $r->user >> is empty/undefined.
+
+=item Apache2::Const::AUTHZ_DENIED
+
+return this constant if C<< $r->user >> is not authorized for the current request.
+
+=item Apache2::Const::AUTHZ_GRANTED
+
+return this constant if C<< $r->user >> is authorized for the current request
+
+=back
+
+=back
 
 =item httpd.conf
 
 =over 4
 
-=item Add a C<PerlAddAuthzProvider> directive that calls C<authz_handler()>
+=item *
+
+Replace all C<PerlAuthzHandler> entries with top level C<PerlAddAuthzProvider> entries.
+
+C<PerlAuthzHandler> is gone in Apache 2.4.  It has been replaced with
+C<PerlAddAuthzProvider>.  C<PerlAddAUthzProvider> methods are expected to
+return one of C<AUTHZ_DENIED_NO_USER>, C<AUTHZ_GRANTED>, or C<AUTHZ_DENIED>.
+Other return values are not valid.  Be sure you have ported your authz methods
+to return the appropriate constant!
+
+=item *
+
+Add a C<PerlAddAuthzProvider> directive that calls C<authz_handler()>
 
 E.g.:
 
@@ -33,8 +84,9 @@ Note that you can use something other than C<user>.  e.g.: C<my-user> if you
 have other authentication modules in use that are responsible for
 C<Requires user ...> directives.
 
+=item *
 
-=item Remove All Instances of PerlAuthzHandler that call authorize()
+Remove All Instances of PerlAuthzHandler that call authorize()
 
 E.g.: remove all all instances of:
 
@@ -57,7 +109,7 @@ C<AUTHZ_DENIED_NO_USER>.
 
 =item ${auth_name}Satisfy
 
-Satisfy support is removed as it is no longer needed with httpd 2.4.
+Satisfy support is removed as it is no longer needed with Apache 2.4.
 
 You can handle other non-user requirements with RequireAll, and additional
 AuthzProvider handlers:
@@ -76,11 +128,26 @@ see: https://httpd.apache.org/docs/2.4/howto/auth.html#reqaccessctrl
 
 =item Unauthorized User HTTP Response Code
 
-In apache 2.4, in mod_authz_core, if no authz_handlers return C<AUTHZ_GRANTED>,
+In Apache 2.4, in mod_authz_core, if no authz_handlers return C<AUTHZ_GRANTED>,
 then C<HTTP_UNAUTHORIZED> is returned.  In previous versions, C<HTTP_FORBIDDEN>
 was returned.  You can get the old behaviour if you want it with:
 
     AuthzSendForbiddenOnFailure On
+
+=back
+
+=head1 FREQUENTLY ASKED QUESTIONS
+
+=over 4
+
+=item *
+
+Why is my authz method called twice per request?
+
+This is normal behaviour under Apache 2.4.  You are expected to return
+C<Apache2::Const::AUTHZ_DENIED_NO_USER> IF C<< $r->user >> has not yet been
+set.  Your authz handler will be called a second time after the user has been
+authenticated.
 
 =back
 
@@ -91,10 +158,5 @@ was returned.  You can get the old behaviour if you want it with:
 =item *
 
 add support for mod_auth_socache if possible
-
-=item *
-
-figure out how to make a release that supports both Apache 2.2 and earlier
-and also Apache 2.4+.
 
 =back

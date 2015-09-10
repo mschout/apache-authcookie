@@ -2,7 +2,12 @@ Revision history for Apache::AuthCookie
 
 {{$NEXT}}
    - Improve CGI mode param() handling to avoi CGI.pm's "param() called in list context" warning.
-   - add initial support for Apache 2.4 via upcoming mod_perl 1.09
+   - add support for Apache 2.4 via mod_perl 1.09.
+     ***** IMPORTANT *****
+     Apache 2.4 has a *VERY* different API for authentication.  You will need
+     to port your subclass and configuration over to the Apache 2.4 API in
+     order to use Apache 2.4!  Please be sure to read README.apache-2.4.pod for
+     porting instructions!
 
 3.22  2014-05-07
 
