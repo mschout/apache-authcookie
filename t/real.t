@@ -14,7 +14,7 @@ use Apache::TestRequest qw(GET POST GET_BODY);
 
 Apache::TestRequest::user_agent( reset => 1, requests_redirectable => 0 );
 
-plan tests => 49, need_lwp;
+plan tests => 51, need_lwp;
 
 ok 1;  # we loaded.
 
@@ -174,6 +174,18 @@ ok 1;  # we loaded.
     );
 
     is($r->code(), 403, 'unauthorized if requirements are not met');
+}
+
+# should pass, ALL requirements are met
+{
+    my $r = GET(
+        '/docs/authall/get_me.html',
+        Cookie => 'Sample::AuthCookieHandler_WhatEver=programmer:Hero'
+    );
+
+    is($r->code, '200', 'get protected document');
+    like($r->content, qr/Congratulations, you got past AuthCookie/s,
+         'check protected document content');
 }
 
 # test POST to GET conversion

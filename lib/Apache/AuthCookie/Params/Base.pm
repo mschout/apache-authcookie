@@ -1,9 +1,10 @@
 package Apache::AuthCookie::Params::Base;
-$Apache::AuthCookie::Params::Base::VERSION = '3.22';
-# ABSTRACT: Interanal CGI AuthCookie Params Base Class
+$Apache::AuthCookie::Params::Base::VERSION = '3.23';
+# ABSTRACT: Internal CGI AuthCookie Params Base Class
 
 use strict;
 use warnings;
+use Class::Load qw(load_class);
 
 sub new {
     my ($class, $r) = @_;
@@ -23,6 +24,14 @@ sub new {
     return $obj;
 }
 
+sub _cgi_new {
+    my ($self, $init) = @_;
+
+    load_class('Apache::AuthCookie::Params::CGI');
+
+    return Apache::AuthCookie::Params::CGI->new($init);
+}
+
 1;
 
 __END__
@@ -31,11 +40,11 @@ __END__
 
 =head1 NAME
 
-Apache::AuthCookie::Params::Base - Interanal CGI AuthCookie Params Base Class
+Apache::AuthCookie::Params::Base - Internal CGI AuthCookie Params Base Class
 
 =head1 VERSION
 
-version 3.22
+version 3.23
 
 =head1 SYNOPSIS
 

@@ -1,22 +1,23 @@
-package Apache::AuthCookie::Autobox;
-$Apache::AuthCookie::Autobox::VERSION = '3.23';
-# ABSTRACT: Autobox Extensions for AuthCookie
+package Apache::AuthCookie::Params::CGI;
+$Apache::AuthCookie::Params::CGI::VERSION = '3.23';
+# ABSTRACT: Internal CGI Params Subclass
 
 use strict;
-use base 'autobox';
+use warnings;
+use vars qw(@ISA);
+use CGI;
 
-sub import {
-    my $class = shift;
+@ISA = qw(CGI);
 
-    $class->SUPER::import(
-        SCALAR => __PACKAGE__ . '::Scalar',
-        UNDEF  => __PACKAGE__ . '::Scalar');
-}
+sub param {
+    my $self = shift;
 
-package Apache::AuthCookie::Autobox::Scalar;
-$Apache::AuthCookie::Autobox::Scalar::VERSION = '3.23';
-sub is_blank {
-    return defined $_[0] && ($_[0] =~ /\S/) ? 0 : 1;
+    # when CGI.pm introduced multi_param, you are expected to use it whenever
+    # you expect a list response.  AuthCookie internally always expects a list
+    # response, so use multi_param if it is available.
+    local $CGI::LIST_CONTEXT_WARN = 0 if defined $CGI::LIST_CONTEXT_WARN;
+
+    return $self->SUPER::param(@_);
 }
 
 1;
@@ -27,7 +28,7 @@ __END__
 
 =head1 NAME
 
-Apache::AuthCookie::Autobox - Autobox Extensions for AuthCookie
+Apache::AuthCookie::Params::CGI - Internal CGI Params Subclass
 
 =head1 VERSION
 
@@ -39,7 +40,7 @@ version 3.23
 
 =head1 DESCRIPTION
 
-This module provides autobox extensions for AuthCookie
+This is a wrapper class for CGI.pm for CGI.pm mode param processing.
 
 =head1 SOURCE
 

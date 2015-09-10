@@ -11,6 +11,7 @@ error_log
 ^dist\.ini
 ^weaver\.ini
 ^t/httpd.loc
+^MYMETA
 
 # Apache::Test generated files
 ^t/conf/extra.conf$
@@ -22,4 +23,5 @@ error_log
 ^t/htdocs/index.html$
 ^t/logs/
 ^t/TEST$
+^t/SMOKE$
 
