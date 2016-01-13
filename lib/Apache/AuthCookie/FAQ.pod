@@ -1,6 +1,6 @@
 # make Dist::Zilla happy.
 package Apache::AuthCookie::FAQ;
-$Apache::AuthCookie::FAQ::VERSION = '3.23';
+$Apache::AuthCookie::FAQ::VERSION = '3.24';
 # ABSTRACT: Frequently Asked Questions about Apache::AuthCookie.
 
 1;
@@ -15,7 +15,7 @@ Apache::AuthCookie::FAQ - Frequently Asked Questions about Apache::AuthCookie.
 
 =head1 VERSION
 
-version 3.23
+version 3.24
 
 =head1 DESCRIPTION
 

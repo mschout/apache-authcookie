@@ -1,5 +1,5 @@
 package Apache::AuthCookie::Util;
-$Apache::AuthCookie::Util::VERSION = '3.23';
+$Apache::AuthCookie::Util::VERSION = '3.24';
 # ABSTRACT: Internal Utility Functions for AuthCookie
 
 use strict;
@@ -96,7 +96,7 @@ Apache::AuthCookie::Util - Internal Utility Functions for AuthCookie
 
 =head1 VERSION
 
-version 3.23
+version 3.24
 
 =head1 SOURCE
 

@@ -1,5 +1,16 @@
 Revision history for Apache::AuthCookie
 
+3.24  2016-01-13
+   - Update Apache 2.4 README, flesh out guts of Authz Provider notes.
+   - Improve Apache 2.4 README's AuthzProvider documentation
+   - Add POD to Apache2_4::AuthCookie
+   - Add FAQ to Apache2_4::AuthCookie documenation
+   - 2.4: document that PerlAddAuthzProvider is only needed for *custom* Requires directives.
+   - 2.4: make authz_handler recognize multiple usernames in the directive like
+     mod_authz_user does.
+   - add test case for internal authz_handler
+   - explicitly require Apache::Test 1.39 so that APACHE2_4 defines are set
+
 3.23  2015-09-10
    - Improve CGI mode param() handling to avoi CGI.pm's "param() called in list context" warning.
    - add support for Apache 2.4 via mod_perl 1.09.

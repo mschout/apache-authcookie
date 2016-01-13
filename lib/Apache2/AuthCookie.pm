@@ -1,5 +1,5 @@
 package Apache2::AuthCookie;
-$Apache2::AuthCookie::VERSION = '3.23';
+$Apache2::AuthCookie::VERSION = '3.24';
 # ABSTRACT: Perl Authentication and Authorization via cookies
 
 use strict;
@@ -113,11 +113,11 @@ Apache2::AuthCookie - Perl Authentication and Authorization via cookies
 
 =head1 VERSION
 
-version 3.23
+version 3.24
 
 =head1 SYNOPSIS
 
-Make sure your mod_perl is at least 1.24, with StackedHandlers,
+Make sure your mod_perl is at least 2.0.0-RC5, with StackedHandlers,
 MethodHandlers, Authen, and Authz compiled in.
 
  # In httpd.conf or .htaccess:

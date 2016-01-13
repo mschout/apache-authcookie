@@ -1,5 +1,5 @@
 package Apache::AuthCookie;
-$Apache::AuthCookie::VERSION = '3.23';
+$Apache::AuthCookie::VERSION = '3.24';
 # ABSTRACT: Perl Authentication and Authorization via cookies
 
 use strict;
@@ -549,7 +549,7 @@ Apache::AuthCookie - Perl Authentication and Authorization via cookies
 
 =head1 VERSION
 
-version 3.23
+version 3.24
 
 =head1 SYNOPSIS
 

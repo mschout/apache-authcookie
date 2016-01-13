@@ -12,7 +12,7 @@ PerlRequire @ServerRoot@/startup.pl
   <IfDefine APACHE2_4>
     PerlModule Sample::Apache2_4::AuthCookieHandler
     PerlAddAuthzProvider dwarf Sample::Apache2_4::AuthCookieHandler->dwarf
-    PerlAddAuthzProvider user Sample::Apache2_4::AuthCookieHandler->authz_handler
+    PerlAddAuthzProvider myuser Sample::Apache2_4::AuthCookieHandler->authz_handler
   </IfDefine>
 </IfDefine>
 
@@ -73,8 +73,7 @@ PerlSetVar WhatEverCookieName Sample::AuthCookieHandler_WhatEver
       PerlAuthenHandler Sample::Apache2_4::AuthCookieHandler->authenticate
     </IfDefine>
   </IfDefine>
-  Require user some-user
-  Require user programmer
+  Require user some-user programmer
   Require user 0
 </Location>
 
@@ -110,6 +109,39 @@ PerlSetVar WhatEverCookieName Sample::AuthCookieHandler_WhatEver
     <RequireAll>
       Require user programmer
       Require dwarf
+    </RequireAll>
+  </IfDefine>
+</Location>
+
+# test our internal authz_handler for apache 2.4
+<Location /docs/myuser>
+  AuthName WhatEver
+
+  <IfDefine APACHE1>
+    AuthType Sample::Apache::AuthCookieHandler
+    PerlAuthenHandler Sample::Apache::AuthCookieHandler->authenticate
+    PerlAuthzHandler Sample::Apache::AuthCookieHandler->authorize
+  </IfDefine>
+  <IfDefine APACHE2>
+    <IfDefine !APACHE2_4>
+      PerlAuthenHandler Sample::Apache2::AuthCookieHandler->authenticate
+      AuthType Sample::Apache2::AuthCookieHandler
+      PerlAuthzHandler Sample::Apache2::AuthCookieHandler->authorize
+    </IfDefine>
+    <IfDefine APACHE2_4>
+      PerlAuthenHandler Sample::Apache2_4::AuthCookieHandler->authenticate
+      AuthType Sample::Apache2_4::AuthCookieHandler
+    </IfDefine>
+  </IfDefine>
+
+  <IfDefine !APACHE2_4>
+    # apache 1.x, apache 2.0, apache 2.2
+    Require user programmer
+  </IfDefine>
+  <IfDefine APACHE2_4>
+    # apache 2.4
+    <RequireAll>
+      Require myuser dopey programmer
     </RequireAll>
   </IfDefine>
 </Location>

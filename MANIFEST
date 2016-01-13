@@ -32,6 +32,7 @@ t/htdocs/docs/echo_cookie.pl
 t/htdocs/docs/index.html
 t/htdocs/docs/login.pl
 t/htdocs/docs/logout.pl
+t/htdocs/docs/myuser/get_me.html
 t/htdocs/docs/protected/echo_user.pl
 t/htdocs/docs/protected/get_me.html
 t/htdocs/docs/stimeout/get_me.html

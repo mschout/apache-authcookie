@@ -1,5 +1,5 @@
 package Apache2::AuthCookie::Base;
-$Apache2::AuthCookie::Base::VERSION = '3.23';
+$Apache2::AuthCookie::Base::VERSION = '3.24';
 use strict;
 use mod_perl2 '1.99022';
 use Carp;
@@ -450,7 +450,7 @@ Apache2::AuthCookie::Base
 
 =head1 VERSION
 
-version 3.23
+version 3.24
 
 =head1 SOURCE
 
