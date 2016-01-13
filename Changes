@@ -3,6 +3,8 @@ Revision history for Apache::AuthCookie
 {{$NEXT}}
    - Update Apache 2.4 README, flesh out guts of Authz Provider notes.
    - Improve Apache 2.4 README's AuthzProvider documentation
+   - 2.4: make authz_handler recognize multiple usernames in the directive like
+     mod_authz_user does.
 
 3.23  2015-09-10
    - Improve CGI mode param() handling to avoi CGI.pm's "param() called in list context" warning.
