@@ -14,7 +14,7 @@ use Apache::TestRequest qw(GET POST GET_BODY);
 
 Apache::TestRequest::user_agent( reset => 1, requests_redirectable => 0 );
 
-plan tests => 51, need_lwp;
+plan tests => 52, need_lwp;
 
 ok 1;  # we loaded.
 
@@ -226,6 +226,17 @@ ok 1;  # we loaded.
 
     like($r->content, qr/Congratulations, you got past AuthCookie/,
          'username=0 access allowed');
+}
+
+# local authz provider test for 2.4 (works same as authany on older versions)
+{
+    my $r = GET(
+        '/docs/myuser/get_me.html',
+        Cookie => 'Sample::AuthCookieHandler_WhatEver=programmer:Hero'
+    );
+
+    like($r->content, qr/Congratulations, you got past AuthCookie/,
+         'myuser=programmer access allowed');
 }
 
 # login with username=0 works
