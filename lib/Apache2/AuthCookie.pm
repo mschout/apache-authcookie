@@ -109,7 +109,7 @@ __END__
 
 =head1 SYNOPSIS
 
-Make sure your mod_perl is at least 1.24, with StackedHandlers,
+Make sure your mod_perl is at least 2.0.0-RC5, with StackedHandlers,
 MethodHandlers, Authen, and Authz compiled in.
 
  # In httpd.conf or .htaccess:
