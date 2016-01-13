@@ -1,6 +1,8 @@
 Revision history for Apache::AuthCookie
 
 {{$NEXT}}
+
+3.24  2016-01-13
    - Update Apache 2.4 README, flesh out guts of Authz Provider notes.
    - Improve Apache 2.4 README's AuthzProvider documentation
    - Add POD to Apache2_4::AuthCookie
