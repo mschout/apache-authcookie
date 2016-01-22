@@ -1,5 +1,7 @@
 package Apache2_4::AuthCookie;
 
+# ABSTRACT: Perl Authentication and Authorization via cookies for Apache 2.4
+
 use strict;
 use base 'Apache2::AuthCookie::Base';
 use Apache::AuthCookie::Autobox;
@@ -565,7 +567,7 @@ C<RequireAny> blocks.
 
 Why is my authz method called twice per request?
 
-This is normal behaviour under Apache 2.4.  This is to accomodate for
+This is normal behaviour under Apache 2.4.  This is to accommodate for
 authorization of anonymous access. You are expected to return
 C<Apache2::Const::AUTHZ_DENIED_NO_USER> IF C<< $r->user >> has not yet been set
 if you want authentication to proceed.  Your authz handler will be called a
