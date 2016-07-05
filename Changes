@@ -3,6 +3,7 @@ Revision history for Apache::AuthCookie
 {{$NEXT}}
    - 2.4: fix POD typo and add missing ABSTRACT
    - reorganize real.t tests into subtests
+   - make sure signature test ignores generated files
 
 3.24  2016-01-13
    - Update Apache 2.4 README, flesh out guts of Authz Provider notes.

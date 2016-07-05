@@ -28,7 +28,7 @@ else {
     plan tests => 1;
 }
 
-my $ret = Module::Signature::verify();
+my $ret = Module::Signature::verify(skip => 1);
 SKIP: {
         skip "Module::Signature cannot verify", 1
                 if $ret eq Module::Signature::CANNOT_VERIFY();
