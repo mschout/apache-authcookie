@@ -4,6 +4,10 @@ Revision history for Apache::AuthCookie
    - 2.4: fix POD typo and add missing ABSTRACT
    - reorganize real.t tests into subtests
    - make sure signature test ignores generated files
+   - fix authenticate so that r->user is copied from r->main on subrequests.
+     Previously this was only done for internal redirects (r->prev is defined).
+     This fixes DirectoryIndexes on AuthCookie enabled directories under apache
+     2.4.
 
 3.24  2016-01-13
    - Update Apache 2.4 README, flesh out guts of Authz Provider notes.

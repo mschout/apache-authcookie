@@ -228,12 +228,14 @@ sub authenticate {
     $r->server->log_error("authenticate() entry") if ($debug >= 3);
     $r->server->log_error("auth_type " . $auth_type) if ($debug >= 3);
 
-    unless ($r->is_initial_req) {
-        if (defined $r->prev) {
-            # we are in a subrequest.  Just copy user from previous request.
-            $r->user( $r->prev->user );
+    if (my $prev = ($r->prev || $r->main)) {
+        # we are in a subrequest or internal redirect.  Just copy user from the
+        # previous or main request if its is present
+        if (defined $prev->user) {
+            $r->server->log_error('authenticate() is in a subrequest or internal redirect.') if $debug >= 3;
+            $r->user( $prev->user );
+            return OK;
         }
-        return OK;
     }
 
     if ($debug >= 3) {

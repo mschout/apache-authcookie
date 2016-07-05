@@ -14,7 +14,7 @@ use Apache::TestRequest qw(GET POST GET_BODY);
 
 Apache::TestRequest::user_agent( reset => 1, requests_redirectable => 0 );
 
-plan tests => 31, need_lwp;
+plan tests => 32, need_lwp;
 
 ok 1, 'Test initialized';
 
@@ -81,6 +81,19 @@ subtest 'redirect wit valid cookie' => sub {
     is($r->code, '200', 'get protected document');
     like($r->content, qr/Congratulations, you got past AuthCookie/s,
          'check protected document content');
+};
+
+subtest 'directory index' => sub {
+    my $uri = '/docs/protected/';
+
+    my $r = GET(
+        $uri,
+        Cookie => 'Sample::AuthCookieHandler_WhatEver=programmer:Hero;'
+    );
+
+    is($r->code, '200', 'get protected document');
+    like($r->content, qr/Congratulations, you got index\.html/s,
+         'check protected index.html document content');
 };
 
 # should have a Set-Cookie header that expired at epoch.
