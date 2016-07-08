@@ -23,6 +23,8 @@ ok 1, 'Test initialized';
 # check that /docs/index.html works.  If this fails, the test environment did
 # not configure properly.
 subtest 'get index.html' => sub {
+    plan tests => 1;
+
     my $url = '/docs/index.html';
     my $data = strip_cr(GET_BODY $url);
 
@@ -32,6 +34,8 @@ subtest 'get index.html' => sub {
 
 # test no_cookie failure
 subtest 'no cookie' => sub {
+    plan tests => 1;
+
     my $url = '/docs/protected/get_me.html';
     my $r = GET $url;
 
@@ -41,6 +45,8 @@ subtest 'no cookie' => sub {
 
 # should succeed with redirect.
 subtest 'login redirects' => sub {
+    plan tests => 2;
+
     my $r = POST('/LOGIN', [
         destination  => '/docs/protected/get_me.html',
         credential_0 => 'programmer',
@@ -53,6 +59,8 @@ subtest 'login redirects' => sub {
 };
 
 subtest 'redirect with bad session key' => sub {
+    plan tests => 3;
+
     my $r = POST('/LOGIN', [
         destination  => '/docs/protected/get_me.html',
         credential_0 => 'programmer',
@@ -71,6 +79,8 @@ subtest 'redirect with bad session key' => sub {
 
 # get protected document with valid cookie.  Should succeed.
 subtest 'redirect wit valid cookie' => sub {
+    plan tests => 2;
+
     my $uri = '/docs/protected/get_me.html';
 
     my $r = GET(
@@ -84,6 +94,8 @@ subtest 'redirect wit valid cookie' => sub {
 };
 
 subtest 'directory index' => sub {
+    plan tests => 2;
+
     my $uri = '/docs/protected/';
 
     my $r = GET(
@@ -98,6 +110,8 @@ subtest 'directory index' => sub {
 
 # should have a Set-Cookie header that expired at epoch.
 subtest 'logout deletes cookie' => sub {
+    plan tests => 1;
+
     my $url = '/docs/logout.pl';
 
     my $r = GET($url);
@@ -110,6 +124,8 @@ subtest 'logout deletes cookie' => sub {
 
 # check the session key
 subtest 'session key data' => sub {
+    plan tests => 1;
+
     my $data = GET_BODY(
         '/docs/echo_cookie.pl',
         Cookie => 'Sample::AuthCookieHandler_WhatEver=programmer:Hero;'
@@ -120,6 +136,8 @@ subtest 'session key data' => sub {
 
 # should fail because of 'require user programmer'
 subtest 'invalid user' => sub {
+    plan tests => 1;
+
     my $r = GET(
         '/docs/protected/get_me.html',
         Cookie => 'Sample::AuthCookieHandler_WhatEver=some-user:duck;'
@@ -130,6 +148,8 @@ subtest 'invalid user' => sub {
 
 # should get the login form back (bad_cookie).
 subtest 'invalid cookie' => sub {
+    plan tests => 1;
+
     my $data = GET_BODY(
         '/docs/protected/get_me.html',
         Cookie=>'Sample::AuthCookieHandler_WhatEver=programmer:Heroo'
@@ -140,6 +160,8 @@ subtest 'invalid cookie' => sub {
 
 # should get the login form back (bad_credentials)
 subtest 'bad credentials' => sub {
+    plan tests => 1;
+
     my $r = POST('/LOGIN', [
         destination  => '/docs/protected/get_me.html',
         credential_0 => 'fail',
@@ -151,6 +173,8 @@ subtest 'bad credentials' => sub {
 };
 
 subtest 'AuthAny' => sub {
+    plan tests => 3;
+
     my $r = POST('/LOGIN', [
         destination  => '/docs/authany/get_me.html',
         credential_0 => 'some-user',
@@ -169,6 +193,8 @@ subtest 'AuthAny' => sub {
 
 # should fail because all requirements are not met
 subtest 'AuthAll' => sub {
+    plan tests => 3;
+
     my $r = GET(
         '/docs/authall/get_me.html',
         Cookie => 'Sample::AuthCookieHandler_WhatEver=some-user:mypassword'
@@ -188,6 +214,8 @@ subtest 'AuthAll' => sub {
 };
 
 subtest 'POST to GET conversion' => sub {
+    plan tests => 1;
+
     my $r = POST('/docs/protected/get_me.html', [
         foo => 'bar'
     ]);
@@ -197,6 +225,8 @@ subtest 'POST to GET conversion' => sub {
 };
 
 subtest 'QUERY_STRING is preserved' => sub {
+    plan tests => 1;
+
     my $data = GET_BODY('/docs/protected/get_me.html?foo=bar');
 
     like($data, qr#"/docs/protected/get_me\.html\?foo=bar"#,
@@ -205,6 +235,8 @@ subtest 'QUERY_STRING is preserved' => sub {
 
 # should succeed (any requirement is met)
 subtest 'AuthAny' => sub {
+    plan tests => 3;
+
     my $r = GET(
         '/docs/authany/get_me.html',
         Cookie => 'Sample::AuthCookieHandler_WhatEver=some-user:mypassword'
@@ -233,6 +265,8 @@ subtest 'AuthAny' => sub {
 
 # local authz provider test for 2.4 (works same as authany on older versions)
 subtest 'Authz Provider' => sub {
+    plan tests => 1;
+
     my $r = GET(
         '/docs/myuser/get_me.html',
         Cookie => 'Sample::AuthCookieHandler_WhatEver=programmer:Hero'
@@ -244,6 +278,8 @@ subtest 'Authz Provider' => sub {
 
 # login with username=0 works
 subtest 'login with username=0' => sub {
+    plan tests => 2;
+
     my $r = POST('/LOGIN', [
         destination  => '/docs/authany/get_me.html',
         credential_0 => '0',
@@ -257,6 +293,8 @@ subtest 'login with username=0' => sub {
 
 # Should succeed and cookie should have HttpOnly attribute
 subtest 'HttpOnly cookie attribute' => sub {
+    plan tests => 3;
+
     my $r = POST('/LOGIN-HTTPONLY', [
         destination  => '/docs/protected/get_me.html',
         credential_0 => 'programmer',
@@ -275,6 +313,8 @@ subtest 'HttpOnly cookie attribute' => sub {
 
 # test SessionTimeout
 subtest 'session timeout' => sub {
+    plan tests => 1;
+
     my $r = GET(
         '/docs/stimeout/get_me.html',
         Cookie => 'Sample::AuthCookieHandler_WhatEver=programmer:Hero'
@@ -288,6 +328,8 @@ subtest 'session timeout' => sub {
 # should return bad credentials page, and credentials should be in a comment.
 # We are checking here that $r->prev->pnotes('WhatEverCreds') works.
 subtest 'creds are in pnotes' => sub {
+    plan tests => 1;
+
     my $r = POST('/LOGIN', [
         destination  => '/docs/protected/get_me.html',
         credential_0 => 'fail',
@@ -300,6 +342,8 @@ subtest 'creds are in pnotes' => sub {
 # regression - Apache2::URI::unescape_url() does not handle '+' to ' '
 # conversion.
 subtest 'unescape URL with spaces' => sub {
+    plan tests => 1;
+
     my $r = POST('/LOGIN', [
         destination  => '/docs/protected/get_me.html',
         credential_0 => 'fail',
@@ -313,6 +357,8 @@ subtest 'unescape URL with spaces' => sub {
 # variation of '+' to ' ' regression.  Make sure we do not remove encoded
 # '+'
 subtest 'do not remove encoded +' => sub {
+    plan tests => 1;
+
     my $r = POST('/LOGIN', [
         destination  => '/docs/protected/get_me.html',
         credential_0 => 'fail',
@@ -325,6 +371,8 @@ subtest 'do not remove encoded +' => sub {
 
 # XSS attack prevention.  make sure embedded \r, \n, \t is escaped in the destination.
 subtest 'XSS: no newlines in destination' => sub {
+    plan tests => 4;
+
     my $r = POST('/LOGIN', [
         destination  => "/docs/protected/get_me.html\r\nX-Test-Bar: True\r\nX-Test-Foo: True\r\n",
         credential_0 => 'programmer',
@@ -347,6 +395,8 @@ subtest 'XSS: no newlines in destination' => sub {
 
 # embedded html tags in destination
 subtest 'XSS: no embedded HTML in destination' => sub {
+    plan tests => 1;
+
     my $r = POST('/LOGIN', [
         destination  => '"><form method="post">Embedded Form</form>'
     ]);
@@ -356,6 +406,8 @@ subtest 'XSS: no embedded HTML in destination' => sub {
 
 # embedded script tags
 subtest 'XSS: no embedded script' => sub {
+    plan tests => 1;
+
     my $r = POST('/LOGIN', [
         destination => q{"><script>alert('123')</script>}
     ]);
@@ -364,6 +416,8 @@ subtest 'XSS: no embedded script' => sub {
 };
 
 subtest 'preserve / in password' => sub {
+    plan tests => 1;
+
     my $r = POST('/LOGIN', [
         destination  => '/docs/protected/get_me.html',
         credential_0 => 'fail',
@@ -376,6 +430,8 @@ subtest 'preserve / in password' => sub {
 
 # make sure multi-valued form data is preserved.
 subtest 'multi-valued form data is preserved' => sub {
+    plan tests => 2;
+
     my $r = POST('/docs/protected/xyz', [
         one => 'abc',
         one => 'def'
@@ -392,6 +448,8 @@ subtest 'multi-valued form data is preserved' => sub {
 
 # make sure $ENV{REMOTE_USER} gets set up
 subtest 'setup $ENV{REMOTE_USER}' => sub {
+    plan tests => 1;
+
     my $r = GET('/docs/protected/echo_user.pl',
         Cookie => 'Sample::AuthCookieHandler_WhatEver=programmer:Hero'
     );
@@ -401,6 +459,8 @@ subtest 'setup $ENV{REMOTE_USER}' => sub {
 
 # test login form response status=OK with SymbianOS
 subtest 'SymbianOS login form response code' => sub {
+    plan tests => 4;
+
     my $orig_agent = Apache::TestRequest::user_agent()->agent;
 
     # should get a 403 response by default
@@ -420,6 +480,8 @@ subtest 'SymbianOS login form response code' => sub {
 };
 
 subtest 'recognize user' => sub {
+    plan tests => 1;
+
     # recognize user
     my $body = GET_BODY('/docs/echo-user.pl',
         Cookie => 'Sample::AuthCookieHandler_WhatEver=programmer:Hero');
