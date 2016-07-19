@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+#
+# This is an internal use only script for smoke testing this dist against
+# various perlbrew installations.
+#
+
+# fail fast and hard
+set -eo pipefail
+
+if [ ! -z "$CPAN_MINVERSION" ]; then
+    cpanm -q --notest \
+        Test::More@0.94 \
+        URI@1.30 \
+        LWP::UserAgent@2.033 \
+        Apache::Test@1.39 \
+        Class::Load@0.03
+else
+    cpanm -q --notest --installdeps .
+fi
+
+if [ ! -z "$AUTHOR_TESTING" ]; then
+    cpanm -q --notest Test::Pod
+fi
+
+if [ ! -z "$TEST_SIGNATURE" ]; then
+    cpanm -q --notest Module::Signature
+fi
+
+perl Makefile.PL && make test
