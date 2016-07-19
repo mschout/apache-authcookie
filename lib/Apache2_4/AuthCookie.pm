@@ -4,9 +4,9 @@ package Apache2_4::AuthCookie;
 
 use strict;
 use base 'Apache2::AuthCookie::Base';
-use Apache::AuthCookie::Autobox;
 use Apache2::Log;
 use Apache2::Const -compile => qw(AUTHZ_GRANTED AUTHZ_DENIED AUTHZ_DENIED_NO_USER);
+use Apache::AuthCookie::Util qw(is_blank);
 
 # You really do not need this provider at all.  This provides an implementation
 # for "Require user ..." directives, that is compatible with mod_authz_core
@@ -20,12 +20,12 @@ sub authz_handler  {
 
     my $user = $r->user;
 
-    if ($user->is_blank) {
+    if (is_blank($user)) {
         # user is not yet authenticated
         return Apache2::Const::AUTHZ_DENIED_NO_USER;
     }
 
-    if ($requires->is_blank) {
+    if (is_blank($requires)) {
         $r->server->log_error(q[Your 'Require user ...' config does not specify any users]);
         return Apache2::Const::AUTHZ_DENIED;
     }

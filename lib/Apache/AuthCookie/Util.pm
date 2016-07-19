@@ -3,6 +3,9 @@ package Apache::AuthCookie::Util;
 # ABSTRACT: Internal Utility Functions for AuthCookie
 
 use strict;
+use base 'Exporter';
+
+our @EXPORT_OK = qw(is_blank);
 
 # -- expires() shamelessly taken from CGI::Util
 sub expires {
@@ -82,6 +85,11 @@ sub understands_forbidden_response {
              or $ua =~ qr{\bIEMobile/10};            # Nokia Lumia 920, possibly others?
 
     return 1;
+}
+
+# return true if the given value is blank or not defined.
+sub is_blank {
+    return defined $_[0] && ($_[0] =~ /\S/) ? 0 : 1;
 }
 
 1;

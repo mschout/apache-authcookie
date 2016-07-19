@@ -5,7 +5,6 @@ use Apache2::Const qw(:common HTTP_FORBIDDEN);
 use Apache2::AuthCookie;
 use Apache2::RequestRec;
 use Apache2::RequestIO;
-use Apache::AuthCookie::Autobox;
 use vars qw(@ISA);
 
 use Apache::Test;

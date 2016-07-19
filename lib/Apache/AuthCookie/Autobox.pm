@@ -4,6 +4,7 @@ package Apache::AuthCookie::Autobox;
 
 use strict;
 use base 'autobox';
+use Apache::AuthCookie::Util qw(is_blank);
 
 sub import {
     my $class = shift;

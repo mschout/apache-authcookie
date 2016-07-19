@@ -8,22 +8,21 @@ use Carp;
 use mod_perl qw(1.07 StackedHandlers MethodHandlers Authen Authz);
 use Apache::Constants qw(:common M_GET FORBIDDEN OK REDIRECT);
 use Apache::AuthCookie::Params;
-use Apache::AuthCookie::Util;
-use Apache::AuthCookie::Autobox;
+use Apache::AuthCookie::Util qw(is_blank);
 use Apache::Util qw(escape_uri);
 
 sub recognize_user ($$) {
     my ($self, $r) = @_;
 
     # only check if user is not already set
-    return DECLINED unless $r->connection->user->is_blank;
+    return DECLINED unless is_blank($r->connection->user);
 
     my $debug = $r->dir_config("AuthCookieDebug") || 0;
     my ($auth_type, $auth_name) = ($r->auth_type, $r->auth_name);
 
-    return DECLINED if $auth_type->is_blank or $auth_name->is_blank;
+    return DECLINED if is_blank($auth_type) or is_blank($auth_name);
 
-    return DECLINED if $r->header_in('Cookie')->is_blank;
+    return DECLINED if is_blank($r->header_in('Cookie'));
 
     my $cookie_name = $self->cookie_name($r);
 
@@ -32,7 +31,7 @@ sub recognize_user ($$) {
     return DECLINED unless $cookie;
 
     my ($user, @args) = $auth_type->authen_ses_key($r, $cookie);
-    if (!$user->is_blank and scalar @args == 0) {
+    if (!is_blank($user) and scalar @args == 0) {
         $r->log_error("user is $user") if $debug >= 2;
 
         # if SessionTimeout is on, send new cookie with new Expires.
@@ -46,7 +45,7 @@ sub recognize_user ($$) {
         return $auth_type->custom_errors($r, $user, @args);
     }
 
-    return $user->is_blank ? DECLINED : OK;
+    return is_blank($user) ? DECLINED : OK;
 }
 
 sub cookie_name {
@@ -259,7 +258,7 @@ sub authenticate ($$) {
         my ($auth_user, @args) =
             $auth_type->authen_ses_key($r, $ses_key_cookie);
 
-        if (!$auth_user->is_blank and scalar @args == 0) {
+        if (!is_blank($auth_user) and scalar @args == 0) {
 
             # We have a valid session key, so we return with an OK value.
             # Tell the rest of Apache what the authentication method and
@@ -383,7 +382,7 @@ sub authorize ($$) {
     my $reqs_arr = $r->requires or return DECLINED;
 
     my $user = $r->connection->user;
-    if ($user->is_blank) {
+    if (is_blank($user)) {
         # authentication failed
         $r->log_reason("No user authenticated", $r->uri);
         return FORBIDDEN;

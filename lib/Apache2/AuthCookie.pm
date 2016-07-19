@@ -6,8 +6,8 @@ use strict;
 
 use Carp;
 use base 'Apache2::AuthCookie::Base';
-use Apache::AuthCookie::Autobox;
 use Apache2::Const qw(OK DECLINED SERVER_ERROR HTTP_FORBIDDEN);
+use Apache::AuthCookie::Util qw(is_blank);
 
 sub authorize {
     my ($auth_type, $r) = @_;
@@ -30,7 +30,7 @@ sub authorize {
 
     $r->server->log_error("authorize user=$user type=$auth_type") if $debug >=3;
 
-    if ($user->is_blank) {
+    if (is_blank($user)) {
         # the authentication failed
         $r->server->log_error("No user authenticated", $r->uri);
         return HTTP_FORBIDDEN;
