@@ -1,10 +1,12 @@
 package Apache2_4::AuthCookie;
-$Apache2_4::AuthCookie::VERSION = '3.24';
+$Apache2_4::AuthCookie::VERSION = '3.25';
+# ABSTRACT: Perl Authentication and Authorization via cookies for Apache 2.4
+
 use strict;
 use base 'Apache2::AuthCookie::Base';
-use Apache::AuthCookie::Autobox;
 use Apache2::Log;
 use Apache2::Const -compile => qw(AUTHZ_GRANTED AUTHZ_DENIED AUTHZ_DENIED_NO_USER);
+use Apache::AuthCookie::Util qw(is_blank);
 
 # You really do not need this provider at all.  This provides an implementation
 # for "Require user ..." directives, that is compatible with mod_authz_core
@@ -18,12 +20,12 @@ sub authz_handler  {
 
     my $user = $r->user;
 
-    if ($user->is_blank) {
+    if (is_blank($user)) {
         # user is not yet authenticated
         return Apache2::Const::AUTHZ_DENIED_NO_USER;
     }
 
-    if ($requires->is_blank) {
+    if (is_blank($requires)) {
         $r->server->log_error(q[Your 'Require user ...' config does not specify any users]);
         return Apache2::Const::AUTHZ_DENIED;
     }
@@ -52,11 +54,11 @@ sub authz_handler  {
 
 =head1 NAME
 
-Apache2_4::AuthCookie
+Apache2_4::AuthCookie - Perl Authentication and Authorization via cookies for Apache 2.4
 
 =head1 VERSION
 
-version 3.24
+version 3.25
 
 =head1 SYNOPSIS
 
@@ -571,7 +573,7 @@ C<RequireAny> blocks.
 
 Why is my authz method called twice per request?
 
-This is normal behaviour under Apache 2.4.  This is to accomodate for
+This is normal behaviour under Apache 2.4.  This is to accommodate for
 authorization of anonymous access. You are expected to return
 C<Apache2::Const::AUTHZ_DENIED_NO_USER> IF C<< $r->user >> has not yet been set
 if you want authentication to proceed.  Your authz handler will be called a

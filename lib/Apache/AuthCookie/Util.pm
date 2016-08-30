@@ -1,8 +1,11 @@
 package Apache::AuthCookie::Util;
-$Apache::AuthCookie::Util::VERSION = '3.24';
+$Apache::AuthCookie::Util::VERSION = '3.25';
 # ABSTRACT: Internal Utility Functions for AuthCookie
 
 use strict;
+use base 'Exporter';
+
+our @EXPORT_OK = qw(is_blank);
 
 # -- expires() shamelessly taken from CGI::Util
 sub expires {
@@ -84,6 +87,11 @@ sub understands_forbidden_response {
     return 1;
 }
 
+# return true if the given value is blank or not defined.
+sub is_blank {
+    return defined $_[0] && ($_[0] =~ /\S/) ? 0 : 1;
+}
+
 1;
 
 __END__
@@ -96,7 +104,7 @@ Apache::AuthCookie::Util - Internal Utility Functions for AuthCookie
 
 =head1 VERSION
 
-version 3.24
+version 3.25
 
 =head1 SOURCE
 

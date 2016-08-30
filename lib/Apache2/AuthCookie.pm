@@ -1,13 +1,13 @@
 package Apache2::AuthCookie;
-$Apache2::AuthCookie::VERSION = '3.24';
+$Apache2::AuthCookie::VERSION = '3.25';
 # ABSTRACT: Perl Authentication and Authorization via cookies
 
 use strict;
 
 use Carp;
 use base 'Apache2::AuthCookie::Base';
-use Apache::AuthCookie::Autobox;
 use Apache2::Const qw(OK DECLINED SERVER_ERROR HTTP_FORBIDDEN);
+use Apache::AuthCookie::Util qw(is_blank);
 
 sub authorize {
     my ($auth_type, $r) = @_;
@@ -30,7 +30,7 @@ sub authorize {
 
     $r->server->log_error("authorize user=$user type=$auth_type") if $debug >=3;
 
-    if ($user->is_blank) {
+    if (is_blank($user)) {
         # the authentication failed
         $r->server->log_error("No user authenticated", $r->uri);
         return HTTP_FORBIDDEN;
@@ -113,7 +113,7 @@ Apache2::AuthCookie - Perl Authentication and Authorization via cookies
 
 =head1 VERSION
 
-version 3.24
+version 3.25
 
 =head1 SYNOPSIS
 

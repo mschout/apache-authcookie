@@ -1,9 +1,10 @@
 package Apache::AuthCookie::Autobox;
-$Apache::AuthCookie::Autobox::VERSION = '3.24';
+$Apache::AuthCookie::Autobox::VERSION = '3.25';
 # ABSTRACT: Autobox Extensions for AuthCookie
 
 use strict;
 use base 'autobox';
+use Apache::AuthCookie::Util qw(is_blank);
 
 sub import {
     my $class = shift;
@@ -14,7 +15,7 @@ sub import {
 }
 
 package Apache::AuthCookie::Autobox::Scalar;
-$Apache::AuthCookie::Autobox::Scalar::VERSION = '3.24';
+$Apache::AuthCookie::Autobox::Scalar::VERSION = '3.25';
 sub is_blank {
     return defined $_[0] && ($_[0] =~ /\S/) ? 0 : 1;
 }
@@ -31,7 +32,7 @@ Apache::AuthCookie::Autobox - Autobox Extensions for AuthCookie
 
 =head1 VERSION
 
-version 3.24
+version 3.25
 
 =head1 SYNOPSIS
 

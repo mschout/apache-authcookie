@@ -51,6 +51,8 @@ PerlSetVar WhatEverCookieName Sample::AuthCookieHandler_WhatEver
     </IfDefine>
   </IfDefine>
   Require user programmer
+
+  DirectoryIndex index.html
 </Location>
 
 # must satisfy any requirement

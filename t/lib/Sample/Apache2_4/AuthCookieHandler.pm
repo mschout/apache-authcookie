@@ -4,7 +4,7 @@ use strict;
 use Sample::Apache2::AuthCookieHandler;
 use Apache2::Const qw(AUTHZ_DENIED_NO_USER);
 use Apache2::RequestRec;
-use Apache::AuthCookie::Autobox;
+use Apache::AuthCookie::Util qw(is_blank);
 
 use vars qw(@ISA);
 
@@ -21,7 +21,7 @@ sub dwarf {
 
     my $user = $r->user;
 
-    if ($user->is_blank) {
+    if (is_blank($user)) {
         $r->server->log_error("No user authenticted yet");
         return Apache2::Const::AUTHZ_DENIED_NO_USER;
     }
