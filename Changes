@@ -1,6 +1,8 @@
 Revision history for Apache::AuthCookie
 
 {{$NEXT}}
+
+3.25  2016-08-30
    - 2.4: fix POD typo and add missing ABSTRACT
    - reorganize real.t tests into subtests
    - make sure signature test ignores generated files
