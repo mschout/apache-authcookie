@@ -1,6 +1,7 @@
 Revision history for Apache::AuthCookie
 
 {{$NEXT}}
+   - remove unused module Apache::AuthCookie::Autobox from dist
 
 3.25  2016-08-30
    - 2.4: fix POD typo and add missing ABSTRACT
