@@ -16,3 +16,4 @@ MYMETA.*
 *.bak
 Apache-AuthCookie-*
 \.build
+\.DS_Store
