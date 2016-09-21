@@ -2,14 +2,48 @@ Revision history for Apache::AuthCookie
 
 {{$NEXT}}
    - remove unused module Apache::AuthCookie::Autobox from dist
-   - remove CGI.pm dependency.  CGI.pm has been removed from perl core, which was the primary reason we used it in the first place.
-     Replaced with dependency on lighter weight set of three modules:
+   - remove CGI.pm dependency.  CGI.pm has been removed from perl core, which
+     was the primary reason we used it in the first place.  Replaced with
+     dependency on lighter weight set of three modules:
 
-        - HTTP::Body
-        - WWW::Form::UrlEncoded
-        - Hash::MultiValue
+        * HTTP::Body
+        * WWW::Form::UrlEncoded
+        * Hash::MultiValue
 
      Also recommended (but not required) is WWW::Form::UrlEncoded::XS
+   - Add optional support for charset encoding.  If you have something like
+
+        PerlSetVar MyAuthNameEncoding UTF-8
+
+     Then AuthCookie with now automatically decode parameters using the given
+     encoding now. AuthCookie params() data will be decoded automatically if
+     this is on.  See details in AuthCookie module documentation.  In addition
+     r->user will be encoded (using byte semantics) using this encoding. 
+
+     ***** IMPORTANT *****
+     If you turn this on, this could break your code.  r->user() will now be
+     byte encoded using the given encoding.  If you use usernames that contain
+     non-ascii characters you either need to use decoded_user(), or decode
+     r->user() yourself in your subclasses.
+
+     See the AuthCookie docs for more details.
+   - add optional support for decoding httpd.conf requires directives. This is
+     enabled with a RequiresEncoding setting:
+
+        PerlSetVar MyAuthNameRequiresEncoding UTF-8
+
+     Then decoded_requires($r) will return the decoded value of $r->requires
+     You only need this if you have non-ascii characters in your requires
+     directives such as:
+
+        Requires user programmør
+
+   - add decoded_user($r) method to get the value of r->user decoded using
+     character semantics instead of bytes.  Due to the fact that r->user is a C
+     API method we cannot get character semantics on r->user directly.  If no
+     Encoding directive is in effect, then this is the same as r->user.
+   - add encoding($r): string which returns the value of the Encoding directive
+     that is in effect for the current request.
 
 3.25  2016-08-30
    - 2.4: fix POD typo and add missing ABSTRACT

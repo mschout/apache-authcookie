@@ -10,6 +10,7 @@ use Apache::Constants qw(:common M_GET FORBIDDEN OK REDIRECT);
 use Apache::AuthCookie::Params;
 use Apache::AuthCookie::Util qw(is_blank);
 use Apache::Util qw(escape_uri);
+use Encode ();
 
 sub recognize_user ($$) {
     my ($self, $r) = @_;
@@ -39,7 +40,7 @@ sub recognize_user ($$) {
             $self->send_cookie($cookie, { expires => $expires });
         }
 
-        $r->connection->user($user);
+        $r->connection->user( $self->_encode($r, $user) );
     }
     elsif (scalar @args > 0 and $auth_type->can('custom_errors')) {
         return $auth_type->custom_errors($r, $user, @args);
@@ -58,6 +59,83 @@ sub cookie_name {
         || "${auth_type}_${auth_name}";
 
     return $cookie_name;
+}
+
+=method encoding($r): string
+
+Return the ${auth_name}Encoding setting that is in effect for this request.
+
+=cut
+
+sub encoding {
+    my ($self, $r) = @_;
+
+    my $auth_name = $r->auth_name;
+
+    return $r->dir_config("${auth_name}Encoding");
+}
+
+=method requires_encoding($r): string
+
+Return the ${auth_name}RequiresEncoding setting that is in effect for this request.
+
+=cut
+
+sub requires_encoding {
+    my ($self, $r) = @_;
+
+    my $auth_name = $r->auth_name;
+
+    return $r->dir_config("${auth_name}RequiresEncoding");
+}
+
+
+=method decoded_user($r): string
+
+If you have set ${auth_name}Encoding, then this will return the decoded value of
+C<< $r->connection->user >>.
+
+=cut
+
+sub decoded_user {
+    my ($self, $r) = @_;
+
+    my $user = $r->connection->user;
+
+    if (is_blank($user)) {
+        return $user;
+    }
+
+    my $encoding = $self->encoding($r);
+
+    if (!is_blank($encoding)) {
+        $user = Encode::decode($encoding, $user);
+    }
+
+    return $user;
+}
+
+=method decoded_requires($r): arrayref
+
+This method returns the C<< $r->requires >> array, with the C<requirement>
+values decoded if C<${auth_name}RequiresEncoding> is in effect for this
+request.
+
+=cut
+
+sub decoded_requires {
+    my ($self, $r) = @_;
+
+    my $reqs     = $r->requires or return;
+    my $encoding = $self->requires_encoding($r);
+
+    unless (is_blank($encoding)) {
+        for my $req (@$reqs) {
+            $$req{requirement} = Encode::decode($encoding, $$req{requirement});
+        }
+    }
+
+    return $reqs;
 }
 
 sub handle_cache {
@@ -222,6 +300,7 @@ sub authenticate ($$) {
     unless ($r->is_initial_req) {
         if (defined $r->prev) {
             # we are in a subrequest.  Just copy user from previous request.
+            # encoding would have been handled in prev req, so do not encode here.
             $r->connection->user($r->prev->connection->user);
         }
         return OK;
@@ -265,7 +344,7 @@ sub authenticate ($$) {
             # user is.
 
             $r->connection->auth_type($auth_type);
-            $r->connection->user($auth_user);
+            $r->connection->user( $auth_type->_encode($r, $auth_user) );
             $r->log_error("user authenticated as $auth_user") if $debug >= 1;
 
             # if SessionTimeout is on, send cookie with new expires
@@ -379,9 +458,9 @@ sub authorize ($$) {
         return DECLINED;
     }
 
-    my $reqs_arr = $r->requires or return DECLINED;
+    my $reqs_arr = $auth_type->decoded_requires($r) or return DECLINED;
 
-    my $user = $r->connection->user;
+    my $user = $auth_type->decoded_user($r);
     if (is_blank($user)) {
         # authentication failed
         $r->log_reason("No user authenticated", $r->uri);
@@ -538,9 +617,24 @@ sub get_cookie_path {
     return $r->dir_config("${auth_name}Path");
 }
 
+sub _encode {
+    my ($self, $r, $value) = @_;
+
+    my $encoding = $self->encoding($r);
+
+    if (is_blank($encoding)) {
+        return $value;
+    }
+    else {
+        return Encode::encode($encoding, $value);
+    }
+}
+
 1;
 
 __END__
+
+=encoding UTF-8
 
 =head1 SYNOPSIS
 
@@ -712,9 +806,6 @@ redirects. Two REDIRECT's are used to keep the client from displaying
 the user's credentials in the Location field. They don't really change
 AuthCookie's model, but they do add another round-trip request to the
 client.
-
-=for html
-<PRE>
 
  (-----------------------)     +---------------------------------+
  ( Request a protected   )     | AuthCookie sets custom error    |

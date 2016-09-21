@@ -7,14 +7,16 @@
 use strict;
 use warnings FATAL => 'all';
 use lib 'lib';
+use utf8;
 
 use Apache::Test '-withtestmore';
 use Apache::TestUtil;
 use Apache::TestRequest qw(GET POST GET_BODY);
+use Encode qw(encode);
 
 Apache::TestRequest::user_agent( reset => 1, requests_redirectable => 0 );
 
-plan tests => 32, need_lwp;
+plan tests => 33, need_lwp;
 
 ok 1, 'Test initialized';
 
@@ -217,10 +219,10 @@ subtest 'POST to GET conversion' => sub {
     plan tests => 1;
 
     my $r = POST('/docs/protected/get_me.html', [
-        foo => 'bar'
+        utf8 => 'programmør'
     ]);
 
-    like($r->content, qr#"/docs/protected/get_me\.html\?foo=bar"#,
+    like($r->content, qr#"/docs/protected/get_me\.html\?utf8=programm%c3%b8r"#,
          'POST -> GET conversion works');
 };
 
@@ -289,6 +291,32 @@ subtest 'login with username=0' => sub {
     is($r->code, 302, 'username=0 login produces redirect');
     is($r->header('Location'), '/docs/authany/get_me.html',
        'redirect header exists, and contains expected url');
+};
+
+subtest 'parameter encoding' => sub {
+    plan tests => 5;
+
+    my $r = POST('/LOGIN', [
+        destination => '/docs/authany/get_me.html',
+        credential_0 => '程序员',
+        credential_1 => 'Hero'
+    ]);
+
+    is($r->code, 302, 'UTF-8 username works');
+    is($r->header('Location'), '/docs/authany/get_me.html',
+       'redirect header exists, and contains expected url');
+
+    like $r->header('Set-Cookie'),
+        qr#Sample::AuthCookieHandler_WhatEver=%E7%A8%8B%E5%BA%8F%E5%91%98:Hero;#,
+        'response contains the session key cookie';
+
+    $r = GET('/docs/authany/get_me.html',
+        Cookie => 'Sample::AuthCookieHandler_WhatEver=%E7%A8%8B%E5%BA%8F%E5%91%98:Hero;'
+    );
+
+    is $r->code, 200;
+    like($r->content, qr/Congratulations, you got past AuthCookie/s,
+         'check protected document content');
 };
 
 # Should succeed and cookie should have HttpOnly attribute

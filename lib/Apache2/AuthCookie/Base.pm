@@ -14,6 +14,7 @@ use Apache2::Response;
 use Apache2::Util;
 use APR::Table;
 use Apache2::Const qw(:common M_GET HTTP_FORBIDDEN HTTP_MOVED_TEMPORARILY HTTP_OK);
+use Encode ();
 
 sub recognize_user {
     my ($self, $r) = @_;
@@ -48,13 +49,89 @@ sub recognize_user {
             $self->send_cookie($r, $cookie, {expires => $expires});
         }
 
-        $r->user($user);
+        $r->user( $self->_encode($r, $user) );
     }
     elsif (scalar @args > 0 and $auth_type->can('custom_errors')) {
         return $auth_type->custom_errors($r, $user, @args);
     }
 
     return is_blank($user) ? DECLINED : OK;
+}
+
+=method encoding($r): string
+
+Return the ${auth_name}Encoding setting that is in effect for this request.
+
+=cut
+
+sub encoding {
+    my ($self, $r) = @_;
+
+    my $auth_name = $r->auth_name;
+
+    return $r->dir_config("${auth_name}Encoding");
+}
+
+=method requires_encoding($r): string
+
+Return the ${auth_name}RequiresEncoding setting that is in effect for this request.
+
+=cut
+
+sub requires_encoding {
+    my ($self, $r) = @_;
+
+    my $auth_name = $r->auth_name;
+
+    return $r->dir_config("${auth_name}RequiresEncoding");
+}
+
+=method decoded_user($r): string
+
+If you have set ${auth_name}Encoding, then this will return the decoded value of
+C<< $r->connection->user >>.
+
+=cut
+
+sub decoded_user {
+    my ($self, $r) = @_;
+
+    my $user = $r->user;
+
+    if (is_blank($user)) {
+        return $user;
+    }
+
+    my $encoding = $self->encoding($r);
+
+    if (!is_blank($encoding)) {
+        $user = Encode::decode($encoding, $user);
+    }
+
+    return $user;
+}
+
+=method decoded_requires($r): arrayref
+
+This method returns the C<< $r->requires >> array, with the C<requirement>
+values decoded if C<${auth_name}RequiresEncoding> is in effect for this
+request.
+
+=cut
+
+sub decoded_requires {
+    my ($self, $r) = @_;
+
+    my $reqs     = $r->requires or return;
+    my $encoding = $self->requires_encoding($r);
+
+    unless (is_blank($encoding)) {
+        for my $req (@$reqs) {
+            $$req{requirement} = Encode::decode($encoding, $$req{requirement});
+        }
+    }
+
+    return $reqs;
 }
 
 sub cookie_name {
@@ -232,6 +309,7 @@ sub authenticate {
         # previous or main request if its is present
         if (defined $prev->user) {
             $r->server->log_error('authenticate() is in a subrequest or internal redirect.') if $debug >= 3;
+            # encoding would have been handled in prev req, so do not encode here.
             $r->user( $prev->user );
             return OK;
         }
@@ -273,7 +351,7 @@ sub authenticate {
             # user is.
 
             $r->ap_auth_type($auth_type);
-            $r->user($auth_user);
+            $r->user( $auth_type->_encode($r, $auth_user) );
             $r->server->log_error("user authenticated as $auth_user")
                 if $debug >= 1;
 
@@ -437,6 +515,19 @@ sub get_cookie_path {
     my $auth_name = $r->auth_name;
 
     return $r->dir_config("${auth_name}Path");
+}
+
+sub _encode {
+    my ($self, $r, $value) = @_;
+
+    my $encoding = $self->encoding($r);
+
+    if (is_blank($encoding)) {
+        return $value;
+    }
+    else {
+        return Encode::encode($encoding, $value);
+    }
 }
 
 1;

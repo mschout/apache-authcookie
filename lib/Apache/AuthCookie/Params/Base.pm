@@ -5,6 +5,7 @@ package Apache::AuthCookie::Params::Base;
 use strict;
 use warnings;
 use Class::Load qw(load_class);
+use Apache::AuthCookie::Util qw(is_blank);
 
 sub new {
     my ($class, $r) = @_;
@@ -17,19 +18,28 @@ sub new {
         return $obj;
     }
 
-    $obj = $class->_new_instance($r);
+    # if an encoding is in effect, then always use the ::CGI interface because
+    # libapreq has no support for UTF-8
+    my $auth_name = $r->auth_name;
+
+    if (!is_blank($r->dir_config("${auth_name}Encoding"))) {
+        $obj = __PACKAGE__->_new_instance($r);
+    }
+    else {
+        $obj = $class->_new_instance($r);
+    }
 
     $r->pnotes($class, $obj);
 
     return $obj;
 }
 
-sub _cgi_new {
-    my ($self, $init) = @_;
+sub _new_instance {
+    my ($self, $r) = @_;
 
     load_class('Apache::AuthCookie::Params::CGI');
 
-    return Apache::AuthCookie::Params::CGI->new($init);
+    return Apache::AuthCookie::Params::CGI->new($r);
 }
 
 1;

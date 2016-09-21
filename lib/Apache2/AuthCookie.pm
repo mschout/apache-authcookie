@@ -24,9 +24,9 @@ sub authorize {
         return DECLINED;
     }
 
-    my $reqs_arr = $r->requires or return DECLINED;
+    my $reqs_arr = $auth_type->decoded_requires($r) or return DECLINED;
 
-    my $user = $r->user;
+    my $user = $auth_type->decoded_user($r);
 
     $r->server->log_error("authorize user=$user type=$auth_type") if $debug >=3;
 
@@ -153,6 +153,9 @@ MethodHandlers, Authen, and Authz compiled in.
  # of this should be
  PerlSetVar WhatEverP3P "CP=\"...\""
 
+ # optional: enable automatic decoding of HTTP parameters
+ PerlSetVar WhatEverEncoding UTF-8
+
  # These documents require user to be logged in.
  <Location /protected>
   AuthType Sample::Apache2::AuthCookieHandler
@@ -271,6 +274,18 @@ put the command
 
 into your server startup file and authentication for this realm will succeed if
 ANY of the C<require> directives are met.
+
+=item 7.
+
+You can optionally enable automatic decoding of HTTP parameters that AuthCookie
+processes using the C<Encoding> directive.  For instance, if your C<AuthName>
+is C<Whatever>, you can put the directive
+
+ PerlSetVar WhatEverEncoding UTF-8
+
+int your server setup file and HTTP POST data and query parameters will
+automatically be decoded as UTF-8 data (or whatever encoding you specified)
+using L<Encode>.
 
 =back
 

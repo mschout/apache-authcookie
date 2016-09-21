@@ -1,11 +1,14 @@
 package Sample::Apache::AuthCookieHandler;
+
 use strict;
+use utf8;
+use base 'Apache::AuthCookie';
 use Apache;
 use Apache::Constants qw(:common);
 use Apache::AuthCookie;
-use vars qw(@ISA);
-
-@ISA = qw(Apache::AuthCookie);
+use Apache::Util;
+use URI::Escape qw(uri_escape_utf8 uri_unescape);
+use Encode;
 
 sub authen_cred ($$\@) {
     my $self = shift;
@@ -17,16 +20,20 @@ sub authen_cred ($$\@) {
     # This would really authenticate the credentials 
     # and return the session key.
     # Here I'm just using setting the session
-    # key to the credentials and delaying authentication.
-    #
-    # Similar to HTTP Basic Authentication, only not base 64 encoded
-    join(":", @creds);
+    # key to the escaped credentials and delaying authentication.
+    return join ':', map { uri_escape_utf8($_) } @creds;
 }
 
 sub authen_ses_key ($$$) {
-    my $self = shift;
-    my $r = shift;
-    my($user, $password) = split(/:/, shift, 2);
+    my ($self, $r, $ses_key) = @_;
+
+    # NOTE: uri_escape_utf8() was used to encode this so we have to decode
+    # using UTF-8.  We don't rely on $self->encoding($r) here because if an
+    # encoding other than UTF-8 is configured in t/conf/extra.conf.in, then the
+    # wrong encoding gets used here.
+    my($user, $password) =
+        map { decode('UTF-8', uri_unescape($_)) }
+        split /:/, $ses_key, 2;
 
     if ($user eq 'programmer' && $password eq 'Hero') {
         return $user;
@@ -35,6 +42,9 @@ sub authen_ses_key ($$$) {
         return $user;
     }
     elsif ($user eq '0') {
+        return $user;
+    }
+    elsif ($user eq '程序员') { # programmer in chinese, at least according to google translate
         return $user;
     }
 
