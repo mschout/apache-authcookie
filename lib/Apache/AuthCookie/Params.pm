@@ -22,11 +22,7 @@ sub _new_instance {
     else {
         $r->server->log_error("params: using CGI") if $debug >= 3;
 
-        # CGI->new($r) doesn't work for POST->GET conversion in MP1, so get
-        # query string manually
-        my $qstring = $r->method eq 'POST' ? scalar $r->content : scalar $r->args;
-
-        return $class->_cgi_new($qstring);
+        return $class->SUPER::_new_instance($r);
     }
 
     return;

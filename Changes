@@ -2,6 +2,14 @@ Revision history for Apache::AuthCookie
 
 {{$NEXT}}
    - remove unused module Apache::AuthCookie::Autobox from dist
+   - remove CGI.pm dependency.  CGI.pm has been removed from perl core, which was the primary reason we used it in the first place.
+     Replaced with dependency on lighter weight set of three modules:
+
+        - HTTP::Body
+        - WWW::Form::UrlEncoded
+        - Hash::MultiValue
+
+     Also recommended (but not required) is WWW::Form::UrlEncoded::XS
 
 3.25  2016-08-30
    - 2.4: fix POD typo and add missing ABSTRACT

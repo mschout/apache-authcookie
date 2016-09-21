@@ -22,7 +22,7 @@ sub _new_instance {
     else {
         $r->server->log_error("params: using CGI") if $debug >= 3;
 
-        return $class->_cgi_new($r);
+        return $class->SUPER::_new_instance($r);
     }
 
     return;
