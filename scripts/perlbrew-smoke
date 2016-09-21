@@ -78,7 +78,9 @@ smoke_perl() {
 
     check_perlbrew
 
-    perlbrew_reset
+    if [ -z "$NO_RESET" ]; then
+        perlbrew_reset
+    fi
 
     install_cpan_deps
 
