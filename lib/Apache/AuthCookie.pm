@@ -12,6 +12,85 @@ use Apache::AuthCookie::Util qw(is_blank);
 use Apache::Util qw(escape_uri);
 use Encode ();
 
+=method authen_cred($r, @credentials)
+
+You must define this method yourself in your subclass of
+C<Apache::AuthCookie>.  Its job is to create the session key that will
+be preserved in the user's cookie.  The arguments passed to it are:
+
+ sub authen_cred ($$\@) {
+   my $self = shift;  # Package name (same as AuthName directive)
+   my $r    = shift;  # Apache request object
+   my @cred = @_;     # Credentials from login form
+
+   ...blah blah blah, create a session key...
+   return $session_key;
+ }
+
+The only limitation on the session key is that you should be able to
+look at it later and determine the user's username.  You are
+responsible for implementing your own session key format.  A typical
+format is to make a string that contains the username, an expiration
+time, whatever else you need, and an MD5 hash of all that data
+together with a secret key.  The hash will ensure that the user
+doesn't tamper with the session key.  More info in the Eagle book.
+
+=method authen_ses_key($r, $session_key)
+
+You must define this method yourself in your subclass of
+Apache::AuthCookie.  Its job is to look at a session key and determine
+whether it is valid.  If so, it returns the username of the
+authenticated user.
+
+ sub authen_ses_key ($$$) {
+   my ($self, $r, $session_key) = @_;
+   ...blah blah blah, check whether $session_key is valid...
+   return $ok ? $username : undef;
+ }
+
+Optionally, return an array of 2 or more items that will be passed to method
+custom_errors. It is the responsibility of this method to return the correct
+response to the main Apache module.
+
+=method custom_errors($r,@_)
+
+Note: this interface is experimental.
+
+This method handles the server response when you wish to access the Apache
+custom_response method. Any suitable response can be used. this is
+particularly useful when implementing 'by directory' access control using
+the user authentication information. i.e.
+
+        /restricted
+                /one            user is allowed access here
+                /two            not here
+                /three          AND here
+
+The authen_ses_key method would return a normal response when the user attempts
+to access 'one' or 'three' but return (NOT_FOUND, 'File not found') if an
+attempt was made to access subdirectory 'two'. Or, in the case of expired
+credentials, (AUTH_REQUIRED,'Your session has timed out, you must login
+again').
+
+  example 'custom_errors'
+
+  sub custom_errors {
+    my ($self,$r,$CODE,$msg) = @_;
+    # return custom message else use the server's standard message
+    $r->custom_response($CODE, $msg) if $msg;
+    return($CODE);
+  }
+
+  where CODE is a valid code from Apache::Constants
+
+=method recognize_user($r)
+
+If the user has provided a valid session key but the document isn't
+protected, this method will set C<$r-E<gt>connection-E<gt>user>
+anyway.  Use it as a PerlFixupHandler, unless you have a better idea.
+
+=cut
+
 sub recognize_user ($$) {
     my ($self, $r) = @_;
 
@@ -89,7 +168,6 @@ sub requires_encoding {
     return $r->dir_config("${auth_name}RequiresEncoding");
 }
 
-
 =method decoded_user($r): string
 
 If you have set ${auth_name}Encoding, then this will return the decoded value of
@@ -138,6 +216,15 @@ sub decoded_requires {
     return $reqs;
 }
 
+=method handle_cache(): void
+
+If C<${auth_name}Cache> is defined, this sets up the response so that the
+client will not cache the result.  This sents C<no_cache> in the apache request
+object and sends the appropriate headers so that the client will not cache the
+response.
+
+=cut
+
 sub handle_cache {
     my $self = shift;
 
@@ -151,6 +238,13 @@ sub handle_cache {
         $r->err_header_out(Pragma => 'no-cache');
     }
 }
+
+=method remove_cookie(): void
+
+Adds a C<Set-Cookie> header that instructs the client to delete the cookie
+immediately.
+
+=cut
 
 sub remove_cookie {
     my $self = shift;
@@ -204,11 +298,29 @@ sub _convert_to_get {
     $r->headers_in->unset('Content-Length');
 }
 
+=method params($r): Apache::AuthCookie::Params
+
+Get the params object for this request.
+
+=cut
+
 sub params {
     my ($self, $r) = @_;
 
     return Apache::AuthCookie::Params->new($r);
 }
+
+=method login($r)
+
+This method handles the submission of the login form.  It will call
+the C<authen_cred()> method, passing it C<$r> and all the submitted
+data with names like C<"credential_#">, where # is a number.  These will
+be passed in a simple array, so the prototype is
+C<$self-E<gt>authen_cred($r, @credentials)>.  After calling
+C<authen_cred()>, we set the user's cookie and redirect to the
+URL contained in the C<"destination"> submitted form field.
+
+=cut
 
 sub login ($$) {
     my ($self, $r) = @_;
@@ -266,11 +378,30 @@ sub login ($$) {
     return REDIRECT;
 }
 
+=method untaint_destination($uri)
+
+This method returns a modified version of the destination parameter
+before embedding it into the response header. Per default it escapes
+CR, LF and TAB characters of the uri to avoid certain types of
+security attacks. You can override it to more limit the allowed
+destinations, e.g., only allow relative uris, only special hosts or
+only limited set of characters.
+
+=cut
+
 sub untaint_destination {
     my ($self, $dest) = @_;
 
     return Apache::AuthCookie::Util::escape_destination($dest);
 }
+
+=method logout($r)
+
+This is simply a convenience method that unsets the session key for
+you.  You can call it in your logout scripts.  Usually this looks like
+C<$r-E<gt>auth_type-E<gt>logout($r);>.
+
+=cut
 
 sub logout($$) {
     my ($self, $r) = @_;
@@ -289,6 +420,16 @@ sub logout($$) {
     #  return OK;
     #}
 }
+
+=method authenticate($r)
+
+This method is one you'll use in a server config file (httpd.conf,
+.htaccess, ...) as a PerlAuthenHandler.  If the user provided a
+session key in a cookie, the C<authen_ses_key()> method will get
+called to check whether the key is valid.  If not, or if there is no
+key provided, we redirect to the login form.
+
+=cut
 
 sub authenticate ($$) {
     my ($auth_type, $r) = @_;
@@ -376,6 +517,16 @@ sub authenticate ($$) {
     return $auth_type->login_form;
 }
 
+=method login_form()
+
+This method is responsible for displaying the login form. The default
+implementation will make an internal redirect and display the URL you
+specified with the C<PerlSetVar WhatEverLoginScript> configuration
+directive. You can overwrite this method to provide your own
+mechanism.
+
+=cut
+
 sub login_form {
     my $self = shift;
 
@@ -408,6 +559,19 @@ sub login_form {
     return $status;
 }
 
+=method login_form_status($r)
+
+This method returns the HTTP status code that will be returned with the login
+form response.  The default behaviour is to return FORBIDDEN, except for some
+known browsers which ignore HTML content for FORBIDDEN responses (e.g.:
+SymbianOS).  You can override this method to return custom codes.
+
+Note that FORBIDDEN is the most correct code to return as the given request was
+not authorized to view the requested page.  You should only change this if
+FORBIDDEN does not work.
+
+=cut
+
 sub login_form_status {
     my ($self, $r) = @_;
 
@@ -437,6 +601,13 @@ sub satisfy_is_valid {
     }
 }
 
+=method get_satisfy(): string
+
+Get the C<Satisfy> value for the current request, or C<all> if it is not
+configured.
+
+=cut
+
 sub get_satisfy {
     my ($auth_type, $r) = @_;
 
@@ -444,6 +615,20 @@ sub get_satisfy {
 
     return lc $r->dir_config("${auth_name}Satisfy") || 'all';
 }
+
+=method authorize($r)
+
+This will step through the C<require> directives you've given for
+protected documents and make sure the user passes muster.  The
+C<require valid-user> and C<require user joey-jojo> directives are
+handled for you.  You can implement custom directives, such as
+C<require species hamster>, by defining a method called C<species()>
+in your subclass, which will then be called.  The method will be
+called as C<$r-E<gt>species($r, $args)>, where C<$args> is everything
+on your C<require> line after the word C<species>.  The method should
+return OK on success and FORBIDDEN on failure.
+
+=cut
 
 sub authorize ($$) {
     my ($auth_type, $r) = @_;
@@ -512,6 +697,14 @@ sub authorize ($$) {
     return $forbidden ? FORBIDDEN : OK;
 }
 
+=method send_cookie($session_key)
+
+By default this method simply sends out the session key you give it.
+If you need to change the default behavior (perhaps to update a
+timestamp in the key) you can override this method.
+
+=cut
+
 sub send_cookie {
     my ($self, $ses_key, $cookie_args) = @_;
     my $r = Apache->request();
@@ -533,7 +726,13 @@ sub send_cookie {
     $r->err_headers_out->add("Set-Cookie" => $cookie);
 }
 
-# send a P3P header if it is configured as ${auth_name}P3P
+=method send_p3p(): void
+
+Set a P3P response header if C<${auth_name}P3P> is configured.  The value of
+the header is whatever is in the C<${auth_name}P3P> setting.
+
+=cut
+
 sub send_p3p {
     my ($self, $r) = @_;
 
@@ -543,6 +742,24 @@ sub send_p3p {
         $r->err_header_out(P3P => $p3p);
     }
 }
+
+=method cookie_string(%args): string
+
+Generate a cookie string. C<%args> are:
+
+=for :list
+* request
+The Apache request object
+* key
+The Cookie name
+* value
+the Cookie value
+* expires (optional)
+When the cookie expires. See L<Apache::AuthCookie::Util/expires()>.  Uses C<${auth_name}Expires> if not given.
+
+All other cookie settings come from C<PerlSetVar> settings.
+
+=cut
 
 sub cookie_string {
     my $self = shift;
@@ -599,6 +816,15 @@ sub cookie_string {
     return $string;
 }
 
+=method key()
+
+This method will return the current session key, if any.  This can be
+handy inside a method that implements a C<require> directive check
+(like the C<species> method discussed above) if you put any extra
+information like clearances or whatever into the session key.
+
+=cut
+
 sub key {
     my $self = shift;
     my $r    = Apache->request;
@@ -607,6 +833,12 @@ sub key {
     my $cookie_name = $self->cookie_name($r);
     return ($allcook =~ /(?:^|\s)$cookie_name=([^;]*)/)[0];
 }
+
+=method get_cookie_path(): string
+
+Returns the value of C<PerlSetVar ${auth_name}Path>.
+
+=cut
 
 sub get_cookie_path {
     my $self = shift;
@@ -872,172 +1104,6 @@ client.
     create must be able to determine if this session_key is valid and
     map it back to the originally authenticated user ID.
 
-=for html
-</PRE>
-
-=head1 METHODS
-
-C<Apache::AuthCookie> has several methods you should know about.  Here
-is the documentation for each. =)
-
-=over 4
-
-=item * authenticate()
-
-This method is one you'll use in a server config file (httpd.conf,
-.htaccess, ...) as a PerlAuthenHandler.  If the user provided a
-session key in a cookie, the C<authen_ses_key()> method will get
-called to check whether the key is valid.  If not, or if there is no
-key provided, we redirect to the login form.
-
-=item * authorize()
-
-This will step through the C<require> directives you've given for
-protected documents and make sure the user passes muster.  The
-C<require valid-user> and C<require user joey-jojo> directives are
-handled for you.  You can implement custom directives, such as
-C<require species hamster>, by defining a method called C<species()>
-in your subclass, which will then be called.  The method will be
-called as C<$r-E<gt>species($r, $args)>, where C<$args> is everything
-on your C<require> line after the word C<species>.  The method should
-return OK on success and FORBIDDEN on failure.
-
-=item * authen_cred()
-
-You must define this method yourself in your subclass of
-C<Apache::AuthCookie>.  Its job is to create the session key that will
-be preserved in the user's cookie.  The arguments passed to it are:
-
- sub authen_cred ($$\@) {
-   my $self = shift;  # Package name (same as AuthName directive)
-   my $r    = shift;  # Apache request object
-   my @cred = @_;     # Credentials from login form
-
-   ...blah blah blah, create a session key...
-   return $session_key;
- }
-
-The only limitation on the session key is that you should be able to
-look at it later and determine the user's username.  You are
-responsible for implementing your own session key format.  A typical
-format is to make a string that contains the username, an expiration
-time, whatever else you need, and an MD5 hash of all that data
-together with a secret key.  The hash will ensure that the user
-doesn't tamper with the session key.  More info in the Eagle book.
-
-=item * authen_ses_key()
-
-You must define this method yourself in your subclass of
-Apache::AuthCookie.  Its job is to look at a session key and determine
-whether it is valid.  If so, it returns the username of the
-authenticated user.
-
- sub authen_ses_key ($$$) {
-   my ($self, $r, $session_key) = @_;
-   ...blah blah blah, check whether $session_key is valid...
-   return $ok ? $username : undef;
- }
-
-Optionally, return an array of 2 or more items that will be passed to method
-custom_errors. It is the responsibility of this method to return the correct
-response to the main Apache module.
-
-=item * custom_errors($r,@_)
-
-Note: this interface is experimental.
-
-This method handles the server response when you wish to access the Apache
-custom_response method. Any suitable response can be used. this is
-particularly useful when implementing 'by directory' access control using
-the user authentication information. i.e.
-
-        /restricted
-                /one            user is allowed access here
-                /two            not here
-                /three          AND here
-
-The authen_ses_key method would return a normal response when the user attempts
-to access 'one' or 'three' but return (NOT_FOUND, 'File not found') if an
-attempt was made to access subdirectory 'two'. Or, in the case of expired
-credentials, (AUTH_REQUIRED,'Your session has timed out, you must login
-again').
-
-  example 'custom_errors'
-
-  sub custom_errors {
-    my ($self,$r,$CODE,$msg) = @_;
-    # return custom message else use the server's standard message
-    $r->custom_response($CODE, $msg) if $msg;
-    return($CODE);
-  }
-          
-  where CODE is a valid code from Apache::Constants
-
-=item * login()
-
-This method handles the submission of the login form.  It will call
-the C<authen_cred()> method, passing it C<$r> and all the submitted
-data with names like C<"credential_#">, where # is a number.  These will
-be passed in a simple array, so the prototype is
-C<$self-E<gt>authen_cred($r, @credentials)>.  After calling
-C<authen_cred()>, we set the user's cookie and redirect to the
-URL contained in the C<"destination"> submitted form field.
-
-=item * login_form()
-
-This method is responsible for displaying the login form. The default
-implementation will make an internal redirect and display the URL you
-specified with the C<PerlSetVar WhatEverLoginScript> configuration
-directive. You can overwrite this method to provide your own
-mechanism.
-
-=item * login_form_status($r)
-
-This method returns the HTTP status code that will be returned with the login
-form response.  The default behaviour is to return FORBIDDEN, except for some
-known browsers which ignore HTML content for FORBIDDEN responses (e.g.:
-SymbianOS).  You can override this method to return custom codes.
-
-Note that FORBIDDEN is the most correct code to return as the given request was
-not authorized to view the requested page.  You should only change this if
-FORBIDDEN does not work.
-
-=item * logout()
-
-This is simply a convenience method that unsets the session key for
-you.  You can call it in your logout scripts.  Usually this looks like
-C<$r-E<gt>auth_type-E<gt>logout($r);>.
-
-=item * send_cookie($session_key)
-
-By default this method simply sends out the session key you give it.
-If you need to change the default behavior (perhaps to update a
-timestamp in the key) you can override this method.
-
-=item * recognize_user()
-
-If the user has provided a valid session key but the document isn't
-protected, this method will set C<$r-E<gt>connection-E<gt>user>
-anyway.  Use it as a PerlFixupHandler, unless you have a better idea.
-
-=item * key()
-
-This method will return the current session key, if any.  This can be
-handy inside a method that implements a C<require> directive check
-(like the C<species> method discussed above) if you put any extra
-information like clearances or whatever into the session key.
-
-=item * untaint_destination($self, $uri)
-
-This method returns a modified version of the destination parameter
-before embedding it into the response header. Per default it escapes
-CR, LF and TAB characters of the uri to avoid certain types of
-security attacks. You can override it to more limit the allowed
-destinations, e.g., only allow relative uris, only special hosts or
-only limited set of characters.
-
-=back
-
 =head1 EXAMPLE
 
 For an example of how to use Apache::AuthCookie, you may want to check
@@ -1129,6 +1195,94 @@ Note that if you don't necessarily trust your users, you can't count
 on cookie deletion for logging out.  You'll have to expire some
 server-side login information too.  AuthCookie doesn't do this for
 you, you have to handle it yourself.
+
+=head1 ENCODING AND CHARACTER SETS
+
+=head2 Encoding
+
+AuthCookie provides support for decoding POST/GET data if you tell it what the
+client encoding is.  You do this by setting the C<< ${auth_name}Encoding >>
+setting in C<httpd.conf>.  E.g.:
+
+ PerlSetVar WhateEverEncoding UTF-8
+ # and you also need to arrange for charset=UTF-8 at the end of the
+ # Content-Type header with something like:
+ AddDefaultCharset UTF-8
+
+Note that you B<can> use charsets other than C<UTF-8>, however, you need to
+arrange for the browser to send the right encoding back to the server.
+
+If you have turned on Encoding support by setting C<< ${auth_name}Encoding >>,
+this has the following effects:
+
+=over 4
+
+=item *
+
+The internal pure-perl params processing subclass will be used, even if
+libapreq is installed.  libapreq does not handle encoding.
+
+=item *
+
+POST/GET data intercepted by AuthCookie will be decoded to perl's internal
+format using L<Encode/decode>.
+
+=item *
+
+The value stored in C<< $r-E<gt>connection-E<gt>user >> will be encoded as
+B<bytes>, not characters using the configured encoding name.  This is because
+the value stored by mod_perl is a C API string, and not a perl string.  You can
+use L<decoded_user()> to get user string encoded using B<character> semantics.
+
+=back
+
+This does has some caveats:
+
+=over 4
+
+=item *
+
+your L<authen_cred()> and L<authen_ses_key()> function is expected to return
+a decoded username, either by passing it through L<Encode/decode()>, or, by
+turning on the UTF8 flag if appropriate.
+
+=item *
+
+Due to the way HTTP works, cookies cannot contain non-ASCII characters.
+Because of this, if you are including the username in your generated session
+key, you will need to escape any non-ascii characters in the session key
+returned by L<authen_cred()>.
+
+=item *
+
+Similarly, you must reverse this escaping process in L<authen_ses_key()> and
+return a L<Encode/decode()> decoded username.  If your L<authen_cred()>
+function already only generates ASCII-only session keys then you do not need to
+worry about any of this.
+
+=item *
+
+The value stored in C<< $r-E<gt>connection-E<gt>user >> will be encoded using
+bytes semantics using the configured B<Encoding>.  If you want the decoded user
+value, use L<decoded_user()> instead.
+
+=back
+
+=head2 Requires
+
+You can also specify what the charset is of the Apache C<< $r-E<gt>requires >>
+data is by setting C<< ${auth_name}RequiresEncoding >> in httpd.conf.
+
+E.g.:
+
+ PerlSetVar WhatEverRequiresEncoding UTF-8
+
+This will make it so that AuthCookie will decode your C<requires> directives
+using the configured character set.  You really only need to do this if you
+have used non-ascii characters in any of your C<requires> directives in
+httpd.conf.  e.g.:
+
+ requires user programmør
 
 =head1 ABOUT SESSION KEYS
 

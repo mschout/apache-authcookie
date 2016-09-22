@@ -7,7 +7,7 @@ use base 'Exporter';
 
 our @EXPORT_OK = qw(is_blank);
 
-# -- expires() shamelessly taken from CGI::Util
+
 sub expires {
     my($time,$format) = @_;
     $format ||= 'http';
@@ -93,3 +93,12 @@ sub is_blank {
 }
 
 1;
+
+__END__
+
+=for Pod::Coverage *EVERYTHING*
+
+=head1 DESCRIPTION
+
+Internal Use Only!
+

@@ -7,6 +7,15 @@ use warnings;
 use Class::Load qw(load_class);
 use Apache::AuthCookie::Util qw(is_blank);
 
+=method new($r)
+
+Constructor.  This will generate either an internal
+L<Apache::AuthCookie::Params::CGI> object, or, if available, use libapreq2.
+Note that libapreq2 will not be used if you turned on C<Encoding> support
+because libapreq2 does not have any support for unicode.
+
+=cut
+
 sub new {
     my ($class, $r) = @_;
 
