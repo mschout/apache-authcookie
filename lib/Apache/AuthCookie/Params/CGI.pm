@@ -21,8 +21,6 @@ sub new {
 
     $class = ref $class || $class;
 
-    $r->log_error("Using CGI Params subclass");
-
     return bless {
         _request => $r
     }, $class;
