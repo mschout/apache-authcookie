@@ -1,10 +1,15 @@
 package Sample::Apache2::AuthCookieHandler;
+
 use strict;
+use utf8;
 use Class::Load 'load_class';
 use Apache2::Const qw(:common HTTP_FORBIDDEN);
 use Apache2::AuthCookie;
 use Apache2::RequestRec;
 use Apache2::RequestIO;
+use Apache2::Util;
+use URI::Escape qw(uri_escape_utf8 uri_unescape);
+use Encode qw(decode);
 use vars qw(@ISA);
 
 use Apache::Test;
@@ -31,15 +36,16 @@ sub authen_cred ($$\@) {
     # This would really authenticate the credentials 
     # and return the session key.
     # Here I'm just using setting the session
-    # key to the credentials and delaying authentication.
-    #
-    # Similar to HTTP Basic Authentication, only not base 64 encoded
-    join(":", @creds);
+    # key to the escaped credentials and delaying authentication.
+    return join ':', map { uri_escape_utf8($_) } @creds;
 }
 
 sub authen_ses_key ($$$) {
     my ($self, $r, $cookie) = @_;
-    my($user, $password) = split(/:/, $cookie);
+
+    my ($user, $password) =
+        map { decode('UTF-8', uri_unescape($_)) }
+        split /:/, $cookie, 2;
 
     $r->server->log_error("authen_ses_key entry");
 
@@ -52,6 +58,9 @@ sub authen_ses_key ($$$) {
         return $user;
     }
     elsif ($user eq '0') {
+        return $user;
+    }
+    elsif ($user eq '程序员') { # programmer in chinese, at least according to google translate
         return $user;
     }
     else {

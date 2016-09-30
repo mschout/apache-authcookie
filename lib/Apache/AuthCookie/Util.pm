@@ -1,5 +1,5 @@
 package Apache::AuthCookie::Util;
-$Apache::AuthCookie::Util::VERSION = '3.25';
+$Apache::AuthCookie::Util::VERSION = '3.26';
 # ABSTRACT: Internal Utility Functions for AuthCookie
 
 use strict;
@@ -7,7 +7,7 @@ use base 'Exporter';
 
 our @EXPORT_OK = qw(is_blank);
 
-# -- expires() shamelessly taken from CGI::Util
+
 sub expires {
     my($time,$format) = @_;
     $format ||= 'http';
@@ -104,7 +104,13 @@ Apache::AuthCookie::Util - Internal Utility Functions for AuthCookie
 
 =head1 VERSION
 
-version 3.25
+version 3.26
+
+=head1 DESCRIPTION
+
+Internal Use Only!
+
+=for Pod::Coverage *EVERYTHING*
 
 =head1 SOURCE
 

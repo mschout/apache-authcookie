@@ -1,10 +1,12 @@
 package Apache::AuthCookie::Params::Base;
-$Apache::AuthCookie::Params::Base::VERSION = '3.25';
+$Apache::AuthCookie::Params::Base::VERSION = '3.26';
 # ABSTRACT: Internal CGI AuthCookie Params Base Class
 
 use strict;
 use warnings;
 use Class::Load qw(load_class);
+use Apache::AuthCookie::Util qw(is_blank);
+
 
 sub new {
     my ($class, $r) = @_;
@@ -17,19 +19,28 @@ sub new {
         return $obj;
     }
 
-    $obj = $class->_new_instance($r);
+    # if an encoding is in effect, then always use the ::CGI interface because
+    # libapreq has no support for UTF-8
+    my $auth_name = $r->auth_name;
+
+    if (!is_blank($r->dir_config("${auth_name}Encoding"))) {
+        $obj = __PACKAGE__->_new_instance($r);
+    }
+    else {
+        $obj = $class->_new_instance($r);
+    }
 
     $r->pnotes($class, $obj);
 
     return $obj;
 }
 
-sub _cgi_new {
-    my ($self, $init) = @_;
+sub _new_instance {
+    my ($self, $r) = @_;
 
     load_class('Apache::AuthCookie::Params::CGI');
 
-    return Apache::AuthCookie::Params::CGI->new($init);
+    return Apache::AuthCookie::Params::CGI->new($r);
 }
 
 1;
@@ -44,7 +55,7 @@ Apache::AuthCookie::Params::Base - Internal CGI AuthCookie Params Base Class
 
 =head1 VERSION
 
-version 3.25
+version 3.26
 
 =head1 SYNOPSIS
 
@@ -53,6 +64,15 @@ version 3.25
 =head1 DESCRIPTION
 
 This is the base class for AuthCookie Params drivers.
+
+=head1 METHODS
+
+=head2 new($r)
+
+Constructor.  This will generate either an internal
+L<Apache::AuthCookie::Params::CGI> object, or, if available, use libapreq2.
+Note that libapreq2 will not be used if you turned on C<Encoding> support
+because libapreq2 does not have any support for unicode.
 
 =head1 SOURCE
 

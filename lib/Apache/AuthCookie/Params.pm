@@ -1,5 +1,5 @@
 package Apache::AuthCookie::Params;
-$Apache::AuthCookie::Params::VERSION = '3.25';
+$Apache::AuthCookie::Params::VERSION = '3.26';
 # ABSTRACT: AuthCookie Params Driver for mod_perl 1.x
 
 use strict;
@@ -22,11 +22,7 @@ sub _new_instance {
     else {
         $r->server->log_error("params: using CGI") if $debug >= 3;
 
-        # CGI->new($r) doesn't work for POST->GET conversion in MP1, so get
-        # query string manually
-        my $qstring = $r->method eq 'POST' ? scalar $r->content : scalar $r->args;
-
-        return $class->_cgi_new($qstring);
+        return $class->SUPER::_new_instance($r);
     }
 
     return;
@@ -44,7 +40,7 @@ Apache::AuthCookie::Params - AuthCookie Params Driver for mod_perl 1.x
 
 =head1 VERSION
 
-version 3.25
+version 3.26
 
 =head1 SYNOPSIS
 

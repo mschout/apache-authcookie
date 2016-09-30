@@ -1,4 +1,5 @@
 PerlRequire @ServerRoot@/startup.pl
+AddDefaultCharset UTF-8
 
 <IfDefine APACHE1>
   PerlModule Sample::Apache::AuthCookieHandler
@@ -20,6 +21,8 @@ PerlSetVar WhatEverPath /
 PerlSetVar WhatEverLoginScript /docs/login.pl
 PerlSetVar AuthCookieDebug 3
 PerlSetVar WhatEverCookieName Sample::AuthCookieHandler_WhatEver
+PerlSetVar WhatEverEncoding UTF-8
+PerlSetVar WhatEverRequiresEncoding UTF-8
 
 <Directory @ServerRoot@>
   AllowOverride All
@@ -75,7 +78,7 @@ PerlSetVar WhatEverCookieName Sample::AuthCookieHandler_WhatEver
       PerlAuthenHandler Sample::Apache2_4::AuthCookieHandler->authenticate
     </IfDefine>
   </IfDefine>
-  Require user some-user programmer
+  Require user some-user programmer 程序员
   Require user 0
 </Location>
 
@@ -254,6 +257,22 @@ PerlSetVar WhatEverCookieName Sample::AuthCookieHandler_WhatEver
       AuthType Sample::Apache2_4::AuthCookieHandler
       PerlResponseHandler Sample::Apache2_4::AuthCookieHandler->login
       Require all granted
+    </IfDefine>
+  </IfDefine>
+</Files>
+
+<Files logout.pl>
+  AuthName WhatEver
+
+  <IfDefine APACHE1>
+    AuthType Sample::Apache::AuthCookieHandler
+  </IfDefine>
+  <IfDefine APACHE2>
+    <IfDefine !APACHE2_4>
+      AuthType Sample::Apache2::AuthCookieHandler
+    </IfDefine>
+    <IfDefine APACHE2_4>
+      AuthType Sample::Apache2_4::AuthCookieHandler
     </IfDefine>
   </IfDefine>
 </Files>

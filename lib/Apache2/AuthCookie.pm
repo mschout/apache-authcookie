@@ -1,5 +1,5 @@
 package Apache2::AuthCookie;
-$Apache2::AuthCookie::VERSION = '3.25';
+$Apache2::AuthCookie::VERSION = '3.26';
 # ABSTRACT: Perl Authentication and Authorization via cookies
 
 use strict;
@@ -8,6 +8,7 @@ use Carp;
 use base 'Apache2::AuthCookie::Base';
 use Apache2::Const qw(OK DECLINED SERVER_ERROR HTTP_FORBIDDEN);
 use Apache::AuthCookie::Util qw(is_blank);
+
 
 sub authorize {
     my ($auth_type, $r) = @_;
@@ -24,9 +25,9 @@ sub authorize {
         return DECLINED;
     }
 
-    my $reqs_arr = $r->requires or return DECLINED;
+    my $reqs_arr = $auth_type->decoded_requires($r) or return DECLINED;
 
-    my $user = $r->user;
+    my $user = $auth_type->decoded_user($r);
 
     $r->server->log_error("authorize user=$user type=$auth_type") if $debug >=3;
 
@@ -80,6 +81,7 @@ sub authorize {
     return $forbidden ? HTTP_FORBIDDEN : OK;
 }
 
+
 sub get_satisfy {
     my ($auth_type, $r) = @_;
 
@@ -87,6 +89,7 @@ sub get_satisfy {
 
     return lc $r->dir_config("${auth_name}Satisfy") || 'all';
 }
+
 
 sub satisfy_is_valid {
     my ($auth_type, $r, $satisfy) = @_;
@@ -113,7 +116,7 @@ Apache2::AuthCookie - Perl Authentication and Authorization via cookies
 
 =head1 VERSION
 
-version 3.25
+version 3.26
 
 =head1 SYNOPSIS
 
@@ -160,6 +163,12 @@ MethodHandlers, Authen, and Authz compiled in.
  # see http://www.w3.org/P3P/ for details about what the value 
  # of this should be
  PerlSetVar WhatEverP3P "CP=\"...\""
+
+ # optional: enable decoding of intercepted GET/POST params:
+ PerlSetVar WhatEverEncoding UTF-8
+
+ # optional: enable decoding of httpd.conf "Requires" directives
+ PerlSetVar WhatEverRequiresEncoding UTF-8
 
  # These documents require user to be logged in.
  <Location /protected>
@@ -288,8 +297,6 @@ displaying the user's credentials in the Location field. They don't really
 change AuthCookie's model, but they do add another round-trip request to the
 client.
 
-=for html <PRE>
-
  (-----------------------)     +---------------------------------+
  ( Request a protected   )     | AuthCookie sets custom error    |
  ( page, but user hasn't )---->| document and returns            |
@@ -355,36 +362,28 @@ client.
     create must be able to determine if this session_key is valid and
     map it back to the originally authenticated user ID.
 
-=for html </PRE>
-
 =head1 METHODS
 
-C<Apache2::AuthCookie> has several methods you should know about.  Here
-is the documentation for each. =)
+=head2 authorize(): int
 
-=over 4
+This will step through the C<require> directives you've given for protected
+documents and make sure the user passes muster.  The C<require valid-user> and
+C<require user joey-jojo> directives are handled for you.  You can implement
+custom directives, such as C<require species hamster>, by defining a method
+called C<species()> in your subclass, which will then be called.  The method
+will be called as C<$r-E<gt>species($r, $args)>, where C<$args> is everything
+on your C<require> line after the word C<species>.  The method should return OK
+on success and HTTP_FORBIDDEN on failure.
 
-=item * authenticate()
+=head2 get_satisfy(): string
 
-This method is one you'll use in a server config file (httpd.conf,
-.htaccess, ...) as a PerlAuthenHandler.  If the user provided a
-session key in a cookie, the C<authen_ses_key()> method will get
-called to check whether the key is valid.  If not, or if there is no
-key provided, we redirect to the login form.
+Get the value of C<${auth_name}Satisfy>, or C<all> if it is not set.
 
-=item * authorize()
+=head2 satisfy_is_valid(): bool
 
-This will step through the C<require> directives you've given for
-protected documents and make sure the user passes muster.  The
-C<require valid-user> and C<require user joey-jojo> directives are
-handled for you.  You can implement custom directives, such as
-C<require species hamster>, by defining a method called C<species()>
-in your subclass, which will then be called.  The method will be
-called as C<$r-E<gt>species($r, $args)>, where C<$args> is everything
-on your C<require> line after the word C<species>.  The method should
-return OK on success and HTTP_FORBIDDEN on failure.
+return true if the configured C<${auth_name}Satisfy> is valid, false otherwise.
 
-=item * authen_cred()
+=head2 authen_cred(): string
 
 You must define this method yourself in your subclass of
 C<Apache2::AuthCookie>.  Its job is to create the session key that will
@@ -407,7 +406,7 @@ time, whatever else you need, and an MD5 hash of all that data
 together with a secret key.  The hash will ensure that the user
 doesn't tamper with the session key.  More info in the Eagle book.
 
-=item * authen_ses_key()
+=head2 authen_ses_key($r, $session_key): string
 
 You must define this method yourself in your subclass of
 Apache2::AuthCookie.  Its job is to look at a session key and determine
@@ -424,7 +423,7 @@ Optionally, return an array of 2 or more items that will be passed to method
 custom_errors. It is the responsibility of this method to return the correct
 response to the main Apache module.
 
-=item * custom_errors($r,@_)
+=head2 custom_errors($r,@_): int
 
 Note: this interface is experimental.
 
@@ -452,73 +451,99 @@ again').
     $r->custom_response($CODE, $msg) if $msg;
     return($CODE);
   }
-          
+
   where CODE is a valid code from Apache2::Const
 
-=item * login()
+=encoding UTF-8
 
-This method handles the submission of the login form.  It will call
-the C<authen_cred()> method, passing it C<$r> and all the submitted
-data with names like C<"credential_#">, where # is a number.  These will
-be passed in a simple array, so the prototype is
-C<$self-E<gt>authen_cred($r, @credentials)>.  After calling
-C<authen_cred()>, we set the user's cookie and redirect to the
-URL contained in the C<"destination"> submitted form field.
+=head1 ENCODING AND CHARACTER SETS
 
-=item * login_form($r)
+=head2 Encoding
 
-This method is responsible for displaying the login form. The default
-implementation will make an internal redirect and display the URL you
-specified with the C<PerlSetVar WhatEverLoginScript> configuration
-directive. You can overwrite this method to provide your own
-mechanism.
+AuthCookie provides support for decoding POST/GET data if you tell it what the
+client encoding is.  You do this by setting the C<< ${auth_name}Encoding >>
+setting in C<httpd.conf>.  E.g.:
 
-=item * login_form_status($r)
+ PerlSetVar WhateEverEncoding UTF-8
+ # and you also need to arrange for charset=UTF-8 at the end of the
+ # Content-Type header with something like:
+ AddDefaultCharset UTF-8
 
-This method returns the HTTP status code that will be returned with the login
-form response.  The default behaviour is to return HTTP_FORBIDDEN, except for
-some known browsers which ignore HTML content for HTTP_FORBIDDEN responses
-(e.g.: SymbianOS).  You can override this method to return custom codes.
+Note that you B<can> use charsets other than C<UTF-8>, however, you need to
+arrange for the browser to send the right encoding back to the server.
 
-Note that HTTP_FORBIDDEN is the most correct code to return as the given
-request was not authorized to view the requested page.  You should only change
-this if HTTP_FORBIDDEN does not work.
+If you have turned on Encoding support by setting C<< ${auth_name}Encoding >>,
+this has the following effects:
 
-=item * logout()
+=over 4
 
-This is simply a convenience method that unsets the session key for
-you.  You can call it in your logout scripts.  Usually this looks like
-C<$r-E<gt>auth_type-E<gt>logout($r);>.
+=item *
 
-=item * send_cookie($r, $session_key)
+The internal pure-perl params processing subclass will be used, even if
+libapreq2 is installed.  libapreq2 does not have any support for encoding or
+unicode.
 
-By default this method simply sends out the session key you give it.
-If you need to change the default behavior (perhaps to update a
-timestamp in the key) you can override this method.
+=item *
 
-=item * recognize_user()
+POST/GET data intercepted by AuthCookie will be decoded to perl's internal
+format using L<Encode/decode>.
 
-If the user has provided a valid session key but the document isn't
-protected, this method will set C<$r-E<gt>user>
-anyway.  Use it as a PerlFixupHandler, unless you have a better idea.
+=item *
 
-=item * key($r)
-
-This method will return the current session key, if any.  This can be
-handy inside a method that implements a C<require> directive check
-(like the C<species> method discussed above) if you put any extra
-information like clearances or whatever into the session key.
-
-=item * untaint_destination($self, $uri)
-
-This method returns a modified version of the destination parameter
-before embedding it into the response header. Per default it escapes
-CR, LF and TAB characters of the uri to avoid certain types of
-security attacks. You can override it to more limit the allowed
-destinations, e.g., only allow relative uris, only special hosts or
-only limited set of characters.
+The value stored in C<< $r-E<gt>user >> will be encoded as B<bytes>, not
+characters using the configured encoding name.  This is because the value
+stored by mod_perl is a C API string, and not a perl string.  You can use
+L<decoded_user()> to get user string encoded using B<character> semantics.
 
 =back
+
+This does has some caveats:
+
+=over 4
+
+=item *
+
+your L<authen_cred()> and L<authen_ses_key()> function is expected to return
+a decoded username, either by passing it through L<Encode/decode()>, or, by
+turning on the UTF8 flag if appropriate.
+
+=item *
+
+Due to the way HTTP works, cookies cannot contain non-ASCII characters.
+Because of this, if you are including the username in your generated session
+key, you will need to escape any non-ascii characters in the session key
+returned by L<authen_cred()>.
+
+=item *
+
+Similarly, you must reverse this escaping process in L<authen_ses_key()> and
+return a L<Encode/decode()> decoded username.  If your L<authen_cred()>
+function already only generates ASCII-only session keys then you do not need to
+worry about any of this.
+
+=item *
+
+The value stored in C<< $r-E<gt>user >> will be encoded using bytes semantics
+using the configured B<Encoding>.  If you want the decoded user value, use
+L<decoded_user()> instead.
+
+=back
+
+=head2 Requires
+
+You can also specify what the charset is of the Apache C<< $r-E<gt>requires >>
+data is by setting C<< ${auth_name}RequiresEncoding >> in httpd.conf.
+
+E.g.:
+
+ PerlSetVar WhatEverRequiresEncoding UTF-8
+
+This will make it so that AuthCookie will decode your C<requires> directives
+using the configured character set.  You really only need to do this if you
+have used non-ascii characters in any of your C<requires> directives in
+httpd.conf.  e.g.:
+
+ requires user programmør
 
 =head1 EXAMPLE
 
@@ -655,7 +680,7 @@ the same terms as Perl itself.
 
 =head1 SEE ALSO
 
-L<perl(1)>, L<mod_perl(1)>, L<Apache(1)>.
+L<Apache2::AuthCookie::Base>
 
 =head1 SOURCE
 

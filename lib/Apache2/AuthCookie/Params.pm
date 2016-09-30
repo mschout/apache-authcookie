@@ -1,5 +1,5 @@
 package Apache2::AuthCookie::Params;
-$Apache2::AuthCookie::Params::VERSION = '3.25';
+$Apache2::AuthCookie::Params::VERSION = '3.26';
 # ABSTRACT: AuthCookie Params Driver for mod_perl 2.x
 
 use strict;
@@ -22,7 +22,7 @@ sub _new_instance {
     else {
         $r->server->log_error("params: using CGI") if $debug >= 3;
 
-        return $class->_cgi_new($r);
+        return $class->SUPER::_new_instance($r);
     }
 
     return;
@@ -40,7 +40,7 @@ Apache2::AuthCookie::Params - AuthCookie Params Driver for mod_perl 2.x
 
 =head1 VERSION
 
-version 3.25
+version 3.26
 
 =head1 SYNOPSIS
 

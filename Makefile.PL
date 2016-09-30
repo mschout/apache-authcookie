@@ -26,11 +26,18 @@ my %WriteMakefileArgs = (
   "LICENSE" => "perl",
   "NAME" => "Apache::AuthCookie",
   "PREREQ_PM" => {
-    "CGI" => "3.12",
+    "Carp" => 0,
     "Class::Load" => "0.03",
-    "Test::More" => "0.94"
+    "Encode" => 0,
+    "HTTP::Body" => 0,
+    "Hash::MultiValue" => 0,
+    "Test::More" => "0.94",
+    "WWW::Form::UrlEncoded" => 0
   },
-  "VERSION" => "3.25",
+  "TEST_REQUIRES" => {
+    "URI::Escape" => "1.31"
+  },
+  "VERSION" => "3.26",
   "clean" => {
     "FILES" => [
       "t/TEST"
@@ -42,9 +49,14 @@ my %WriteMakefileArgs = (
 );
 
 my %FallbackPrereqs = (
-  "CGI" => "3.12",
+  "Carp" => 0,
   "Class::Load" => "0.03",
-  "Test::More" => "0.94"
+  "Encode" => 0,
+  "HTTP::Body" => 0,
+  "Hash::MultiValue" => 0,
+  "Test::More" => "0.94",
+  "URI::Escape" => "1.31",
+  "WWW::Form::UrlEncoded" => 0
 );
 
 # inserted by Dist::Zilla::Plugin::DynamicPrereqs 0.030
