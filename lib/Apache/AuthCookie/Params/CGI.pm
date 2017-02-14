@@ -73,7 +73,7 @@ sub param {
 
 =method params(): Hash::MultiValue
 
-Get the underlying CGI paramters.  This is a merged version of
+Get the underlying CGI parameters.  This is a merged version of
 L<query_params()> and L<body_params()>.
 
 =cut
