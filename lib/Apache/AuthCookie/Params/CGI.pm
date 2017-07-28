@@ -229,5 +229,5 @@ __END__
 
 =head1 DESCRIPTION
 
-This is a pure perl implmentation of HTTP/CGI parameter processing for Apache::AuthCookie.
+This is a pure perl implementation of HTTP/CGI parameter processing for Apache::AuthCookie.
 

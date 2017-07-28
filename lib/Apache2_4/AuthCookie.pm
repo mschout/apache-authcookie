@@ -551,7 +551,7 @@ I upgraded to Apache 2.4 and now AuthCookie doesn't work!
 
 Apache 2.4 radically changed the authenciation and authorization API.  You will
 need to port your AuthCookie subclass over to the Apache 2.4 API.  See the POD
-documenation in L<README.apache-2.4> for more information, but the quick
+documentation in L<README.apache-2.4> for more information, but the quick
 rundown is you need to:
 
 =over 4
