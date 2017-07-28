@@ -1,6 +1,8 @@
 Revision history for Apache::AuthCookie
 
 {{$NEXT}}
+
+3.27  2017-07-28
    - Fix POD spelling error [#118545].
 
 3.26  2016-09-30
