@@ -1232,7 +1232,7 @@ format using L<Encode/decode>.
 The value stored in C<< $r-E<gt>connection-E<gt>user >> will be encoded as
 B<bytes>, not characters using the configured encoding name.  This is because
 the value stored by mod_perl is a C API string, and not a perl string.  You can
-use L<decoded_user()> to get user string encoded using B<character> semantics.
+use L</decoded_user()> to get user string encoded using B<character> semantics.
 
 =back
 
@@ -1242,7 +1242,7 @@ This does has some caveats:
 
 =item *
 
-your L<authen_cred()> and L<authen_ses_key()> function is expected to return
+your L</authen_cred()> and L</authen_ses_key()> function is expected to return
 a decoded username, either by passing it through L<Encode/decode()>, or, by
 turning on the UTF8 flag if appropriate.
 
@@ -1251,12 +1251,12 @@ turning on the UTF8 flag if appropriate.
 Due to the way HTTP works, cookies cannot contain non-ASCII characters.
 Because of this, if you are including the username in your generated session
 key, you will need to escape any non-ascii characters in the session key
-returned by L<authen_cred()>.
+returned by L</authen_cred()>.
 
 =item *
 
-Similarly, you must reverse this escaping process in L<authen_ses_key()> and
-return a L<Encode/decode()> decoded username.  If your L<authen_cred()>
+Similarly, you must reverse this escaping process in L</authen_ses_key()> and
+return a L<Encode/decode()> decoded username.  If your L</authen_cred()>
 function already only generates ASCII-only session keys then you do not need to
 worry about any of this.
 
@@ -1264,7 +1264,7 @@ worry about any of this.
 
 The value stored in C<< $r-E<gt>connection-E<gt>user >> will be encoded using
 bytes semantics using the configured B<Encoding>.  If you want the decoded user
-value, use L<decoded_user()> instead.
+value, use L</decoded_user()> instead.
 
 =back
 
