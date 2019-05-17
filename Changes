@@ -1,6 +1,7 @@
 Revision history for Apache::AuthCookie
 
 {{$NEXT}}
+   - Add support for SameSite cookie property (can be strict/lax).
 
 3.27  2017-07-28
    - Fix POD spelling error [#118545].
@@ -114,8 +115,8 @@ Revision history for Apache::AuthCookie
 
 3.17  2011-01-19
    - skip the test suite if running as root.  Apache::Test 1.34 fails the test
-     suite if running as root instead of skipping it.  By skipping, AuthCookie can
-     be installed via CPAN.pm as root.
+     suite if running as root instead of skipping it.  By skipping, AuthCookie
+     can be installed via CPAN.pm as root.
 
 3.16  2011-01-19
    - require Apache::Test 1.32 - fixes ubuntu build issue

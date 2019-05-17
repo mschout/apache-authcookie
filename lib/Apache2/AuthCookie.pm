@@ -165,9 +165,13 @@ MethodHandlers, Authen, and Authz compiled in.
  PerlSetVar WhatEverSessionTimeout +30m
 
  # to enable the HttpOnly cookie property, use HttpOnly.
- # this is an MS extension.  See:
+ # This is an MS extension.  See:
  # http://msdn.microsoft.com/workshop/author/dhtml/httponly_cookies.asp
  PerlSetVar WhatEverHttpOnly 1
+
+ # to enable the SameSite cookie property, set SameSite to "lax" or "strict".
+ # See: https://www.owasp.org/index.php/SameSite
+ PerlSetVar WhatEverSameSite strict
 
  # Usually documents are uncached - turn off here
  PerlSetVar WhatEverCache 1
