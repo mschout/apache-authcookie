@@ -816,10 +816,10 @@ sub cookie_string {
     # SameSite is an anti-CSRF cookie property.  See
     # https://www.owasp.org/index.php/SameSite
     if (my $samesite = $r->dir_config("${auth_name}SameSite")) {
-	if ($samesite =~ /\A(strict|lax)\z/i) {
-	    $samesite = lc($1);
-	    $string .= "; SameSite=$samesite";
-	}
+        if ($samesite =~ /\A(strict|lax)\z/i) {
+            $samesite = lc($1);
+            $string .= "; SameSite=$samesite";
+        }
     }
 
     return $string;
