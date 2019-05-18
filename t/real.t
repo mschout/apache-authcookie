@@ -16,7 +16,7 @@ use Encode qw(encode);
 
 Apache::TestRequest::user_agent( reset => 1, requests_redirectable => 0 );
 
-plan tests => 36, need_lwp;
+plan tests => 34, need_lwp;
 
 ok 1, 'Test initialized';
 
