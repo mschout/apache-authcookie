@@ -1,6 +1,8 @@
 Revision history for Apache::AuthCookie
 
 {{$NEXT}}
+
+3.28  2019-11-19
    - Add support for SameSite cookie property (can be strict/lax).
    - Minor POD updates.
 
