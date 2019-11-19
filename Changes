@@ -2,6 +2,7 @@ Revision history for Apache::AuthCookie
 
 {{$NEXT}}
    - Add support for SameSite cookie property (can be strict/lax).
+   - Minor POD updates.
 
 3.27  2017-07-28
    - Fix POD spelling error [#118545].
