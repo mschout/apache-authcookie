@@ -1,6 +1,15 @@
 Revision history for Apache::AuthCookie
 
 {{$NEXT}}
+   - Add optional support for enforcing a local destination, like so:
+
+        PerlSetVar MyAuthEnforceLocalDestination 1
+
+   - Add optional support for specifying a default destination when the login
+     form's destination argument is unspecified or invalid (including
+     non-local if local destinations are enforced), like this:
+
+        PerlSetVar MyAuthDefaultDestination /protected/user/
 
 3.28  2019-11-19
    - Add support for SameSite cookie property (can be strict/lax).

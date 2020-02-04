@@ -353,10 +353,26 @@ sub login {
         $self->_convert_to_get($r);
     }
 
-    unless (defined $params->param('destination')) {
+    my $destination = $params->param('destination');
+    my $default_destination = $r->dir_config("${auth_name}DefaultDestination");
+
+    unless (defined $destination) {
         $r->server->log_error("No key 'destination' found in form data");
-        $r->subprocess_env('AuthCookieReason', 'no_cookie');
-        return $auth_type->login_form($r);
+	if (defined($default_destination) && length($default_destination)) {
+	    $destination = $default_destination;
+	    $r->server->log_error("destination set to $destination");
+	} else {
+	    $r->subprocess_env('AuthCookieReason', 'no_cookie');
+	    return $auth_type->login_form($r);
+	}
+    }
+
+    if ($r->dir_config("${auth_name}EnforceLocalDestination")) {
+	if ($destination !~ /\A\//) {
+	    $r->server->log_error("invalid destination $destination detected for uri ",$r->uri);
+	    $destination = defined($default_destination) && length($default_destination) ? $default_destination : '/';
+	    $r->server->log_error("destination changed to $destination");
+        }
     }
 
     # Get the credentials from the data posted by the client
@@ -376,7 +392,7 @@ sub login {
     unless ($ses_key) {
         $r->server->log_error("Bad credentials") if $debug >= 2;
         $r->subprocess_env('AuthCookieReason', 'bad_credentials');
-        $r->uri($self->untaint_destination($params->param('destination')));
+        $r->uri($self->untaint_destination($destination));
         return $auth_type->login_form($r);
     }
 
@@ -390,11 +406,11 @@ sub login {
     $self->handle_cache($r);
 
     if ($debug >= 2) {
-        $r->server->log_error("redirect to ", $params->param('destination'));
+        $r->server->log_error("redirect to $destination");
     }
 
     $r->headers_out->set(
-        "Location" => $self->untaint_destination($params->param('destination')));
+        "Location" => $self->untaint_destination($destination));
 
     return HTTP_MOVED_TEMPORARILY;
 }

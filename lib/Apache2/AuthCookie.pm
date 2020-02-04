@@ -190,6 +190,14 @@ MethodHandlers, Authen, and Authz compiled in.
  # optional: enable decoding of httpd.conf "Requires" directives
  PerlSetVar WhatEverRequiresEncoding UTF-8
 
+ # optional: enforce that the destination argument from the login form is
+ # local to the server
+ PerlSetVar WhatEverEnforceLocalDestination 1
+
+ # optional: specify a default destination for when the destination argument
+ # of the login form is invalid or unspecified
+ PerlSetVar WhatEverDefaultDestination /protected/user/
+
  # These documents require user to be logged in.
  <Location /protected>
   AuthType Sample::Apache2::AuthCookieHandler
