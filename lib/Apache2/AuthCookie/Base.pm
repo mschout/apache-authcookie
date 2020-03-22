@@ -353,25 +353,29 @@ sub login {
         $self->_convert_to_get($r);
     }
 
-    my $destination = $params->param('destination');
     my $default_destination = $r->dir_config("${auth_name}DefaultDestination");
+    my $destination         = $params->param('destination');
 
-    unless (defined $destination) {
-        $r->server->log_error("No key 'destination' found in form data");
-	if (defined($default_destination) && length($default_destination)) {
-	    $destination = $default_destination;
-	    $r->server->log_error("destination set to $destination");
-	} else {
-	    $r->subprocess_env('AuthCookieReason', 'no_cookie');
-	    return $auth_type->login_form($r);
-	}
+    if (is_blank($destination)) {
+        if (!is_blank($default_destination)) {
+            $destination = $default_destination;
+            $r->server->log_error("destination set to $destination");
+        }
+        else {
+            $r->server->log_error("No key 'destination' found in form data");
+            $r->subprocess_env('AuthCookieReason', 'no_cookie');
+            return $auth_type->login_form($r);
+        }
     }
 
     if ($r->dir_config("${auth_name}EnforceLocalDestination")) {
-	if ($destination !~ /\A\//) {
-	    $r->server->log_error("invalid destination $destination detected for uri ",$r->uri);
-	    $destination = defined($default_destination) && length($default_destination) ? $default_destination : '/';
-	    $r->server->log_error("destination changed to $destination");
+        if ($destination !~ m|^\s*/|) {
+            $r->server->log_error("invalid destination $destination detected for uri ",$r->uri);
+
+            unless (is_blank($default_destination)) {
+                $destination = $default_destination;
+                $r->server->log_error("destination changed to $destination");
+            }
         }
     }
 
