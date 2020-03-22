@@ -1,6 +1,8 @@
 Revision history for Apache::AuthCookie
 
 {{$NEXT}}
+
+3.29  2020-03-22
    - Add optional support for enforcing a local destination, like so:
 
         PerlSetVar MyAuthEnforceLocalDestination 1
