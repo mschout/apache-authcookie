@@ -332,10 +332,30 @@ sub login ($$) {
 
     $self->_convert_to_get($r) if $r->method eq 'POST';
 
-    unless (defined $params->param('destination')) {
-        $r->log_error("No key 'destination' found in form data");
-        $r->subprocess_env('AuthCookieReason', 'no_cookie');
-        return $auth_type->login_form;
+    my $destination         = $params->param('destination');
+    my $default_destination = $r->dir_config("${auth_name}DefaultDestination");
+
+    if (is_blank($destination)) {
+        if (!is_blank($default_destination)) {
+            $destination = $default_destination;
+            $r->log_error("destination set to $destination");
+        }
+        else {
+            $r->log_error("No key 'destination' found in form data");
+            $r->subprocess_env('AuthCookieReason', 'no_cookie');
+            return $auth_type->login_form;
+        }
+    }
+
+    if ($r->dir_config("${auth_name}EnforceLocalDestination")) {
+        if ($destination !~ m|^\s*/|) {
+            $r->log_error("non-local destination $destination detected for uri ",$r->uri);
+
+            unless (is_blank($default_destination)) {
+                $destination = $default_destination;
+                $r->log_error("destination changed to $destination");
+            }
+        }
     }
 
     # Get the credentials from the data posted by the client
@@ -355,7 +375,7 @@ sub login ($$) {
     unless ($ses_key) {
         $r->log_error("Bad credentials") if $debug >= 2;
         $r->subprocess_env('AuthCookieReason', 'bad_credentials');
-        $r->uri($self->untaint_destination($params->param('destination')));
+        $r->uri($self->untaint_destination($destination));
         return $auth_type->login_form;
     }
 
@@ -372,8 +392,7 @@ sub login ($$) {
 
     $self->handle_cache;
 
-    $r->header_out(
-        "Location" => $self->untaint_destination($params->param('destination')));
+    $r->header_out(Location => $self->untaint_destination($destination));
 
     return REDIRECT;
 }
@@ -922,6 +941,14 @@ MethodHandlers, Authen, and Authz compiled in.
  # see http://www.w3.org/P3P/ for details about what the value 
  # of this should be
  PerlSetVar WhatEverP3P "CP=\"...\""
+
+ # optional: enforce that the destination argument from the login form is
+ # local to the server
+ PerlSetVar WhatEverEnforceLocalDestination 1
+
+ # optional: specify a default destination for when the destination argument
+ # of the login form is invalid or unspecified
+ PerlSetVar WhatEverDefaultDestination /protected/user/
 
  # These documents require user to be logged in.
  <Location /protected>
