@@ -376,6 +376,11 @@ sub login {
                 $destination = $default_destination;
                 $r->server->log_error("destination changed to $destination");
             }
+            else {
+                $r->server->log_error("Returning login form: non local destination: $destination");
+                $r->subprocess_env('AuthCookieReason', 'no_cookie');
+                return $auth_type->login_form($r);
+            }
         }
     }
 
