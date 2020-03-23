@@ -8,7 +8,7 @@ use Carp;
 use mod_perl qw(1.07 StackedHandlers MethodHandlers Authen Authz);
 use Apache::Constants qw(:common M_GET FORBIDDEN OK REDIRECT);
 use Apache::AuthCookie::Params;
-use Apache::AuthCookie::Util qw(is_blank);
+use Apache::AuthCookie::Util qw(is_blank is_local_destination);
 use Apache::Util qw(escape_uri);
 use Encode ();
 
@@ -348,10 +348,10 @@ sub login ($$) {
     }
 
     if ($r->dir_config("${auth_name}EnforceLocalDestination")) {
-        if ($destination !~ m|^\s*/|) {
+        unless (is_local_destination($destination)) {
             $r->log_error("non-local destination $destination detected for uri ",$r->uri);
 
-            unless (is_blank($default_destination)) {
+            if (is_local_destination($default_destination)) {
                 $destination = $default_destination;
                 $r->log_error("destination changed to $destination");
             }

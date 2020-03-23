@@ -5,8 +5,10 @@ package Apache::AuthCookie::Util;
 use strict;
 use base 'Exporter';
 
-our @EXPORT_OK = qw(is_blank);
-
+our @EXPORT_OK = qw(
+  is_blank
+  is_local_destination
+);
 
 sub expires {
     my($time,$format) = @_;
@@ -90,6 +92,15 @@ sub understands_forbidden_response {
 # return true if the given value is blank or not defined.
 sub is_blank {
     return defined $_[0] && ($_[0] =~ /\S/) ? 0 : 1;
+}
+
+# returns true if the given value looks like a local destination
+sub is_local_destination {
+    my $destination = shift;
+
+    return 0 if is_blank($destination);
+
+    return $destination =~ m|^\s*/|;
 }
 
 1;

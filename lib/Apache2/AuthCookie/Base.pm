@@ -6,7 +6,7 @@ use strict;
 use mod_perl2 '1.99022';
 use Carp;
 
-use Apache::AuthCookie::Util qw(is_blank);
+use Apache::AuthCookie::Util qw(is_blank is_local_destination);
 use Apache2::AuthCookie::Params;
 use Apache2::RequestRec;
 use Apache2::RequestUtil;
@@ -369,10 +369,10 @@ sub login {
     }
 
     if ($r->dir_config("${auth_name}EnforceLocalDestination")) {
-        if ($destination !~ m|^\s*/|) {
-            $r->server->log_error("invalid destination $destination detected for uri ",$r->uri);
+        unless (is_local_destination($destination)) {
+            $r->server->log_error("non-local destination $destination detected for uri ",$r->uri);
 
-            unless (is_blank($default_destination)) {
+            if (is_local_destination($default_destination)) {
                 $destination = $default_destination;
                 $r->server->log_error("destination changed to $destination");
             }
