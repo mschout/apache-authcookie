@@ -1,6 +1,9 @@
 Revision history for Apache::AuthCookie
 
 {{$NEXT}}
+   - Fix logic error for EnforceLocalDestination
+   - Add a bunch of tests to cover all scenarios of EnforceLocalDestination and
+     DefaultDestination
 
 3.29  2020-03-22
    - Add optional support for enforcing a local destination, like so:
