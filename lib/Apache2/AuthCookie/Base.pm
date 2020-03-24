@@ -13,6 +13,7 @@ use Apache2::RequestUtil;
 use Apache2::Log;
 use Apache2::Access;
 use Apache2::Response;
+use Apache2::URI;
 use Apache2::Util;
 use APR::Table;
 use Apache2::Const qw(OK DECLINED SERVER_ERROR M_GET HTTP_FORBIDDEN HTTP_MOVED_TEMPORARILY HTTP_OK);
@@ -369,10 +370,11 @@ sub login {
     }
 
     if ($r->dir_config("${auth_name}EnforceLocalDestination")) {
-        unless (is_local_destination($destination)) {
+        my $current_url = $r->construct_url;
+        unless (is_local_destination($destination, $current_url)) {
             $r->server->log_error("non-local destination $destination detected for uri ",$r->uri);
 
-            if (is_local_destination($default_destination)) {
+            if (is_local_destination($default_destination, $current_url)) {
                 $destination = $default_destination;
                 $r->server->log_error("destination changed to $destination");
             }

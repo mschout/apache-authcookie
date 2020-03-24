@@ -10,6 +10,7 @@ use Apache::Constants qw(:common M_GET FORBIDDEN OK REDIRECT);
 use Apache::AuthCookie::Params;
 use Apache::AuthCookie::Util qw(is_blank is_local_destination);
 use Apache::Util qw(escape_uri);
+use Apache::URI;
 use Encode ();
 
 =method authen_cred($r, @credentials)
@@ -348,10 +349,11 @@ sub login ($$) {
     }
 
     if ($r->dir_config("${auth_name}EnforceLocalDestination")) {
-        unless (is_local_destination($destination)) {
+        my $current_url = Apache::URI->parse($r)->unparse;
+        unless (is_local_destination($destination, $current_url)) {
             $r->log_error("non-local destination $destination detected for uri ",$r->uri);
 
-            if (is_local_destination($default_destination)) {
+            if (is_local_destination($default_destination, $current_url)) {
                 $destination = $default_destination;
                 $r->log_error("destination changed to $destination");
             }
