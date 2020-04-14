@@ -636,7 +636,7 @@ subtest 'EnforceLocalDestination with default destination' => sub {
 };
 
 subtest 'EnforceLocalDestination with no default destination' => sub {
-    plan tests => 3;
+    plan tests => 4;
 
     my $r = POST('/LOGIN-ENFORCELOCAL-NODEFAULT', [
         destination  => 'http://metacpan.org/',
@@ -672,7 +672,6 @@ subtest 'EnforceLocalDestination with no default destination' => sub {
 
     like($r->content, qr/Failure reason: 'no_cookie'/,
         'login form was returned - protocol relative destination in params');
-
 };
 
 subtest 'EnforceLocalDestination with non local default destination' => sub {
