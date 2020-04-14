@@ -1,6 +1,8 @@
 Revision history for Apache::AuthCookie
 
 {{$NEXT}}
+
+3.30  2020-04-14
    - Fix logic error for EnforceLocalDestination
    - Add a bunch of tests to cover all scenarios of EnforceLocalDestination and
      DefaultDestination
