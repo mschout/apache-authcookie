@@ -106,7 +106,7 @@ sub get_satisfy {
 
     my $auth_name = $r->auth_name;
 
-    return lc $r->dir_config("${auth_name}Satisfy") || 'all';
+    return lc( $r->dir_config("${auth_name}Satisfy") || 'all' );
 }
 
 =method satisfy_is_valid(): bool
