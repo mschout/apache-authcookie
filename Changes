@@ -1,6 +1,8 @@
 Revision history for Apache::AuthCookie
 
 {{$NEXT}}
+
+3.31  2022-01-05
    - Fix uninitialized variable warning if "Satisfy" was not set (github #15, thanks yewtc)
 
 3.30  2020-04-14
