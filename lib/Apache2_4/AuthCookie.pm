@@ -553,7 +553,7 @@ saved login.  I use a database to store the session key and retrieve it later.
 
 I upgraded to Apache 2.4 and now AuthCookie doesn't work!
 
-Apache 2.4 radically changed the authenciation and authorization API.  You will
+Apache 2.4 radically changed the authentication and authorization API.  You will
 need to port your AuthCookie subclass over to the Apache 2.4 API.  See the POD
 documentation in L<README.apache-2.4> for more information, but the quick
 rundown is you need to:
