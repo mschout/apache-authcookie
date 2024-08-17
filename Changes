@@ -1,6 +1,8 @@
 Revision history for Apache::AuthCookie
 
 {{$NEXT}}
+
+3.32  2024-08-17
    - Fix small typo in documentation (github #18, thanks Damyan Ivanov)
    - Capitalize Apache in POD (thanks Ed Sabol)
    - Fix warning due to quoted version in import under Perl 5.40
