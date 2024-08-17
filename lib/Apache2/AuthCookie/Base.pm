@@ -3,7 +3,7 @@ package Apache2::AuthCookie::Base;
 # ABSTRACT: Common Methods Shared by Apache2 and Apache2_4 AuthCookie Subclasses.
 
 use strict;
-use mod_perl2 '1.99022';
+use mod_perl2 1.99022;
 use Carp;
 
 use Apache::AuthCookie::Util qw(is_blank is_local_destination);
