@@ -18,3 +18,4 @@ Apache-AuthCookie-*
 \.build
 \.DS_Store
 travis-build/
+\.idea/
