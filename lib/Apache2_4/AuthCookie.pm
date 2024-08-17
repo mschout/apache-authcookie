@@ -571,7 +571,7 @@ Remove all C<PerlAuthzHandler> configuration entries.
 =item *
 
 Write Authz Provider methods for any C<Requires> directives that you are using
-that apache does not provide for already (e.g. apache already handles C<user>
+that Apache does not provide for already (e.g. Apache already handles C<user>
 and C<valid-user>) and register them with something like.
 
  PerlAddAuthzProvier species Sample::AuthCookieHandler->authz_species
